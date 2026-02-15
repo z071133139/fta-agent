@@ -84,15 +84,38 @@ SAP was built for manufacturing. Its terminology, menu labels, configuration des
 
 **Why this matters:** When the agent says "functional area" to an insurance CFO, the CFO hears manufacturing. When the agent says "expense classification -- claims, acquisition, and administrative" -- the CFO immediately understands. The agent bridges the gap.
 
+### Insurance Sub-Segment Differentiation
+
+The agent must know which sub-segment(s) the client operates in. The code block design, COA structure, regulatory requirements, and terminology differ significantly across sub-segments. The agent asks early and adapts everything accordingly.
+
+| Sub-Segment | Key GL / Code Block Differences |
+|-------------|-------------------------------|
+| **Life & Annuity** | Reserve accounting is dominant (policy reserves, DAC amortization, surrender values, annuity benefits). GAAP reserves follow ASC 944. IFRS 17 measurement models (GMM, VFA, PAA) drive subledger-to-GL design. Separate accounts for participating vs. non-participating. Investment income allocation to product lines. Embedded derivatives on variable annuities. Long duration contract accounting under LDTI. |
+| **Property & Casualty** | Loss reserves (case, IBNR, LAE) are the core complexity. Unearned premium reserves. Loss development triangles require accident year / underwriting year tracking. Reinsurance recoverables. Salvage and subrogation. State-level reporting is critical (premiums and losses by state). Statutory reporting follows NAIC Annual Statement format. Short-duration contracts -- simpler IFRS 17 (typically PAA). |
+| **Reinsurance** | Treaty vs. facultative distinction affects account structure. Assumed and ceded accounting on both sides. Retrocession adds another layer. Funds withheld / funds held accounting. Sliding scale commissions, profit commissions. Multi-currency is more prevalent (international treaties). Reserving at treaty level. Lag in reporting (claims reported by cedant on delay). |
+
+**Why this matters for code block design:**
+- A **Life carrier** needs GL accounts for DAC, VOBA, policy reserves by type, separate investment accounts, annuity benefit reserves -- none of which exist in a P&C carrier's COA
+- A **P&C carrier** needs accident year tracking, state-level dimensions, unearned premium reserves, salvage/subrogation accounts -- not relevant for life
+- A **Reinsurer** needs assumed/ceded mirroring, treaty-level tracking, retrocession layers, funds withheld accounts -- a fundamentally different account structure
+- A **multi-line carrier** (common) needs all of the above, carefully organized so the COA doesn't explode in complexity
+
+**Agent behavior:**
+- Asks at engagement start: "Which sub-segments does this carrier operate in?"
+- Adapts COA recommendations, code block design, regulatory references, and terminology based on the answer
+- For multi-line carriers, identifies which dimensions and accounts are shared vs. sub-segment-specific
+- References the correct regulatory framework (NAIC Annual Statement for P&C, LDTI for Life, etc.)
+
 ### Knowledge
 - Insurance-specific GL structures (life, P&C, reinsurance, health)
+- **Sub-segment differentiation: Life/Annuity, P&C, Reinsurance**
 - Statutory vs. GAAP/IFRS account hierarchies
 - Segment/entity/LOB dimensionality
 - Subledger-to-GL mapping patterns
 - Intercompany design
 - Regulatory reporting requirements and their GL implications
 - IFRS 17 / LDTI impact on COA design
-- **SAP-to-insurance terminology translation across all interactions**
+- SAP-to-insurance terminology translation across all interactions
 
 ### Target Platform Grounding
 
