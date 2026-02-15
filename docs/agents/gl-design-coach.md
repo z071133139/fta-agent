@@ -83,6 +83,51 @@ The GL Design Coach doesn't just design the COA -- it designs the **full insuran
 
 ACDOCA has 360-500+ fields. For insurance, approximately 50-100 are relevant. The rest (material ledger, plant, production order, batch, etc.) are not applicable.
 
+#### Code Block Dimension Guide
+
+A significant portion of consulting time on finance transformation projects is spent discussing what each code block dimension is for, why it matters, and how to design it. The GL Design Coach must support these discussions in an AI-native way -- not as a static reference document, but as an interactive guide that helps the consultant and client work through design decisions for each dimension.
+
+**For each dimension, the agent knows and can articulate:**
+
+| Dimension | What It Is | What It's Used For in Insurance | Key Design Question | Common Debate |
+|-----------|-----------|-------------------------------|-------------------|---------------|
+| **Company Code** | The legal entity in SAP. Represents a separate set of books with its own balance sheet and P&L. | Each insurance carrier, holding company, and service entity is typically a separate company code. Drives statutory reporting boundaries and legal entity financials. | How many company codes? Does every legal entity need one, or can some be combined? | "Do we need a company code for the holding company that has no transactions?" |
+| **GL Account** | The natural account -- identifies WHAT happened financially (premium earned, claims paid, salaries, rent). | The backbone of every financial report. Every transaction is classified by its GL account. Insurance-specific accounts include premium, claims, reserves (IBNR, case, LAE), ceded reinsurance, policyholder dividends. | How granular? How many accounts? How do we balance reporting detail with simplicity? | "Do we need separate GL accounts for each claim type or can we use a dimension?" |
+| **Profit Center** | An organizational unit that represents an area of management responsibility for which profit can be measured. | Insurance carriers use profit centers to track profitability. Typically aligned to LOB (auto, property, life), product groups, regions, or a combination. Enables internal P&L by business segment. | What does the profit center represent? LOB? Product? Region? A combination? | "Should LOB be the profit center or a COPA characteristic? If profit center, can we still report profit by region?" |
+| **Cost Center** | Where overhead costs are incurred. Represents a department or function within the organization. | Claims operations, underwriting, actuarial, IT, finance, legal, HR, executive. Used for budgeting, cost control, and functional area derivation. | How granular? One cost center per department or per team? | "Do we need separate cost centers for each claims office or is one per region enough?" |
+| **Segment** | A high-level reporting dimension required by IFRS 8 / ASC 280 for external segment reporting. Derived from profit center in SAP. | Insurance carriers report externally by operating segment (e.g., Life, P&C, Health). Segment must be on every line item for balanced segment reporting. | How many segments? Do they align with how the business is managed? | "Our IFRS segments are Life and Non-Life, but management tracks 6 LOBs. Do we need 2 segments or 6?" |
+| **Functional Area** | Classifies expenses by function for cost-of-sales (P&L by nature vs. by function). | Insurance carriers report expenses as: acquisition costs, claims management, administrative expenses, investment management. Required for statutory reporting and management P&L. | How are functional areas derived? From cost center? From order type? | "Claims adjusters do both claims management and admin work. How do we split their costs?" |
+| **Business Area** | Legacy SAP dimension originally used for internal balance sheet reporting before segments existed. | Many insurance carriers still have it from legacy ECC implementations. In S/4HANA, segment has largely replaced it. | Keep or retire? If keep, what does it represent? | "We've used business area for 15 years. Can we retire it or will something break?" |
+| **Trading Partner** | Identifies the intercompany counterparty on journal entry line items. | Insurance groups with multiple entities need intercompany elimination for consolidation. Reinsurance ceded between affiliates, shared service charges, management fees. | Which entities trade with each other? What's the IC transaction inventory? | "Do we need trading partner on every line item or only on IC-specific accounts?" |
+| **Internal Order** | A cost collector for specific activities, projects, or initiatives with a defined start and end. | One-time projects (system implementation, office move), marketing campaigns, regulatory initiatives. Enables cost tracking outside the recurring cost center structure. | What types of activities warrant an internal order vs. tracking on cost centers? | "Should we use internal orders or WBS elements for our transformation program?" |
+| **Ledger** | Represents a set of books under a specific accounting standard. | Insurance carriers operating internationally need parallel accounting: local statutory, IFRS 17, US GAAP. Each ledger can have different postings for the same transaction. | How many ledgers? Leading vs. non-leading? Which standards require separate ledgers vs. adjusting entries? | "Can we handle IFRS 17 adjustments in a non-leading ledger or do we need FPSL?" |
+| **Currency** | SAP supports up to 10 parallel currencies per ledger. | Multi-jurisdiction carriers need: local currency, group currency, hard currency. Carriers in volatile currency markets need parallel valuations. | How many currencies? Which currency types (10, 30, 40)? | "Do we need group currency on every entity or only on those that consolidate?" |
+
+**For each COPA characteristic, the agent knows:**
+
+| Characteristic | What It's Used For in Insurance | Key Design Question | Common Debate |
+|---------------|-------------------------------|-------------------|---------------|
+| **Line of Business** | Profitability analysis by insurance LOB (auto, homeowners, commercial property, term life, etc.) | Where does LOB live -- profit center, COPA, or both? | "If LOB is the profit center, we can't easily do profit center by region. If it's COPA, we lose document splitting by LOB." |
+| **Product** | Granular product-level profitability (beyond LOB) | How granular? Product family or individual product? | "Actuarial needs product-level data but finance only reports by LOB. Who wins?" |
+| **Distribution Channel** | Direct, agent, broker, digital -- tracks acquisition cost and revenue by channel | Mandatory or optional? Posted or derived from master data? | "Can we derive channel from the agent/broker master data instead of posting it?" |
+| **Geography / Region** | State, country, territory -- performance by geography | Separate dimension or derivable from other data? | "Is this the same as the custom state field we need for statutory reporting?" |
+
+**How the agent supports these discussions (AI-native approach):**
+
+The agent doesn't just define dimensions -- it facilitates design workshops:
+
+1. **Contextual explanation.** When a client asks "what is a profit center?" the agent doesn't give a generic SAP definition. It says: "For your company, which is a mid-size P&C carrier with 4 LOBs operating in 12 states, the profit center would most likely represent your LOBs -- Auto, Homeowners, Commercial Property, and Workers Comp. This lets you see a full P&L for each line. Here's why that matters for your specific reporting requirements..."
+
+2. **Trade-off analysis.** When the team debates "should LOB be profit center or COPA?" the agent lays out both sides with the implications specific to the client: what you gain, what you lose, what breaks, what becomes easier. Not generic pros/cons -- specific impact on THIS carrier's reporting, document splitting, and close process.
+
+3. **Cross-dimension impact.** When a decision is made on one dimension, the agent immediately surfaces the ripple effects: "You've decided profit center = LOB. This means your segment will be derived as Life vs. Non-Life (since segment comes from profit center). It also means if you want profitability by state, state must be a COPA characteristic or a custom field, because profit center is already taken by LOB."
+
+4. **Decision capture.** Every dimension design decision is logged with rationale, alternatives considered, and who decided. When the team revisits a decision 3 weeks later, the agent has the full context: "We discussed this on Feb 10. The team chose X because of Y. Here were the alternatives we considered."
+
+5. **Challenge and push back.** The agent flags when a proposed design creates problems: "You're proposing 200 cost centers for a finance organization of 80 people. That's 2.5 cost centers per person. Most carriers your size operate with 40-60. What's driving the granularity?"
+
+6. **Progressive depth.** In early workshops with executives, the agent provides high-level framing. In detailed design sessions with the finance team, it goes deep into derivation logic, posting rules, and document splitting behavior.
+
 #### Insurance-Relevant Code Block Dimensions
 
 **Core Organizational:**
