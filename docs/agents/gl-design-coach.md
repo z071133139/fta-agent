@@ -96,14 +96,84 @@ The GL Design Coach has strong views grounded in real-world experience, not text
 
 ## Data Skills
 
-This is a critical differentiator. The GL Design Coach doesn't just help design on paper -- it works with real client data:
+This is a critical differentiator. The GL Design Coach doesn't just help design on paper -- it works with real client data.
 
-- **Ingest:** Accept legacy GL extracts (trial balances, account masters, posting data)
-- **Transform:** Apply mapping rules to convert legacy data to the target COA structure
-- **Validate:** Run the converted data against the target design to identify exceptions, unmapped accounts, balance discrepancies
-- **Report:** Surface issues and insights from the conversion test
+### Architecture: LLM is the Brain, Not the Muscle
 
-This allows consultants to demonstrate to clients: "We didn't just design this on paper -- we've already run your actuals through the target structure."
+Insurance GL data can be millions of records per month. The LLM never processes raw data directly. Instead:
+
+```
+Consultant (conversational interface)
+    |
+GL Design Coach (LLM -- reasons, interprets, recommends)
+    |
+Data Analytics Engine (Python/SQL -- crunches millions of records)
+    |
+Raw GL Data
+```
+
+The Data Analytics Engine ingests raw data, computes structured **account profiles**, and stores the results. The LLM reasons over the profiles, not the raw data. A 3,000-account COA with millions of postings becomes 3,000 profile rows the LLM can work with.
+
+The consultant never leaves the conversation. They don't open a separate tool, run queries, or export results. The agent orchestrates the data engine invisibly.
+
+### Data Ingestion Priority
+
+The agent prioritizes actual posting data over static configuration:
+
+| Priority | Data Source | Purpose |
+|----------|-----------|---------|
+| 1 | **Posting data (journal entries)** | Ground truth -- derive the real COA from actual usage, not stale config |
+| 2 | **Account master (as reference)** | Descriptions, configured attributes -- agent flags discrepancies vs. actual behavior |
+| 3 | **Trial balance** | Balance validation and reconciliation |
+| Future | **Direct ERP extraction** | Pull all of the above directly from SAP |
+
+**Key principle:** The account master tells you what someone configured. The posting data tells you what actually happened. The agent starts with the data and challenges the master.
+
+### What the Data Engine Pre-Computes (Account Profiles)
+
+| Profile Dimension | What's Computed |
+|-------------------|----------------|
+| Activity | First posting date, last posting date, posting count by period |
+| Balance behavior | Average balance, balance direction, carries balance vs. resets |
+| Volume | Monthly posting volume, materiality (dollar amount) |
+| Counterparties | Most common offsetting accounts |
+| Dimensions used | Which profit centers, cost centers, segments are populated |
+| Patterns | Seasonal posting patterns, one-time vs. recurring |
+| Relationships | Accounts that consistently post together in the same journal entries |
+| Classification check | Configured type (from master) vs. observed behavior (from postings) |
+
+### Progressive Disclosure
+
+The agent presents findings in layers, not data dumps:
+
+- **Level 1 -- Executive summary:** "2,800 accounts, 1,600 active, 340 low-activity, 12 anomalies"
+- **Level 2 -- Category drill-down:** "Here are the 340 low-activity accounts grouped by type..."
+- **Level 3 -- Account detail:** "Account 510340: last posting March 2024, 2 postings total, both reclassifications. Recommendation: merge into 510300."
+
+The consultant goes as deep as they want. The data is always there, pre-computed and ready.
+
+### Persistent Analysis Store
+
+**Design consideration:** Analysis results are not just conversational output that scrolls away. All analysis is **persisted and stored** as structured data in the engagement context. Consultants can:
+
+- Access detailed analysis results at any time outside the conversation flow
+- Browse account profiles, findings, and recommendations independently
+- Share analysis with other team members or client stakeholders
+- Return to analysis from a prior session without re-running it
+- Render the analysis in different formats (browsable report, deck, detailed export)
+
+This follows the structured-first documentation principle: the analysis is living data in the engagement context, not a chat message that gets buried.
+
+### Data Validation Pipeline
+
+- **Ingest:** Accept GL extracts (posting data, account masters, trial balances)
+- **Profile:** Derive the real COA from actual posting behavior
+- **Map:** Auto-suggest mappings from legacy to target with confidence scores (high / medium / low)
+- **Transform:** Restate balances under the target COA
+- **Validate:** Reconciliation (OLD = NEW), completeness, design validation, anomaly detection
+- **Iterate:** Consultant adjusts, agent re-runs, full audit trail maintained
+
+This allows consultants to demonstrate to clients: "We didn't just design this on paper -- we've already run your actuals through the target structure and every dollar reconciles."
 
 ## Integration with Layer 1
 
