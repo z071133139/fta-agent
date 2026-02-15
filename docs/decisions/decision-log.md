@@ -155,3 +155,49 @@ This log captures key product and architecture decisions made during ideation an
 **Decision:** A PMO / Engagement Planning tool will be added to Layer 1 general tools. It will be scoped in a dedicated session.
 
 **Rationale:** Engagement planning ties directly into the shared backlog and is essential for team coordination. But the scope is large enough to warrant its own design discussion.
+
+---
+
+## DEC-014: Reporting Design Agent -- Separate from GL Design Coach
+
+**Date:** 2026-02-15
+**Status:** Decided (agent to be scoped separately)
+
+**Decision:** Financial and management reporting design will be a separate domain specialist agent (Reporting Design Agent), not part of the GL Design Coach. The GL Design Coach owns reporting requirements as input to code block design ("can the code block support the required reports?"). The Reporting Design Agent owns the actual report design and build ("given this code block, design the reports").
+
+**Rationale:** Different skills, different tools, different expertise. The code block is the foundation; the reports are the output built on top of it.
+
+**Critical design note:** The handoff between code block design and reporting design is a **major source of friction on real consulting projects.** The traditional approach (design the code block, hand it off, design the reports, discover the code block doesn't support them, rework) is broken. FTA needs a smart AI-native solution that eliminates this friction -- the two agents must be tightly integrated through the shared engagement context, with the Reporting Design Agent continuously validating that the code block design supports reporting needs as the design evolves, not after it's finalized. This is a key differentiator to design carefully.
+
+---
+
+## DEC-015: Insurance Language Translation as Core Capability
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** The GL Design Coach (and all future insurance domain agents) translates SAP terminology to insurance language in every interaction. SAP was built for manufacturing; insurance companies don't have COGS, production orders, or materials. The agent speaks insurance, not SAP.
+
+**Rationale:** SAP jargon is a constant source of confusion on insurance implementations. The agent bridges the gap between SAP's manufacturing-oriented framework and insurance business reality.
+
+---
+
+## DEC-016: Full Code Block Design, Not Just COA
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** The GL Design Coach designs the full insurance code block (all relevant ACDOCA dimensions), not just the chart of accounts. The COA is one dimension. The code block includes profit centers, cost centers, segments, functional areas, COPA characteristics, intercompany dimensions, custom insurance-specific extensions (state, statutory product, etc.), parallel ledgers, and currencies.
+
+**Rationale:** A COA without the surrounding code block dimensions is incomplete. All dimensions interact (document splitting derives segment from profit center, cost center drives functional area, etc.). Designing them in isolation leads to rework.
+
+---
+
+## DEC-017: Sub-Segment Differentiation Required
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** The GL Design Coach must differentiate between Life/Annuity, Property & Casualty, and Reinsurance sub-segments. Each has fundamentally different COA structures, reserve accounting, regulatory requirements, and code block dimensions.
+
+**Rationale:** A one-size-fits-all approach doesn't work. A Life carrier's COA looks completely different from a P&C carrier's. The agent must ask at engagement start and adapt accordingly.
