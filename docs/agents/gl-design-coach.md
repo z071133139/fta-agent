@@ -77,12 +77,116 @@ The target COA is not an abstract design -- it must work in the specific ERP the
 
 **Architecture note:** SAP-specific knowledge is delivered through a platform adapter. The coach's core domain logic is platform-neutral. Adding Oracle or Workday support means adding a new adapter, not modifying the coach.
 
+### Insurance Code Block Design (Full ACDOCA Scope)
+
+The GL Design Coach doesn't just design the COA -- it designs the **full insurance code block**. The GL account is one field. The code block is the complete set of accounting dimensions that get populated on every journal entry line item in ACDOCA.
+
+ACDOCA has 360-500+ fields. For insurance, approximately 50-100 are relevant. The rest (material ledger, plant, production order, batch, etc.) are not applicable.
+
+#### Insurance-Relevant Code Block Dimensions
+
+**Core Organizational:**
+
+| Dimension | ACDOCA Field | Insurance Purpose | Design Required |
+|-----------|-------------|-------------------|-----------------|
+| Company Code | RBUKRS | Legal entity (carrier, holding, service co.) | Entity structure |
+| GL Account | RACCT / HKONT | Natural account (premium, claims, reserves, expenses) | COA design |
+| Segment | SEGMENT | IFRS 8 segment reporting (Life, P&C, Health) | Segment hierarchy |
+| Profit Center | PRCTR | Internal profitability (LOB, product, region) | Profit center hierarchy |
+| Cost Center | KOSTL | Overhead cost management (departments) | Cost center hierarchy |
+| Functional Area | RFAREA | Cost-of-sales (admin, acquisition, claims mgmt) | Derivation rules |
+| Business Area | GSBER | Legacy dimension -- often being phased out | Keep or retire decision |
+| Ledger | RLDNR | Multi-GAAP (Statutory, IFRS, US GAAP) | Parallel ledger strategy |
+
+**Partner & Intercompany:**
+
+| Dimension | ACDOCA Field | Insurance Purpose | Design Required |
+|-----------|-------------|-------------------|-----------------|
+| Trading Partner | RASSC | IC eliminations (reinsurance ceded, shared services) | IC partner mapping |
+| Partner Profit Center | PPRCTR | IC settlement | Linked to profit center design |
+| Partner Segment | PSEGMENT | IC balanced reporting | Linked to segment design |
+| Customer | KUNNR | Policyholders, agents, brokers | Subledger integration |
+| Vendor | LIFNR | Claimants, service providers, reinsurers | Subledger integration |
+
+**Profitability (COPA Characteristics):**
+
+| Dimension | Insurance Purpose | Design Required |
+|-----------|-------------------|-----------------|
+| Line of Business | Life, Auto, Property, Health, Workers Comp | COPA characteristic or profit center |
+| Product / Product Group | Specific insurance products (Term Life, Whole Life) | COPA characteristic |
+| Distribution Channel | Direct, Agent, Broker, Digital | COPA characteristic |
+| Geography / Region | State, country, territory | COPA characteristic |
+| Customer Group | Individual, Commercial, Group | COPA characteristic |
+
+**Controlling:**
+
+| Dimension | ACDOCA Field | Insurance Purpose | Design Required |
+|-----------|-------------|-------------------|-----------------|
+| Internal Order | AUFNR | Projects, initiatives | Order type design |
+| WBS Element | PS_PSP_PNR | Large programs (if used) | Project structure |
+
+**Currency & Valuation:**
+
+| Dimension | Insurance Purpose | Design Required |
+|-----------|-------------------|-----------------|
+| Transaction Currency | Original posting currency | Standard |
+| Local Currency | Company code currency | Standard |
+| Group Currency | Consolidation / group reporting | Group currency strategy |
+| Additional currencies (up to 10) | Multi-jurisdiction carriers | Parallel currency strategy |
+
+#### Insurance-Specific Custom Fields (Code Block Extensions)
+
+SAP does not natively support several dimensions that are critical for US insurance companies. These are added as custom fields via coding block extensibility (CI_COBL / OXK3 or Fiori Custom Fields & Logic app) and flow into ACDOCA.
+
+**Common insurance-specific extensions:**
+
+| Custom Field | Why SAP Doesn't Have It | Insurance Purpose |
+|-------------|------------------------|-------------------|
+| **State** | SAP has no native "state" dimension on the code block | US insurance is regulated state-by-state. Carriers must track premiums, claims, reserves, and expenses by state for statutory reporting to each state's Department of Insurance |
+| **Statutory Product / NAIC Line of Business** | SAP has no native statutory product classification | Annual Statement reporting requires financials by NAIC line of business (fire, allied lines, homeowners, auto liability, etc.) |
+| **Statutory Entity** | May differ from legal entity structure | Statutory reporting entity may not align 1:1 with SAP company codes |
+| **Treaty / Reinsurance Agreement** | Not a standard SAP dimension | Track ceded/assumed premiums and claims by reinsurance treaty |
+| **Accident Year / Underwriting Year** | Not a standard SAP GL dimension | Loss development and reserving analysis requires year-of-origin tracking |
+| **Coverage Type** | Not a standard SAP dimension | Detailed analysis by coverage within a product line |
+| **Risk Category** | Not a standard SAP dimension | Risk-based reporting and capital allocation |
+
+**Design considerations for custom fields:**
+- Each custom field added to the code block increases data entry complexity and storage
+- Custom fields must be populated consistently across all posting sources (manual, subledger, interfaces)
+- Document splitting behavior must be defined for each custom field
+- The agent should challenge whether a custom field is truly needed on ACDOCA or whether it can be handled through master data attributes or reporting hierarchies
+- The agent should assess: "Does this need to be on every journal entry line, or can it be derived?"
+
+**The agent's role:** When designing the code block, the GL Design Coach identifies which custom extensions the specific carrier needs based on their regulatory environment (US vs. international), reporting requirements, and business model. It proposes the minimum set of extensions that meets requirements -- not every possible field.
+
+#### Subledger Integration Points
+
+| Source System | What It Posts to ACDOCA | Design Required |
+|--------------|------------------------|-----------------|
+| FPSL (Financial Products Subledger) | IFRS 17 accounting -- CSM, risk adjustments, insurance revenue | FPSL subledger COA to GL COA mapping |
+| FS-CD / FI-CA | Premium billing, collections, commissions | Receivables/payables account determination |
+| Policy Admin System | Premium, claims, reserves via interfaces | Interface mapping to GL code block |
+| Actuarial Systems | Reserve movements, IBNR, LAE | Reserve account structure |
+| Reinsurance System | Ceded premiums, recoveries, commissions | Reinsurance account structure |
+| Investment / Asset Mgmt | Investment income, gains/losses | Investment account structure |
+
+#### What's NOT Relevant for Insurance
+
+| ACDOCA Field Category | Why Excluded |
+|----------------------|--------------|
+| Material Ledger (MATNR, BWTAR, etc.) | No manufacturing / inventory valuation |
+| Plant / Storage Location | No physical production |
+| Production Order | No manufacturing |
+| Quantity fields (most) | Insurance is financial, not unit-based |
+| Batch / Serial Number | Not applicable |
+
 ### Tools (Specialist-Specific)
-- **COA Builder** -- construct a target chart of accounts based on client context and requirements
-- **Mapping Generator** -- create mappings from legacy COA to target COA
-- **Gap Analyzer** -- compare current state to target and identify gaps
-- **Regulatory Cross-Reference Checker** -- validate COA design against regulatory reporting needs
-- **Data Transformer** -- convert data from old GL to target GL to verify the new chart of accounts
+- **Code Block Designer** -- design the full insurance code block (all relevant ACDOCA dimensions including custom extensions), not just the COA
+- **COA Builder** -- construct the target chart of accounts (GL account dimension of the code block)
+- **Mapping Generator** -- create mappings from legacy code block to target code block
+- **Gap Analyzer** -- compare current state to target and identify gaps across all code block dimensions
+- **Regulatory Cross-Reference Checker** -- validate code block design against regulatory reporting needs (statutory, IFRS, segment)
+- **Data Transformer** -- convert data from old GL to target GL to verify the new code block design
 
 ### Memory
 - Remembers the client's current state, prior design decisions, and constraints
@@ -90,17 +194,25 @@ The target COA is not an abstract design -- it must work in the specific ERP the
 - Maintains decision history with rationale
 
 ### Process Guidance
-The GL Design Coach doesn't just answer questions -- it drives a structured design journey:
+The GL Design Coach doesn't just answer questions -- it drives a structured design journey across the full code block, not just the COA:
 
-1. Understand the current COA structure and pain points
-2. Define design principles and constraints (regulatory, reporting, operational)
-3. Design the natural account structure
-4. Design the dimensional model (segments, profit centers, cost centers, LOBs)
-5. Define the subledger-to-GL mapping strategy
-6. Build the target COA
-7. Map legacy accounts to target
-8. Validate through data conversion testing
-9. Produce design documentation and sign-off materials
+1. Identify the target ERP platform (SAP / Oracle / Workday / agnostic)
+2. Understand the current code block structure and pain points
+3. Ingest and profile the existing GL data (posting data first, master data as reference)
+4. Analyze MJE patterns and identify optimization potential
+5. Define design principles and constraints (regulatory, reporting, operational)
+6. Design the natural account structure (GL accounts)
+7. Design the organizational dimensions (profit center hierarchy, cost center hierarchy, segment model)
+8. Design the profitability dimensions (COPA characteristics)
+9. Identify required insurance-specific custom field extensions (state, statutory product, etc.)
+10. Design the intercompany model (trading partners, partner dimensions)
+11. Define the parallel ledger and currency strategy
+12. Define the subledger-to-GL integration design (FPSL, policy admin, actuarial, reinsurance)
+13. Build the full target code block
+14. Map legacy code block to target
+15. Validate through data conversion testing (restate actuals, reconcile OLD = NEW)
+16. Quantify MJE optimization (business case for the transformation)
+17. Produce design documentation and sign-off materials
 
 The coach knows where you are in this journey and guides you to the next step.
 
