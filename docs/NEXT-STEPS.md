@@ -1,37 +1,36 @@
 # Next Steps
 
-> Last updated: 2026-02-14 (after Session 001)
+> Last updated: 2026-02-15 (after Session 002)
 
 ## How to Use This Document
 
 This is the primary pickup point between sessions. Before starting any new session, read this document first to understand where things stand and what's next. Update it at the end of every session.
 
-## Current Phase: Ideation
+## Current Phase: Ideation / Design
 
-The product vision and high-level architecture are established. No code has been written. The next steps focus on deepening the design before building.
+The product vision, architecture, and GL Design Coach have been significantly detailed. No code has been written. The GL Design Coach spec is now comprehensive but needs MVP scoping (what's in V1 vs. later). Other areas remain at high-level ideation.
 
 ---
 
-## Priority 1: Scope the GL Design Coach MVP
+## Priority 1: Define GL Design Coach MVP Tiers
 
-**Why first:** This is the first thing we'll build. We need to define exactly what's in scope for the MVP version vs. what comes later.
+**Why first:** The GL Design Coach spec (docs/agents/gl-design-coach.md) is now very comprehensive -- full code block design, MJE analysis, data validation, insurance language translation, sub-segment differentiation. We need to draw the line on what's in V1 vs. V2 vs. later.
 
 **What needs to happen:**
-- Define the specific COA design methodology the coach will guide (step-by-step)
-- Define which SAP-specific knowledge is included at launch
-- Define the data skills MVP (what data formats, what transformations, what validations)
-- Define the tool set: COA Builder, Mapping Generator, Gap Analyzer -- what does each actually do?
-- Define what "opinions" the coach has at launch (what best practices are encoded)
-- Decide: how deep is the insurance sub-segment knowledge? (life vs. P&C vs. reinsurance)
+- Tier the capabilities: what's MVP (personal use), what's V2 (super testers), what's future
+- Define the minimum data inputs needed for MVP (just trial balance + account master? or posting data from day one?)
+- Decide MVP sub-segment focus (start with P&C only? or all three from day one?)
+- Define how the domain knowledge is encoded (prompt engineering? RAG over curated docs? fine-tuning? knowledge base?)
+- Define the MVP data analytics engine (lightweight Python scripts? or full pipeline?)
 
 **Relevant docs:**
-- docs/agents/gl-design-coach.md (current spec with open questions)
+- docs/agents/gl-design-coach.md (comprehensive spec, needs tiering)
 
 ---
 
 ## Priority 2: Design the Engagement Context ("Engagement Brain")
 
-**Why second:** This is the backbone that everything connects to. Needs to be designed before we build anything that reads/writes to it.
+**Why second:** This is the backbone that everything connects to. Needs to be designed before we build anything that reads/writes to it. The GL Design Coach's persistent analysis store depends on this.
 
 **What needs to happen:**
 - Define the data model (what's stored, how it's structured)
@@ -50,14 +49,15 @@ The product vision and high-level architecture are established. No code has been
 
 ## Priority 3: Choose the Tech Stack
 
-**Why third:** Can't build without making technology choices.
+**Why third:** Can't build without making technology choices. Some decisions are now more informed by the GL Design Coach requirements (e.g., need Python for data analytics engine, need structured storage for persistent analysis).
 
 **What needs to happen:**
 - LLM provider(s): Anthropic (Claude), OpenAI, open-source, or mix?
 - Agent framework: LangChain, LangGraph, Autogen, custom, or something else?
-- Backend language/framework
+- Backend language/framework (Python likely given data analytics engine needs)
 - Frontend approach (conversational-only MVP? web app? both?)
 - Database / persistence layer (ties into engagement context design)
+- Data analytics engine stack (Pandas? DuckDB? something else for GL data processing?)
 - Deployment target for personal phase (local? cloud? which cloud?)
 
 ---
@@ -110,3 +110,4 @@ These items are explicitly deferred but documented:
 | Session | Date | Focus | Key Outcomes |
 |---------|------|-------|-------------|
 | [001](sessions/2026-02-14-session-001-ideation-kickoff.md) | 2026-02-14 | Ideation kickoff | Vision, architecture, 13 decisions, full documentation structure |
+| [002](sessions/2026-02-15-session-002-gl-design-coach-deep-dive.md) | 2026-02-15 | GL Design Coach deep dive | Full code block design, MJE analysis, data validation pipeline, insurance language translation, sub-segment differentiation, 7 commits to gl-design-coach.md |
