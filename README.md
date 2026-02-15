@@ -68,5 +68,6 @@ Consulting Agent (orchestrator)
 | [Configuration Agent](docs/features/configuration-agent.md) | Future: SAP configuration automation |
 | [Day in the Life](docs/engagement-flow/day-in-the-life.md) | How consultants use the system |
 | [Decision Log](docs/decisions/decision-log.md) | Key decisions and rationale |
+| [Tech Stack](docs/tech/tech-stack.md) | Technology choices and rationale |
 | [Cost Model](docs/operations/cost-model.md) | Token estimates, runtime projections, optimization strategies |
 | **[Next Steps](docs/NEXT-STEPS.md)** | **Start here -- priorities, pickup points, session log** |
