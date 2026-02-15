@@ -201,3 +201,73 @@ This log captures key product and architecture decisions made during ideation an
 **Decision:** The GL Design Coach must differentiate between Life/Annuity, Property & Casualty, and Reinsurance sub-segments. Each has fundamentally different COA structures, reserve accounting, regulatory requirements, and code block dimensions.
 
 **Rationale:** A one-size-fits-all approach doesn't work. A Life carrier's COA looks completely different from a P&C carrier's. The agent must ask at engagement start and adapt accordingly.
+
+---
+
+## DEC-018: Agent Orchestration -- LangGraph
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** Use LangGraph as the agent orchestration framework.
+**Alternatives considered:** CrewAI, AutoGen, OpenAI Agents SDK, custom build.
+
+**Rationale:** FTA has two types of state: domain state (engagement context, stored in Supabase) and workflow state (where is the consultant in the process, what tools have been called, what's next). LangGraph manages workflow state with built-in checkpointing, concurrency, streaming, and error recovery. Multi-consultant scale (5+ concurrent users) and multi-agent architecture (Consulting Agent → GL Design Coach → tools) map directly to LangGraph's graph-based design. Building from scratch converges to building a worse framework. AutoGen is being sunset. OpenAI Agents SDK locks into OpenAI. CrewAI has less control over complex flows.
+
+**Key insight:** The custom-build option was carefully evaluated. Day 1 is clean Python classes. Month 6 is a homegrown framework nobody else can maintain. The multi-consultant, multi-agent, long-running engagement requirements mean we'd end up rebuilding LangGraph's features without the community and testing.
+
+---
+
+## DEC-019: LLM Provider -- Multi-Provider via LiteLLM
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** Use LiteLLM as an abstraction layer to route to the best model per task. Primary providers: Claude (Anthropic) and GPT-4o (OpenAI).
+
+**Rationale:** Single API to call any provider. Swap models without code changes. Optimize cost by routing simple tasks to cheaper models, complex reasoning to stronger models. No vendor lock-in.
+
+---
+
+## DEC-020: Data Analytics Engine -- DuckDB + Polars
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** DuckDB as primary query engine, Polars for DataFrame operations. Replaces Pandas.
+
+**Rationale:** Insurance GL data can have millions of records monthly. DuckDB is SQL-first, 5x faster than Pandas, minimal memory footprint (streams data, spills to disk), no server needed. Polars is Rust-based, 7x faster than Pandas for CSV reading, 5x faster for joins. Together they handle insurance data volumes on a laptop without becoming a clunky data tool.
+
+---
+
+## DEC-021: Database -- Supabase (Postgres + pgvector)
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** Supabase as the persistence layer.
+**Alternatives considered:** Firebase, raw Postgres.
+
+**Rationale:** Postgres underneath (enterprise-standard, relational engagement context). pgvector for semantic search (no separate vector DB needed). Built-in auth (multi-consultant ready). Real-time subscriptions (concurrency ready). Open-source and self-hostable (enterprise deployment). Row Level Security for future permissions. Firebase rejected: NoSQL/document model doesn't suit relational engagement data, harder to self-host.
+
+---
+
+## DEC-022: Backend -- Python + FastAPI
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** Python with FastAPI as the backend framework.
+
+**Rationale:** Python is the lingua franca for AI/ML -- LangGraph, DuckDB, Polars, LiteLLM are all Python-native. FastAPI: async, type-safe with Pydantic, automatic OpenAPI docs. Enterprise-standard, used by Microsoft, Netflix, Uber.
+
+---
+
+## DEC-023: Frontend -- Next.js (React)
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** CLI during development phase, Next.js web app for the product.
+
+**Rationale:** CLI-first for fast iteration on agent behavior during personal phase. Next.js for the web app: React ecosystem, SSR, API routes, works naturally with Supabase SDK. The product must be visually appealing and sellable. Enterprise-standard, massive ecosystem.
