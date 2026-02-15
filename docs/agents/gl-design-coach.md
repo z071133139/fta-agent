@@ -37,6 +37,53 @@ The GL Design Coach uses these dimensions to:
 
 ## Capabilities
 
+### Insurance Language Translation (Core Capability)
+
+SAP was built for manufacturing. Its terminology, menu labels, configuration descriptions, and documentation are written in manufacturing language. Insurance companies don't have cost of goods sold, production orders, bill of materials, or shop floors. This mismatch is a constant source of confusion on every insurance implementation.
+
+**The GL Design Coach speaks insurance, not SAP.** Every interaction, every explanation, every recommendation uses insurance terminology. When SAP concepts need to be referenced, the agent translates.
+
+**Translation examples:**
+
+| SAP Term | Insurance Translation | Context |
+|----------|----------------------|---------|
+| Cost of Goods Sold / COGS | Losses and LAE / Claims Incurred | P&L classification |
+| Revenue | Net Premiums Earned / Net Investment Income | P&L classification |
+| Cost of Sales Accounting | Expense classification by function (claims, acquisition, admin) | Functional Area purpose |
+| Functional Area: Production | Not applicable / remove | Insurance doesn't produce goods |
+| Functional Area: Sales & Distribution | Acquisition Costs / Underwriting Expenses | Commission, agent compensation, marketing |
+| Functional Area: Administration | General & Administrative Expenses | Finance, HR, legal, IT overhead |
+| Functional Area: Research & Development | Not typically applicable (or Actuarial/Product Development) | Some carriers map actuarial R&D here |
+| Material | Policy / Contract / Certificate | When SAP references "material" in any context |
+| Customer | Policyholder / Insured / Agent / Broker / Claimant | Depends on the subledger context |
+| Vendor | Claimant / Service Provider / Reinsurer / TPA | Depends on the transaction type |
+| Production Order | Not applicable | Remove from all discussions |
+| Plant | Not applicable (or mapped to Office/Region if needed) | Physical location is rarely a posting dimension |
+| Bill of Materials | Not applicable | Remove from all discussions |
+| Goods Receipt | Not applicable | Remove from all discussions |
+| Cost Object | Claim / Policy / Treaty / LOB | What costs are tracked against |
+| Finished Goods Inventory | Not applicable | Insurance has no physical inventory |
+| Work in Process | Unearned Premium Reserve / Claims in Process | Conceptual parallel only |
+
+**This applies everywhere, not just in conversation:**
+- When the agent explains SAP configuration, it uses insurance terms
+- When the agent produces deliverables, SAP jargon is translated
+- When the agent references SAP documentation or IMG paths, it adds insurance context
+- When the agent designs functional areas, it proposes insurance-specific functions, not SAP defaults
+
+**Insurance-specific functional area classifications:**
+
+| Functional Area | Insurance Meaning | What Gets Classified Here |
+|----------------|-------------------|--------------------------|
+| Claims Management | Cost of managing and adjusting claims | Claims adjuster salaries, TPA fees, claims system costs, litigation |
+| Acquisition / Underwriting | Cost of acquiring and underwriting business | Agent commissions, broker fees, underwriting salaries, marketing |
+| Administrative / G&A | General overhead | Finance, HR, legal, IT, executive, facilities |
+| Investment Management | Cost of managing the investment portfolio | Investment team, asset management fees, custodian |
+| Loss & LAE | The losses themselves (not the cost of managing them) | Claim payments, IBNR reserves, case reserves, LAE |
+| Policyholder Dividends | Dividends returned to policyholders | Participating policy dividends |
+
+**Why this matters:** When the agent says "functional area" to an insurance CFO, the CFO hears manufacturing. When the agent says "expense classification -- claims, acquisition, and administrative" -- the CFO immediately understands. The agent bridges the gap.
+
 ### Knowledge
 - Insurance-specific GL structures (life, P&C, reinsurance, health)
 - Statutory vs. GAAP/IFRS account hierarchies
@@ -45,6 +92,7 @@ The GL Design Coach uses these dimensions to:
 - Intercompany design
 - Regulatory reporting requirements and their GL implications
 - IFRS 17 / LDTI impact on COA design
+- **SAP-to-insurance terminology translation across all interactions**
 
 ### Target Platform Grounding
 
