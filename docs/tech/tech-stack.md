@@ -58,9 +58,55 @@
 - **Enterprise-ready.** Self-hosted option, backed by well-funded company (LangChain), becoming an industry standard.
 - **Observability.** LangSmith integration for tracing and debugging agent behavior.
 
-**Why not custom build:**
-- Evaluated carefully. Custom build is simpler initially for a single user, but the multi-consultant, multi-agent, long-running engagement requirements mean we'd end up rebuilding LangGraph's features (checkpointing, concurrency, streaming, error recovery) without the community and testing.
-- The "build-it-yourself trap": Day 1 is clean Python classes. Month 6 is a homegrown framework nobody else can maintain.
+**The Custom Build Debate (Session 003):**
+
+This was the most contested decision in the tech stack discussion. After the initial recommendation of LangGraph, the product owner asked a direct question: *"Why not custom build the agentic flow?"*
+
+The argument for custom build is real:
+- Full control over every design decision
+- No framework learning curve (product owner has no LangGraph experience)
+- No dependency on a third-party framework's roadmap
+- Simpler initially -- just Python classes calling LLMs
+- No framework abstractions hiding what's happening
+
+The initial response was to flip to recommending custom build. The product owner rejected this: *"This change was fast -- I don't appreciate it. Think again. This is fundamental."*
+
+The deeper analysis that followed revealed the core issue: **FTA has two fundamentally different types of state, and they need different solutions.**
+
+**1. Domain state** -- the engagement context. What the consultant is working on: requirements, COA designs, MJE analysis results, decisions, artifacts. This is *our* data model. It lives in Supabase. No framework manages this for us, nor should one. We own this completely regardless of whether we use LangGraph or custom build.
+
+**2. Workflow state** -- the agent session flow. Where is the consultant in the 17-step design process? What tools have been called? What's the conversation history? Can the session be resumed tomorrow? What happens if the server crashes mid-analysis? This is *infrastructure* state.
+
+A custom build handles domain state fine -- that's just database reads and writes. But workflow state is where the complexity explodes:
+
+| Capability | Custom Build (Day 1) | Custom Build (Month 6) | LangGraph |
+|-----------|---------------------|----------------------|-----------|
+| Basic agent loop | Simple Python class | Same | Built-in |
+| Tool calling | Manual dispatch | Same | Built-in |
+| Session persistence | Not built yet | Must build (DB schema, serialization, restoration) | Built-in checkpointing |
+| Session resumability | Not built yet | Must build (state snapshots, replay) | Built-in |
+| Error recovery | Try/except | Must build (retry logic, partial state recovery, dead letter handling) | Built-in |
+| Streaming | Not built yet | Must build (SSE/WebSocket, partial response handling) | Built-in |
+| Concurrent sessions | Not built yet | Must build (session isolation, resource management, connection pooling) | Built-in |
+| Multi-agent routing | If/else | Must build (graph-based routing, conditional edges, parallel execution) | Core design pattern |
+| Human-in-the-loop | Manual breaks | Must build (interrupt/resume, approval gates, state preservation across waits) | Built-in patterns |
+| Observability | print() statements | Must build (tracing, logging, debugging across agent hops) | LangSmith integration |
+
+**The build-it-yourself trap:** Day 1 is a clean Python class with a `run()` method. It feels elegant. By Month 6, you've built session management, checkpointing, error recovery, streaming, concurrency isolation, and a graph-based routing system. You've built LangGraph -- just a worse version of it, without the community, testing, or documentation.
+
+**The deciding factors for LangGraph:**
+- **5+ concurrent consultants** on the same engagement is a foundational requirement (DEC-009), not a future enhancement. Concurrent session management is non-trivial to build correctly.
+- **Multi-agent architecture** (Consulting Agent → GL Design Coach → tools) maps directly to LangGraph's graph-based design. Building a custom graph execution engine is exactly what frameworks exist to avoid.
+- **Long-running engagements** (weeks to months) require reliable session persistence and resumability. This is infrastructure, not domain logic.
+- **Agent ecosystem growth** -- GL Design Coach is the first of many specialist agents. Each new agent should plug into a consistent pattern, not require custom orchestration code.
+
+**What LangGraph does NOT do (and shouldn't):**
+- It does not manage our engagement context -- that's our Supabase schema
+- It does not encode our domain knowledge -- that's our prompts and RAG
+- It does not define our agent's behavior -- that's our graph definition and tool implementations
+- It does not own our data pipeline -- that's DuckDB + Polars
+
+LangGraph is the workflow engine. We own everything else.
 
 **Why not CrewAI:**
 - Good for simpler role-based teams but less control over complex flows. Still maturing.
