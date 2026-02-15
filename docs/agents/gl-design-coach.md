@@ -46,6 +46,26 @@ The GL Design Coach uses these dimensions to:
 - Regulatory reporting requirements and their GL implications
 - IFRS 17 / LDTI impact on COA design
 
+### Target Platform Grounding
+
+The target COA is not an abstract design -- it must work in the specific ERP the client is implementing. The platform choice shapes every design decision and is one of the first questions the agent asks.
+
+**Three operating modes:**
+
+| Mode | When | Agent Behavior |
+|------|------|----------------|
+| **SAP S/4HANA** (MVP) | Client is implementing SAP | COA design respects SAP constraints: account number length/format, account groups, field status variants, document splitting requirements, universal journal structure, profit center/segment mandatory fields. Validates all proposals against SAP-specific rules. |
+| **Other ERP** (future) | Client is implementing Oracle/Workday | COA design respects that platform's constraints via adapter |
+| **Platform-agnostic** | Client hasn't decided yet | COA design follows best practices without platform-specific constraints. Agent flags decisions that would differ by platform: "If you go SAP, this means X; if Oracle, this means Y." |
+
+**SAP-specific validation (when in SAP mode):**
+- Account number length and format comply with COA configuration
+- Required account types exist (reconciliation accounts, cash accounts, tax accounts)
+- Document splitting prerequisites are met
+- Profit center / segment assignment rules are supported
+- Posting logic works (automatic postings, substitutions, validations)
+- Account groups and field status groups are correctly assigned
+
 ### ERP Platform Knowledge (SAP-first)
 - S/4HANA new GL / Universal Journal (ACDOCA)
 - Account groups, field status variants
@@ -174,6 +194,84 @@ This follows the structured-first documentation principle: the analysis is livin
 - **Iterate:** Consultant adjusts, agent re-runs, full audit trail maintained
 
 This allows consultants to demonstrate to clients: "We didn't just design this on paper -- we've already run your actuals through the target structure and every dollar reconciles."
+
+## MJE Analysis (Manual Journal Entry Optimization)
+
+This is a critical value accelerator. Insurance companies spend significant effort on manual journal entries during the financial close. MJEs are often a **symptom of a broken COA** -- if someone books the same reclassification every quarter, that's not a people problem, that's a COA problem.
+
+By analyzing MJEs alongside the COA design, the agent can **design the problem away** rather than just document it for later. This connects two workstreams that are usually separate: COA design and close process optimization.
+
+### Why MJE Analysis Belongs in the GL Design Coach
+
+- MJEs caused by COA gaps should be eliminated through COA redesign, not automated as-is
+- MJE data quantifies the business case for COA transformation (hours saved, risk reduced)
+- MJE analysis during design prevents discovering close process issues months later during UAT
+- The posting data is already ingested -- MJE analysis is an extension of the same data pipeline
+
+### MJE Pattern Detection
+
+The Data Analytics Engine identifies MJEs from posting data (by document type, posting keys, user IDs) and profiles them:
+
+| Pattern | What the Agent Detects | Optimization Potential |
+|---------|----------------------|----------------------|
+| **Recurring identical** | Same accounts, same amounts, same period frequency (e.g., Jackie books the same entry every quarter) | Automate via recurring entry program or eliminate through COA redesign |
+| **Recurring template** | Same accounts, different amounts each period (accruals, allocations) | Automate via allocation rules or accrual engine in target ERP |
+| **Reclassification** | Moves balances from account A to account B every period | Fix the source: redesign COA so original posting lands correctly |
+| **Intercompany** | Manual IC entries that should be automated | Design IC posting rules in target COA |
+| **Accrual/reversal pairs** | Manual accrual posted, then reversed next period | Automate via accrual engine in SAP |
+| **Correction entries** | Fixing posting errors after the fact | Investigate root cause: wrong account defaults, user error, system gap |
+| **Consolidation adjustments** | Entries to make the GL work for reporting purposes | Redesign COA to support reporting natively |
+
+### User Pattern Analysis
+
+The agent profiles MJEs by preparer:
+
+- **Volume:** Who books the most MJEs (concentration risk)
+- **Key person risk:** Which MJEs are only booked by one person
+- **Timing:** Which MJEs are booked last minute in the close (bottleneck indicators)
+- **Patterns:** Individuals who consistently book the same entries -- these are the strongest candidates for automation or elimination
+
+### Materiality and Risk Assessment
+
+- MJEs sorted by dollar amount -- focus optimization on the ones that matter
+- MJEs that auditors would flag (large, unusual, late, round numbers)
+- MJEs with no clear supporting documentation pattern (risk indicator)
+
+### Connecting MJE Findings to COA Design
+
+This is the key integration. The agent doesn't just produce an MJE report -- it links every finding to a specific COA design recommendation:
+
+**Example agent output:**
+
+> "I found 142 recurring MJEs across 8 company codes. 63 are reclassifications between P&L accounts. I've traced the root cause for 48 of them to dimensional encoding in the current COA -- the source system posts to a generic account and a manual reclass moves it to the correct LOB account every quarter.
+>
+> In the target COA design, I'm proposing account derivation rules that route these postings correctly at the source. This would eliminate 48 MJEs per quarter.
+>
+> Want me to walk through the specific accounts and proposed derivation rules?"
+
+### MJE Deliverable
+
+The analysis produces a structured deliverable (stored in persistent analysis store):
+
+- **MJE inventory:** Every recurring MJE profiled by pattern, preparer, frequency, materiality
+- **Root cause analysis:** Why each MJE exists, traced to COA or process gaps
+- **Optimization recommendations:** Linked to specific target COA design decisions
+- **Business case:** "This COA design eliminates X MJEs, reduces close effort by Y entries per period, reduces audit risk on Z entries"
+- **Residual MJEs:** The ones that will remain in the new world and why (legitimate business reasons, not COA gaps)
+
+### MVP Scope
+
+| Capability | MVP | Later |
+|-----------|-----|-------|
+| Identify MJEs from posting data (by document type) | Yes | |
+| Detect recurring patterns (same accounts, same frequency) | Yes | |
+| Detect reclassification patterns | Yes | |
+| Link MJE root causes to COA design gaps | Yes | |
+| User/preparer analysis | Yes | |
+| Quantify optimization potential (MJE count reduction) | Yes | |
+| Estimate hours saved per close | | Yes |
+| Audit risk scoring | | Yes |
+| Propose specific SAP automation rules (recurring entries, accrual engine, substitutions) | | Yes |
 
 ## Integration with Layer 1
 
