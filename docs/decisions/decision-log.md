@@ -271,3 +271,27 @@ This log captures key product and architecture decisions made during ideation an
 **Decision:** CLI during development phase, Next.js web app for the product.
 
 **Rationale:** CLI-first for fast iteration on agent behavior during personal phase. Next.js for the web app: React ecosystem, SSR, API routes, works naturally with Supabase SDK. The product must be visually appealing and sellable. Enterprise-standard, massive ecosystem.
+
+---
+
+## DEC-024: Commercial Model -- Managed SaaS for Consulting Firms
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** FTA is sold to consulting firms who use it on insurance finance transformation engagements. We provide a managed environment (not consulting-firm-hosted). Insurance company data flows through our managed infrastructure.
+
+**Rationale:** Consulting firms are the customer, insurance companies are the end client whose data is processed. This model aligns with how consulting tools are typically sold and deployed.
+
+---
+
+## DEC-025: Enterprise LLM Data Handling -- Enterprise Endpoints via Managed Cloud
+
+**Date:** 2026-02-15
+**Status:** Decided (implementation deferred to pre-production)
+
+**Decision:** Client data is sent to LLMs only through enterprise endpoints (AWS Bedrock for Claude, Azure OpenAI for GPT-4o) within our managed cloud accounts. Data is covered by enterprise data processing agreements. LLM providers never access the data directly. LiteLLM abstracts the routing -- no code changes required when switching from standard APIs (used during development) to enterprise endpoints (used in production).
+
+**Rationale:** Insurance company financial data (GL, trial balances, MJEs) is sensitive and covered by consulting firm NDAs. Standard LLM APIs are acceptable for development with synthetic/personal data but not for production with real client data. The "LLM is the brain, not the muscle" architecture (DEC-012) limits data exposure by sending summarized profiles to the LLM rather than raw records. Enterprise endpoints provide the required data governance without changing the application architecture.
+
+**Deferred until:** Pre-production phase. During personal MVP, standard APIs are used with non-client data. Enterprise endpoint configuration is a deployment concern, not an architecture concern, thanks to LiteLLM abstraction (DEC-019).

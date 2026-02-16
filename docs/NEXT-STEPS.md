@@ -117,6 +117,8 @@ These items are explicitly deferred but documented:
 | Oracle / Workday adapters | After SAP MVP stable | docs/features/erp-platform-strategy.md |
 | Other domain specialist agents | After GL Design Coach | Will use docs/agents/_template.md |
 | PMO tool detailed scoping | Dedicated session | DEC-013 |
+| Enterprise LLM endpoints (Bedrock/Azure) | Pre-production | DEC-025 |
+| Data isolation per engagement | Pre-production | DEC-024 |
 | Cost model refinement | After real usage data | docs/operations/cost-model.md |
 
 ---
