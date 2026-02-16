@@ -1,6 +1,6 @@
 # FTA Master Plan
 
-> Status: DRAFT -- awaiting product owner approval
+> Status: APPROVED (Session 005)
 > Created: 2026-02-16 (Session 005)
 > Last updated: 2026-02-16
 
@@ -282,9 +282,9 @@ These are non-negotiable across every phase (from design-principles.md):
 Phase 1: Personal Use MVP
 ├── Project skeleton                         ✅ Session 004
 ├── GL Design Coach MVP tiering              ✅ Session 004
-├── Master plan + V1 build plan              ✅ Session 005 (pending approval)
+├── Master plan + V1 build plan              ✅ Session 005 (approved)
 │
-├── Iteration 0: Test Data + Eval Framework  ← NEXT
+├── Iteration 0: Test Data + Eval Framework  ← IN PROGRESS
 ├── Iteration 1: Domain Knowledge Encoding
 ├── Iteration 2: Persistence Layer
 ├── Iteration 3: Data Pipeline

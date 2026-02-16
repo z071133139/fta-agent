@@ -39,6 +39,10 @@ ENV/
 # ruff
 .ruff_cache/
 
+# Generated test fixtures (large files -- regenerate with synthetic.py)
+tests/fixtures/*.csv
+tests/fixtures/*.parquet
+
 # OS
 .DS_Store
 Thumbs.db
