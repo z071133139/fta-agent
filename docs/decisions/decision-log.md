@@ -295,3 +295,42 @@ This log captures key product and architecture decisions made during ideation an
 **Rationale:** Insurance company financial data (GL, trial balances, MJEs) is sensitive and covered by consulting firm NDAs. Standard LLM APIs are acceptable for development with synthetic/personal data but not for production with real client data. The "LLM is the brain, not the muscle" architecture (DEC-012) limits data exposure by sending summarized profiles to the LLM rather than raw records. Enterprise endpoints provide the required data governance without changing the application architecture.
 
 **Deferred until:** Pre-production phase. During personal MVP, standard APIs are used with non-client data. Enterprise endpoint configuration is a deployment concern, not an architecture concern, thanks to LiteLLM abstraction (DEC-019).
+
+---
+
+## DEC-026: GL Design Coach MVP -- P&C Only
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** The GL Design Coach MVP (V1, personal use) focuses exclusively on Property & Casualty sub-segment. Life/Annuity is added in V2. Reinsurance is deferred to future.
+
+**Rationale:** P&C is the most common sub-segment across insurance finance transformations. Starting narrow allows deeper expertise and faster validation. Expanding to Life/Annuity in V2 is a natural progression once P&C is proven.
+
+**Alternatives considered:** All three sub-segments from day one (broader but shallower); P&C + Life (covers most carriers but doubles the prompt engineering).
+
+---
+
+## DEC-027: GL Design Coach MVP -- Real Data from Day One
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** The GL Design Coach V1 works with real client data (posting data, account master, trial balance) from day one. It is not a purely conversational advisor.
+
+**Rationale:** The data skills are the key differentiator (DEC-012). A conversational-only advisor is not meaningfully different from prompting Claude directly. The ability to ingest data, profile accounts, detect MJE patterns, and link findings to COA design recommendations is what makes the agent credible and valuable.
+
+**Alternatives considered:** Conversational-first (faster to build, but no differentiator); lightweight data with trial balance only (tests the pipeline but misses the MJE analysis and account profiling from posting data).
+
+---
+
+## DEC-028: Knowledge Encoding -- Hybrid (Prompts + RAG)
+
+**Date:** 2026-02-15
+**Status:** Decided
+
+**Decision:** Domain knowledge is encoded using a hybrid approach: core P&C expertise in structured system prompts, supplemented by RAG over curated reference material (NAIC Annual Statement structure, SAP S/4HANA config reference, insurance GL examples).
+
+**Rationale:** Pure prompt engineering is fastest to iterate but limited by context window -- the full P&C domain knowledge won't fit in a single prompt. Pure RAG requires more infrastructure and risks retrieving irrelevant content. Hybrid puts the essential reasoning patterns in prompts (always available) and uses RAG for reference material that the agent retrieves when needed.
+
+**Alternatives considered:** Prompt engineering only (limited by context window); RAG only (more infrastructure, retrieval quality risk).

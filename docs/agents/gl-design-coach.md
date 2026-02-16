@@ -508,10 +508,66 @@ The GL Design Coach can invoke Layer 1 general tools:
 - Call the **Requirements Engine** to capture requirements surfaced during COA design
 - Call the **Process Documenter** to document GL-related process changes
 
+## MVP Tiering (Decided 2026-02-15, Session 004)
+
+### V1 -- Personal Use (MVP)
+
+**Sub-segment focus:** P&C only (DEC-026)
+
+**Conversational guidance (P&C focus):**
+- Full code block dimension guide with P&C-specific context
+- Insurance language translation (SAP→insurance) across all interactions
+- Opinions framework (MUST DO / WORTH IT / PARK IT / DON'T TOUCH)
+- 17-step process guidance -- agent knows where you are and guides next step
+- Challenge and push-back on design decisions
+- P&C sub-segment: loss reserves, UPR, accident year, state-level, NAIC Annual Statement
+
+**Data skills (real data from day one) (DEC-027):**
+- Ingest posting data + account master + trial balance
+- Account profiling (activity, balance behavior, volume, counterparties, dimension usage)
+- Progressive disclosure (executive summary → category drill-down → account detail)
+- MJE detection: identify MJEs from posting data, recurring patterns, reclassifications
+- Link MJE root causes to COA design recommendations
+- MJE preparer analysis (volume, key person risk)
+- MJE count reduction quantification
+
+**Knowledge encoding: hybrid approach (DEC-028):**
+- Core P&C expertise in structured system prompts (dimensions, opinions, process steps)
+- RAG over curated reference material (NAIC Annual Statement structure, SAP S/4HANA config reference, insurance GL examples)
+
+**NOT in V1:**
+- Life/Annuity, Reinsurance sub-segments
+- Legacy→target mapping generator
+- OLD=NEW reconciliation / data conversion testing
+- Specialist tools as separate callable tools (Code Block Designer, COA Builder, etc.)
+- Persistent analysis store (uses conversation context only)
+- Layer 1 integration (Deck Builder, Requirements Engine)
+- Audit risk scoring, hours-saved estimation
+- SAP automation rule proposals
+
+### V2 -- Super Testers
+
+- Add Life/Annuity sub-segment
+- Legacy→target mapping with confidence scores
+- OLD=NEW reconciliation (restate actuals, prove it balances)
+- Persistent analysis store (Supabase -- browse results outside conversation)
+- Hours-saved estimation for MJE optimization business case
+- Specialist tools as callable: Code Block Designer, COA Builder, Gap Analyzer
+
+### Future
+
+- Reinsurance sub-segment
+- Regulatory Cross-Reference Checker
+- SAP automation rule proposals (recurring entries, accrual engine, substitutions)
+- Audit risk scoring
+- Layer 1 tool integration
+- Platform-agnostic / Oracle / Workday modes
+- Direct ERP extraction
+
 ## Open Questions
 
-- [ ] What is the scope of the MVP GL Design Coach vs. full version?
-- [ ] How deep should the SAP-specific knowledge be at launch?
-- [ ] What data formats should the data transformer accept initially?
+- [x] What is the scope of the MVP GL Design Coach vs. full version? → See MVP Tiering above (DEC-026, DEC-027, DEC-028)
+- [x] How deep should the SAP-specific knowledge be at launch? → SAP S/4HANA mode for P&C, via hybrid knowledge encoding (prompts + RAG)
+- [x] What data formats should the data transformer accept initially? → Posting data + account master + trial balance (V1); legacy→target mapping in V2
 - [ ] How does the coach interact with other future specialist agents (e.g., Close Process Architect needs COA decisions)?
-- [ ] What is the training data / knowledge base strategy for encoding domain expertise?
+- [x] What is the training data / knowledge base strategy for encoding domain expertise? → Hybrid: core in system prompts, reference material via RAG (DEC-028)

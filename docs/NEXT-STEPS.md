@@ -1,58 +1,20 @@
 # Next Steps
 
-> Last updated: 2026-02-15 (after Session 003)
+> Last updated: 2026-02-15 (after Session 004)
 
 ## How to Use This Document
 
 This is the primary pickup point between sessions. Before starting any new session, read this document first to understand where things stand and what's next. Update it at the end of every session.
 
-## Current Phase: Ideation / Design → Build Transition
+## Current Phase: Build
 
-The product vision, architecture, GL Design Coach, and tech stack are all defined. No code has been written. Next step is to set up the project skeleton so remaining design work happens against a running codebase, not just documents.
-
----
-
-## Priority 1: Set Up Project Skeleton
-
-**Why first:** Tech stack is decided. The project structure, FastAPI app, LangGraph skeleton, and LiteLLM wiring are the same regardless of MVP scope. Getting a running agent skeleton demystifies LangGraph and makes remaining design sessions concrete. Three sessions of pure design with zero running code risks over-designing.
-
-**What needs to happen:**
-- Python project structure (pyproject.toml / uv, src layout, config)
-- FastAPI app skeleton with basic API structure
-- LangGraph agent skeleton (hello-world Consulting Agent → GL Design Coach graph)
-- LiteLLM configuration (Claude + GPT-4o routing)
-- DuckDB + Polars wiring (basic data ingestion proof of concept)
-- CLI interface for development-phase interaction
-- Basic dev tooling (linting, formatting, type checking)
-
-**What NOT to do yet:**
-- Supabase schema -- depends on engagement context design (Priority 3)
-- Full agent capabilities -- depends on MVP tiering (Priority 2)
-
-**Relevant docs:**
-- docs/tech/tech-stack.md (full stack decisions)
+Project skeleton is running (FastAPI, LangGraph, LiteLLM, DuckDB/Polars, CLI). GL Design Coach MVP tiered. Next step is designing the Engagement Context (Supabase schema), then building the GL Design Coach V1.
 
 ---
 
-## Priority 2: Define GL Design Coach MVP Tiers
+## Priority 1: Design the Engagement Context ("Engagement Brain")
 
-**Why second:** The GL Design Coach spec (docs/agents/gl-design-coach.md) is comprehensive -- full code block design, MJE analysis, data validation, insurance language translation, sub-segment differentiation. We need to draw the line on what's in V1 vs. V2 vs. later. With a running skeleton, we can start implementing as we tier.
-
-**What needs to happen:**
-- Tier the capabilities: what's MVP (personal use), what's V2 (super testers), what's future
-- Define the minimum data inputs needed for MVP (just trial balance + account master? or posting data from day one?)
-- Decide MVP sub-segment focus (start with P&C only? or all three from day one?)
-- Define how the domain knowledge is encoded (prompt engineering? RAG over curated docs? fine-tuning? knowledge base?)
-- Define the MVP data analytics pipeline scope (DuckDB + Polars -- what queries/analyses are in V1?)
-
-**Relevant docs:**
-- docs/agents/gl-design-coach.md (comprehensive spec, needs tiering)
-
----
-
-## Priority 3: Design the Engagement Context ("Engagement Brain")
-
-**Why third:** This is the backbone that everything connects to. The GL Design Coach's persistent analysis store depends on this. Once designed, we set up the Supabase schema.
+**Why first:** This is the backbone that everything connects to. The GL Design Coach's persistent analysis store depends on this. Once designed, we set up the Supabase schema.
 
 **What needs to happen:**
 - Define the data model (what's stored, how it's structured)
@@ -70,7 +32,7 @@ The product vision, architecture, GL Design Coach, and tech stack are all define
 
 ---
 
-## Priority 4: Scope the Layer 1 General Tools
+## Priority 2: Scope the Layer 1 General Tools
 
 **What needs to happen:**
 - Requirements Engine: define input formats, output schema, deduplication logic
@@ -83,7 +45,7 @@ The product vision, architecture, GL Design Coach, and tech stack are all define
 
 ---
 
-## Priority 5: Define the Multi-Consultant Flow
+## Priority 3: Define the Multi-Consultant Flow
 
 **What needs to happen:**
 - Define how consultants onboard to an engagement in the agent
@@ -103,6 +65,8 @@ The product vision, architecture, GL Design Coach, and tech stack are all define
 | Item | Session | Reference |
 |------|---------|-----------|
 | Tech stack selection | 003 | docs/tech/tech-stack.md, DEC-018 through DEC-023 |
+| Project skeleton | 004 | FastAPI, LangGraph, LiteLLM, DuckDB/Polars, CLI -- running end-to-end |
+| GL Design Coach MVP tiering | 004 | docs/agents/gl-design-coach.md, DEC-026 through DEC-028 |
 
 ---
 
@@ -130,3 +94,4 @@ These items are explicitly deferred but documented:
 | [001](sessions/2026-02-14-session-001-ideation-kickoff.md) | 2026-02-14 | Ideation kickoff | Vision, architecture, 13 decisions, full documentation structure |
 | [002](sessions/2026-02-15-session-002-gl-design-coach-deep-dive.md) | 2026-02-15 | GL Design Coach deep dive | Full code block design, MJE analysis, data validation pipeline, insurance language translation, sub-segment differentiation, 7 commits to gl-design-coach.md |
 | [003](sessions/2026-02-15-session-003-tech-stack.md) | 2026-02-15 | Tech stack decisions | LangGraph, LiteLLM, DuckDB+Polars, FastAPI, Supabase, Next.js. 6 tech decisions (DEC-018 through DEC-023) |
+| 004 | 2026-02-15 | Skeleton build + MVP tiering | Project skeleton running end-to-end. GL Design Coach tiered: V1 = P&C only, real data from day one, hybrid knowledge encoding. 3 decisions (DEC-026 through DEC-028) |
