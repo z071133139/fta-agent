@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import duckdb
 import polars as pl
 
@@ -12,7 +14,9 @@ class DataEngine:
     def __init__(self, db_path: str = ":memory:") -> None:
         self.conn = duckdb.connect(db_path)
 
-    def execute(self, sql: str, params: list | None = None) -> duckdb.DuckDBPyConnection:
+    def execute(
+        self, sql: str, params: list[Any] | None = None
+    ) -> duckdb.DuckDBPyConnection:
         """Execute raw SQL and return the connection for chaining."""
         if params:
             return self.conn.execute(sql, params)

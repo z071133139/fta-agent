@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage
 
@@ -15,7 +16,7 @@ def main() -> None:
     print("-" * 48)
 
     graph = get_consulting_agent_graph()
-    messages: list = []
+    messages: list[Any] = []
 
     while True:
         try:

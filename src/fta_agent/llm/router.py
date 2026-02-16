@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models.chat_models import BaseChatModel
 
 from fta_agent.config import get_settings
 
-# LiteLLM Router config — ready for multi-provider routing.
+# LiteLLM Router config -- ready for multi-provider routing.
 # Import and instantiate when needed:
 #   from litellm import Router
 #   llm_router = Router(model_list=LITELLM_MODEL_LIST)
@@ -43,11 +42,13 @@ def get_chat_model(model: str | None = None) -> BaseChatModel:
 
         return ChatOpenAI(
             model=model_name,
-            api_key=settings.openai_api_key,  # type: ignore[arg-type]
+            api_key=settings.openai_api_key,
         )
 
     # Default to Anthropic
+    from langchain_anthropic import ChatAnthropic
+
     return ChatAnthropic(
-        model_name=model_name,
-        api_key=settings.anthropic_api_key,  # type: ignore[arg-type]
+        model=model_name,
+        api_key=settings.anthropic_api_key,
     )

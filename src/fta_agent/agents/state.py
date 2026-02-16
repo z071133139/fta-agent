@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, TypedDict
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
 
-class AgentState(dict):
+class AgentState(TypedDict):
     """State shared by parent and child agent graphs.
 
     Using `add_messages` reducer so that both the supervisor and sub-agents

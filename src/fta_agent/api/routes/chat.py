@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
 from fastapi import APIRouter
 from langchain_core.messages import AIMessage, HumanMessage
+from pydantic import BaseModel
 
 from fta_agent.agents.consulting_agent import get_consulting_agent_graph
 
