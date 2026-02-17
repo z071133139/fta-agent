@@ -1,8 +1,8 @@
 # GL Design Coach V1 -- Build Plan
 
-> Status: APPROVED (Session 005)
+> Status: APPROVED (Session 005, updated Session 006)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-02-16
+> Last updated: 2026-02-16 (Session 006)
 
 ## Plan Philosophy
 
@@ -137,57 +137,117 @@
 - Does the product owner confirm the output is usable in a real engagement context?
 - Is token usage within acceptable cost thresholds?
 - **If NO:** Investigate root cause. Options: restructure prompts, reduce scope, change model, add RAG earlier. Update plan before proceeding.
-- **If YES:** Proceed to Iteration 2. Document what knowledge gaps remain for RAG to address.
+- **If YES:** Proceed to Iteration 1.5. Document what knowledge gaps remain for RAG to address.
 
 ---
 
-## Iteration 2: Persistence Layer (Engagement Context + Supabase)
+## Iteration 1.5: Agent Harness (Three-Agent System)
 
-**Goal:** Design decisions and engagement state persist across sessions. Informed by real conversation patterns observed in Iteration 1.
+> Added Session 006 after MVP agent design was completed. See [mvp-agent-design.md](../design/mvp-agent-design.md) for the full skills specification.
+
+**Goal:** Build the multi-agent system. Three agents (Consulting Agent, Functional Consultant, GL Design Coach) working together with LLM routing, structured handoff, and outcome capture. This is the "bones" of the consulting team.
+
+### 1.5A: Agent Infrastructure
+
+**Build:**
+- Extended AgentState with engagement context fields (engagement metadata, data state, active decisions)
+- LLM-based intent router in Consulting Agent (replace keyword regex in `consulting_agent.py`)
+- Handoff protocol: context packaging --> sub-agent invocation --> structured outcome return
+- Tool definitions as @tool decorated functions:
+  - `capture_decision`: Write a DimensionalDecision to engagement context
+  - `capture_finding`: Write an AnalysisFinding to engagement context
+  - `capture_requirement`: Write a Requirement to engagement context
+  - `capture_mapping`: Write an AccountMapping to engagement context
+  - `query_context`: Read structured artifacts from engagement context
+- Agent self-introduction logic: each agent produces a contextual greeting based on engagement state
+
+### 1.5B: Functional Consultant Agent
+
+**Build:**
+- New LangGraph graph for the Functional Consultant
+- System prompt: generalist consulting persona, requirements and process language
+- Requirements extraction tool: unstructured text --> structured Requirement records
+- Process flow generation tool: verbal descriptions --> structured ProcessFlow records
+- Engagement context read/write integration
+
+### 1.5C: Consulting Agent Upgrade
+
+**Build:**
+- Upgrade Consulting Agent from keyword router to full orchestrator
+- Engagement onboarding flow (capture client details, create engagement record)
+- Decision registry: central view of all decisions across agents
+- Open items tracking: unresolved questions linked to workstreams
+- Status synthesis: natural language engagement status from structured state
+- Workplan management: basic phase/milestone/task tracking
+
+### 1.5D: GL Design Coach Tool Wiring
+
+**Build:**
+- Wire existing GL Design Coach to the outcome capture tools
+- Agent invokes `capture_decision` when a design decision is made in conversation
+- Agent invokes `capture_finding` when analysis surfaces an issue
+- Progressive disclosure tools: `get_account_summary`, `get_category_detail`, `get_account_detail`
+
+**Test:**
+- Route 20 representative user messages and verify correct agent selection (>90% accuracy)
+- Handoff round-trip: Consulting Agent --> GL Coach --> structured decision --> back to context store
+- Functional Consultant: extract requirements from sample meeting notes, verify structured output
+- Multi-agent session: user asks status question (Consulting Agent handles), then asks about account design (routes to GL Coach), then asks for a requirements summary (routes to Functional Consultant)
+- Outcome persistence: captured decisions and findings survive process restart
+
+**Deliverable:** Three-agent system where each agent can be addressed independently, captures structured outcomes, and shares the engagement context.
+
+**Checkpoint:**
+- Does LLM routing correctly identify the target agent >90% of the time?
+- Do structured outcomes (decisions, findings, requirements) persist correctly?
+- Does each agent self-introduce with relevant engagement context?
+- Is the handoff latency acceptable (<2s for routing + context packaging)?
+- **If issues:** Simplify routing (fall back to keyword with LLM override for ambiguous cases), adjust handoff protocol.
+
+---
+
+## Iteration 2: Persistence Layer (Engagement Context + DuckDB)
+
+**Goal:** Design decisions and engagement state persist across sessions. Informed by real conversation patterns observed in Iterations 1 and 1.5.
+
+> Updated Session 006: DuckDB replaces Supabase for V1 persistence (DEC-032). Decision extraction resolved: tool calls (DEC-034).
 
 ### 2A: Engagement Context Data Model
 
-**Design (informed by Iteration 1 learnings):**
+**Design (informed by Iteration 1 and 1.5 learnings):**
 - Engagement profile: client name, sub-segment (P&C), ERP target (SAP), active/archived, design principles, constraints
 - Design decisions store: dimension, decision, rationale, alternatives considered, decided by, date, status (active/superseded/reversed), linked process step
 - Conversation memory: session history with LangGraph checkpointing, plus summarization strategy for long engagements
 - Open items: unresolved questions, who raised them, when, linked to dimension/process step
+- Requirements store: structured requirements from Functional Consultant
 - Artifact registry: uploaded files (GL extracts), analysis outputs (account profiles, MJE reports), metadata
 - Context window management: conversation summarization strategy -- when to summarize older history, how to preserve key decisions in active context
 
 **Build:**
-- Set up Supabase project
-- Postgres tables + migrations for all entities above
-- Enable pgvector extension (embeddings stored here for Iteration 4 RAG)
-- Row Level Security policies (single user for V1, but schema supports multi-user per DEC-009)
-- Python Supabase client: `src/fta_agent/db/supabase.py`
-- Config: SUPABASE_URL + SUPABASE_KEY in settings
-- LangGraph checkpointer wired to Supabase (session persistence across CLI restarts)
+- DuckDB tables for all entities above (schema designed to transfer directly to Postgres/Supabase in Phase 2)
+- Engagement context module: `src/fta_agent/data/engagement_context.py`
+- LangGraph checkpointer wired to DuckDB (session persistence across CLI restarts)
+- Context query interface used by all three agents
 
-### 2B: Structured Decision Extraction
+### 2B: Structured Outcome Persistence
 
-**Design:**
-- How the agent detects a design decision in conversation:
-  - Option A: LLM tool call -- agent has a `capture_decision` tool it invokes when it detects a decision
-  - Option B: Post-turn extraction -- separate LLM call after each turn to extract structured decisions
-  - Option C: Hybrid -- agent proposes decisions inline, user confirms, then tool captures
-- Evaluate: accuracy, latency, cost, UX feel
-- Design the 17-step process state machine: how does the agent track and advance position?
+**Decision resolved (DEC-034):** Agents capture outcomes via tool calls. The capture tools (built in Iteration 1.5) write to in-memory state. This iteration wires them to DuckDB for persistence across sessions.
 
 **Build:**
-- Implement chosen decision extraction mechanism
-- Wire to Supabase decision store
+- Wire `capture_decision`, `capture_finding`, `capture_requirement`, `capture_mapping` tools to DuckDB
 - Process position tracking (current step stored in engagement context, surfaced in conversation)
 - Open items capture and resurfacing logic
+- Cross-session context restoration: on startup, load engagement state from DuckDB into agent state
 
 **Test:**
 - Multi-session design workshop simulation:
   - Session 1: discuss profit center design, make a decision
   - Close CLI, reopen
   - Session 2: agent recalls the profit center decision, surfaces downstream implications for segment
-- Verify decisions are correctly structured in Supabase (dimension, rationale, alternatives)
+- Verify decisions are correctly structured in DuckDB (dimension, rationale, alternatives)
 - Verify process position is maintained across sessions
 - Verify open items surface when the relevant topic comes up
+- Verify all three agents can read outcomes captured by the other two
 
 **Deliverable:** Agent remembers everything across sessions. Design decisions are structured data, not buried in chat history.
 
@@ -196,7 +256,7 @@
 - Does the agent recall prior decisions naturally in conversation?
 - Does process tracking feel helpful (not robotic)?
 - Is conversation summarization preserving the right information?
-- **If issues:** Adjust extraction mechanism, summarization strategy, or schema before proceeding.
+- **If issues:** Adjust persistence strategy, context restoration, or schema before proceeding.
 
 ---
 
@@ -403,15 +463,17 @@
 ## Iteration Dependencies
 
 ```
-Iteration 0 (Test Data + Eval) ─────┐
-                                     │
-Iteration 1 (Domain Knowledge) ◄────┘
+Iteration 0 (Test Data + Eval)     ✅ DONE
          │
-         ├── Learnings inform ──► Iteration 2 (Persistence)
+Iteration 1 (Domain Knowledge)    ✅ DONE
+         │
+Iteration 1.5 (Agent Harness)     ← NEXT
+         │
+         ├── Informs ──► Iteration 2 (Persistence / DuckDB)
          │                               │
-         ├── Learnings inform ──► Iteration 3 (Data Pipeline)
+         ├── Informs ──► Iteration 3 (Data Pipeline)
          │                               │
-         ├── Gap analysis informs ► Iteration 4 (RAG)
+         ├── Gap analysis ──► Iteration 4 (RAG)
          │                               │
          └───────────────────────────────┤
                                          ▼
@@ -421,11 +483,12 @@ Iteration 1 (Domain Knowledge) ◄────┘
                                   Iteration 6 (Polish)
 ```
 
-**Critical path:** 0 → 1 → 5 → 6 (knowledge encoding must be proven before integration)
+**Critical path:** 0 → 1 → 1.5 → 2 → 5 → 6 (agent harness before persistence, persistence before integration)
 
 **Parallel opportunities:**
-- Iterations 2, 3, 4 can overlap after Iteration 1 completes (they don't depend on each other)
+- Iterations 2, 3, 4 can overlap after Iteration 1.5 completes
 - Knowledge base curation (4A) can start during Iteration 2/3 builds
+- Data pipeline (3) is independent of persistence (2) -- both can start after agent harness
 
 ---
 

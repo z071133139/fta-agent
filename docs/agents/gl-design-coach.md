@@ -1,6 +1,8 @@
 # GL Design Coach (Layer 2 -- Domain Specialist Agent)
 
-> Status: Ideation -- MVP domain specialist, to be scoped in detail
+> Status: Scoping (Session 006 -- updated with outcome capture and data skill details)
+> Created: 2026-02-14 (Session 001)
+> Last updated: 2026-02-16 (Session 006)
 
 ## Overview
 
@@ -500,6 +502,43 @@ The analysis produces a structured deliverable (stored in persistent analysis st
 | Estimate hours saved per close | | Yes |
 | Audit risk scoring | | Yes |
 | Propose specific SAP automation rules (recurring entries, accrual engine, substitutions) | | Yes |
+
+## Outcome Capture Skills (Build -- Session 006)
+
+The GL Design Coach captures structured outcomes and writes them to the engagement context. These are not chat messages -- they are structured records that persist, are queryable, and are visible to all agents.
+
+### Capture Findings
+
+Write structured findings to engagement context:
+- `category`: Account analysis, MJE analysis, dimensional design, regulatory, integration
+- `severity`: CRIT / HIGH / MED / LOW / INFO
+- `title`: Short descriptive title
+- `detail`: Full finding with supporting data
+- `affected_accounts`: List of GL accounts involved
+- `recommendation`: What to do about it
+- `recommendation_category`: MUST DO / WORTH IT / PARK IT / DON'T TOUCH
+- `status`: OPEN / REVIEWED / ACCEPTED / REJECTED
+
+### Capture Decisions
+
+Write structured design decisions:
+- `dimension`: Which code block dimension (profit center, segment, GL account, etc.)
+- `choice`: What was decided
+- `rationale`: Why this choice
+- `alternatives_considered`: What else was evaluated
+- `downstream_impacts`: What other dimensions or workstreams are affected
+- `status`: PROPOSED / PENDING / DECIDED / REVISED
+- `decided_by`: Who made the decision
+
+### Capture Mappings
+
+Write structured account mappings:
+- `legacy_account`: Source account number and description
+- `target_account`: Target account number and description
+- `confidence`: HIGH / MED / LOW
+- `rationale`: Why this mapping
+- `mapping_type`: ONE_TO_ONE / SPLIT / MERGE / NEW / RETIRE
+- `status`: PROPOSED / VALIDATED / APPROVED
 
 ## Integration with Layer 1
 

@@ -1,8 +1,8 @@
 # FTA Master Plan
 
-> Status: APPROVED (Session 005)
+> Status: APPROVED (Session 005, updated Session 006)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-02-16
+> Last updated: 2026-02-16 (Session 006)
 
 ## Purpose
 
@@ -16,12 +16,17 @@ FTA is an AI-native agent that changes how consultants deliver insurance finance
 
 It is **not** a chatbot with finance knowledge. It is **not** a template library. It is a system of agents that reason, advise, push back, and work with real client data -- connected by a shared engagement context that never breaks.
 
-**Three-layer architecture:**
-- **Layer 1:** General consulting tools (Requirements Engine, Process Documenter, Deck Builder, PMO)
+**Three-agent MVP architecture (DEC-029, Session 006):**
+- **Consulting Agent:** Orchestrator + engagement lead + PMO. Routes work, tracks progress, owns the plan.
+- **Functional Consultant:** Generalist. Requirements capture, process documentation, deliverable generation.
+- **GL Design Coach:** P&C domain specialist. Data analysis, code block design, MJE optimization.
+
+All agents read from and write to the **Shared Engagement Context** ("Engagement Brain").
+
+**Full three-layer architecture (post-MVP):**
+- **Layer 1:** General consulting tools (expanded from Functional Consultant)
 - **Layer 2:** Domain specialist agents (GL Design Coach first, then Close Process Architect, Regulatory Advisor, etc.)
 - **Layer 3:** Platform configuration agents (SAP first, Oracle/Workday later)
-
-All layers read from and write to the **Shared Engagement Context** ("Engagement Brain").
 
 ---
 
@@ -54,12 +59,14 @@ All layers read from and write to the **Shared Engagement Context** ("Engagement
 **Goal:** Product owner can use FTA on a real P&C finance transformation engagement. One user, one engagement, CLI interface.
 
 **What's in Phase 1:**
+- Three-agent MVP: Consulting Agent + Functional Consultant + GL Design Coach (DEC-029)
 - GL Design Coach V1 (P&C only, SAP mode, real data, hybrid knowledge)
-- Engagement Context with full persistence (Supabase)
+- Engagement Context with DuckDB persistence (local, V1) (DEC-032)
 - Data Analytics Engine (ingest, profile, MJE analysis)
 - RAG pipeline (curated P&C + SAP reference material)
-- Consulting Agent (routes to GL Design Coach)
-- CLI interface
+- LLM-based intent routing (DEC-031)
+- Agent handoff protocol with structured outcome capture (DEC-034)
+- CLI interface (engagement-aware REPL)
 - Synthetic + real P&C data for testing
 - Evaluation framework
 - Cost monitoring
@@ -68,12 +75,12 @@ All layers read from and write to the **Shared Engagement Context** ("Engagement
 
 **What's NOT in Phase 1:**
 - Life/Annuity, Reinsurance sub-segments
-- Layer 1 tools (Requirements, Process Docs, Deck Builder, PMO)
-- Other Layer 2 specialists
+- Other Layer 2 specialists (Close Process Architect, Reporting Agent, etc.)
 - Layer 3 configuration agents
-- Web UI / Next.js
+- Web UI / Next.js (skeleton built but not wired to agents)
 - Multi-user / concurrency
 - Enterprise LLM endpoints
+- Supabase (deferred to Phase 2; DuckDB used in Phase 1)
 
 ### Phase 1 Iterations
 
@@ -273,6 +280,12 @@ These are non-negotiable across every phase (from design-principles.md):
 | DEC-026: P&C only V1 | Life/Annuity in Phase 2. Reinsurance in Phase 3. |
 | DEC-027: Real data day one | Data pipeline is Phase 1 Iteration 3, not deferred. |
 | DEC-028: Hybrid knowledge | Prompts + RAG. Both built in Phase 1. |
+| DEC-029: Three-agent MVP | Consulting Agent + Functional Consultant + GL Design Coach. |
+| DEC-030: Multi-user direct access | Each agent independently accessible by role. |
+| DEC-031: LLM-based routing | Replaces keyword regex with LLM intent classifier. |
+| DEC-032: DuckDB engagement context (V1) | Local persistence in V1; Supabase in Phase 2. |
+| DEC-033: Functional Consultant as agent | Separate agent, not tools on the Consulting Agent. |
+| DEC-034: Outcome capture via tool calls | Agents invoke capture tools, not post-turn extraction. |
 
 ---
 
@@ -283,9 +296,11 @@ Phase 1: Personal Use MVP
 ├── Project skeleton                         ✅ Session 004
 ├── GL Design Coach MVP tiering              ✅ Session 004
 ├── Master plan + V1 build plan              ✅ Session 005 (approved)
+├── MVP agent design (skills spec)           ✅ Session 006
 │
-├── Iteration 0: Test Data + Eval Framework  ← IN PROGRESS
-├── Iteration 1: Domain Knowledge Encoding
+├── Iteration 0: Test Data + Eval Framework  ✅ Complete
+├── Iteration 1: Domain Knowledge + Frontend ✅ Complete (backend + frontend)
+├── Iteration 1.5: Agent Harness             ← NEXT (agent design complete, build next)
 ├── Iteration 2: Persistence Layer
 ├── Iteration 3: Data Pipeline
 ├── Iteration 4: RAG Pipeline

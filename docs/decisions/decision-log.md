@@ -334,3 +334,81 @@ This log captures key product and architecture decisions made during ideation an
 **Rationale:** Pure prompt engineering is fastest to iterate but limited by context window -- the full P&C domain knowledge won't fit in a single prompt. Pure RAG requires more infrastructure and risks retrieving irrelevant content. Hybrid puts the essential reasoning patterns in prompts (always available) and uses RAG for reference material that the agent retrieves when needed.
 
 **Alternatives considered:** Prompt engineering only (limited by context window); RAG only (more infrastructure, retrieval quality risk).
+
+---
+
+## DEC-029: Three-Agent MVP Architecture
+
+**Date:** 2026-02-16
+**Status:** Decided
+
+**Decision:** The MVP consists of three agents: Consulting Agent (orchestrator + engagement lead + PMO), Functional Consultant (generalist -- requirements, process docs, decks), and GL Design Coach (P&C domain specialist). The human user is the client. The agents are the consulting team.
+
+**Rationale:** This maps directly to how real consulting engagements work: an engagement lead manages the project, a generalist handles cross-cutting work, and a domain specialist does the analytical deep-dive. Three agents is the minimum viable team.
+
+**Alternatives considered:** Single monolithic agent (simpler but can't scale to multi-user or multi-workstream); two agents only -- Consulting Agent + GL Coach (missing the generalist work that consumes significant consulting time).
+
+---
+
+## DEC-030: Multi-User Direct Access Model
+
+**Date:** 2026-02-16
+**Status:** Decided
+
+**Decision:** Each agent is independently accessible. Different users interact with different agents based on their role. There is no single entry point or receptionist routing. The engagement context is the connective tissue.
+
+**Rationale:** A project manager and an accounting expert have fundamentally different workflows. Forcing everyone through one agent adds friction and dilutes the specialized UX each agent provides. Direct access lets each agent speak the user's professional language.
+
+**Alternatives considered:** Single entry point with routing to sub-agents (adds latency, loses the "workspace per role" UX); fully autonomous inter-agent communication (too complex for MVP, risk of surprising users).
+
+---
+
+## DEC-031: LLM-Based Intent Routing
+
+**Date:** 2026-02-16
+**Status:** Decided
+
+**Decision:** Replace the keyword-based regex router in `consulting_agent.py` with an LLM-based intent classifier. A lightweight LLM call determines the target agent from the user's message + agent descriptions.
+
+**Rationale:** Keyword routing is brittle and can't handle nuanced requests. LLM routing handles edge cases, mixed-intent messages, and evolves naturally as agent capabilities expand. With only 2-3 target agents, the routing task is simple enough for a fast model.
+
+**Alternatives considered:** Keep keyword routing (works but breaks on anything beyond exact phrases); rule-based NLP classifier (middle ground but still brittle); embedding similarity (viable but adds infrastructure).
+
+---
+
+## DEC-032: DuckDB-Based Engagement Context (V1)
+
+**Date:** 2026-02-16
+**Status:** Decided
+
+**Decision:** The engagement context store uses DuckDB in V1 (local persistence). All structured artifacts -- decisions, findings, requirements, process flows, mappings, engagement metadata -- are stored in DuckDB tables. Upgraded to Supabase (Postgres) in Phase 2 for multi-user support.
+
+**Rationale:** DuckDB is already in the stack for data analytics. Using it for engagement context in V1 keeps the stack simple (no external database for single-user MVP). The schema design transfers directly to Postgres when we upgrade to Supabase in Phase 2.
+
+**Alternatives considered:** Supabase from day one (premature -- adds deployment complexity for single-user MVP); JSON files (fragile, no query capability); SQLite (viable but DuckDB is already a dependency and has better analytical query support).
+
+---
+
+## DEC-033: Functional Consultant as Separate Agent
+
+**Date:** 2026-02-16
+**Status:** Decided
+
+**Decision:** The Functional Consultant is a separate agent with its own identity, skills, and prompt, not a set of tools hanging off the Consulting Agent.
+
+**Rationale:** Requirements capture, process documentation, and deck generation require a different "persona" than engagement management. The Functional Consultant speaks in process and requirements language. Bundling everything into the Consulting Agent would create a bloated agent that's mediocre at everything rather than focused agents that excel at their domain.
+
+**Alternatives considered:** Tools on the Consulting Agent (simpler but weaker UX, harder to maintain prompt quality as capabilities grow); defer to V2 (possible but requirements capture is needed from day one).
+
+---
+
+## DEC-034: Outcome Capture via Tool Calls
+
+**Date:** 2026-02-16
+**Status:** Decided
+
+**Decision:** Agents capture structured outcomes (decisions, findings, requirements, mappings) via LangGraph tool calls (`capture_decision`, `capture_finding`, `capture_requirement`, `capture_mapping`). The agent invokes the tool when it detects an outcome in conversation.
+
+**Rationale:** Tool calls are explicit, auditable, and fit naturally into the LangGraph tool-use loop. The agent decides when to capture (not a separate post-processing step), so it can ask the user for confirmation before writing. This gives the user control: "I'm about to record this as a decision -- does this look right?"
+
+**Alternatives considered:** Post-turn extraction (separate LLM call after each turn to extract outcomes -- adds latency and cost, user doesn't see what's being captured); hybrid (agent proposes, post-processor validates -- complex, two LLM calls per turn).

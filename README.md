@@ -2,9 +2,9 @@
 
 > An AI-native agent that reimagines how consultants deliver finance transformation projects in the insurance industry.
 
-## Status: Ideation Phase
+## Status: Build -- Phase 1 (Personal Use MVP)
 
-This repository captures the product vision, architecture, and design decisions for the Finance Transformation Agent. We are currently in early ideation -- scoping the product, defining the architecture, and documenting key design principles before building.
+Iterations 0-1 complete (synthetic test data, evaluation framework, domain knowledge prompts, outcome schemas, API routes, frontend dashboard). MVP agent design complete (Session 006). Next: build the three-agent harness (Iteration 1.5).
 
 ## What is FTA?
 
@@ -14,29 +14,23 @@ FTA is not another delivery platform with AI bolted on. It is an AI-native agent
 
 ## Architecture at a Glance
 
+**MVP (Three-Agent System):**
+
 ```
-Consultant
+Consultant (human -- the client/business)
     |
-Consulting Agent (orchestrator)
+Consulting Agent (orchestrator + engagement lead + PMO)
     |
-    |-- Layer 1: General Tools
-    |   |-- Requirements Engine
-    |   |-- Process Documenter
-    |   |-- Deck Builder
-    |   |-- PMO / Engagement Planning (to be scoped)
+    |-- Functional Consultant
+    |       - Requirements capture & structuring
+    |       - Process documentation
+    |       - Deck/deliverable generation
     |
-    |-- Layer 2: Domain Specialist Agents
-    |   |-- GL Design Coach (MVP)
-    |   |-- Close Process Architect (future)
-    |   |-- Regulatory Reporting Advisor (future)
-    |   |-- Subledger Integration Specialist (future)
-    |   |-- Data Migration Strategist (future)
-    |   |-- Target Operating Model Designer (future)
-    |   |-- Reconciliation Designer (future)
-    |
-    |-- Layer 3: Platform Configuration Agents (future)
-        |-- SAP Configuration Agent
-        |-- (Other ERPs)
+    |-- Domain Specific Agents
+            |-- GL Design Coach (MVP -- P&C insurance)
+            |-- Reporting Agent (future)
+            |-- Close Process Architect (future)
+            |-- (7 more specialists planned)
 ```
 
 ## Key Principles
@@ -55,19 +49,45 @@ Consulting Agent (orchestrator)
 
 ## Documentation
 
+**Start here:**
+
+| Document | Description |
+|----------|-------------|
+| **[Next Steps](docs/NEXT-STEPS.md)** | **Start here -- priorities, pickup points, session log** |
+| [Master Plan](docs/plans/master-plan.md) | Full 3-phase product roadmap (APPROVED) |
+| [V1 Build Plan](docs/plans/v1-build-plan.md) | Detailed Phase 1 iteration plan (APPROVED) |
+
+**Design:**
+
+| Document | Description |
+|----------|-------------|
+| [MVP Agent Design](docs/design/mvp-agent-design.md) | Three-agent skills specification and interaction model |
+| [Consulting Agent](docs/agents/consulting-agent.md) | Orchestrator + engagement lead + PMO |
+| [Functional Consultant](docs/agents/functional-consultant.md) | Generalist: requirements, process docs, decks |
+| [GL Design Coach](docs/agents/gl-design-coach.md) | P&C domain specialist agent |
+
+**Vision & Architecture:**
+
 | Document | Description |
 |----------|-------------|
 | [Product Vision](docs/vision/product-vision.md) | Core vision, value proposition, and target users |
 | [Architecture Overview](docs/vision/architecture-overview.md) | Layered architecture and component design |
 | [Design Principles](docs/vision/design-principles.md) | AI-native design principles |
-| [Consulting Agent](docs/agents/consulting-agent.md) | Layer 1: General tools specification |
-| [GL Design Coach](docs/agents/gl-design-coach.md) | First domain specialist agent |
+| [Tech Stack](docs/tech/tech-stack.md) | Technology choices and rationale |
+
+**Features:**
+
+| Document | Description |
+|----------|-------------|
 | [Engagement Context](docs/features/engagement-context.md) | Shared context / "Engagement Brain" |
 | [Shared Backlog](docs/features/shared-backlog.md) | Agent-managed backlog |
 | [ERP Platform Strategy](docs/features/erp-platform-strategy.md) | SAP-first, multi-ERP architecture |
 | [Configuration Agent](docs/features/configuration-agent.md) | Future: SAP configuration automation |
+
+**Reference:**
+
+| Document | Description |
+|----------|-------------|
+| [Decision Log](docs/decisions/decision-log.md) | 34 decisions with rationale (DEC-001 through DEC-034) |
+| [Cost Model](docs/operations/cost-model.md) | Token estimates, runtime projections |
 | [Day in the Life](docs/engagement-flow/day-in-the-life.md) | How consultants use the system |
-| [Decision Log](docs/decisions/decision-log.md) | Key decisions and rationale |
-| [Tech Stack](docs/tech/tech-stack.md) | Technology choices and rationale |
-| [Cost Model](docs/operations/cost-model.md) | Token estimates, runtime projections, optimization strategies |
-| **[Next Steps](docs/NEXT-STEPS.md)** | **Start here -- priorities, pickup points, session log** |
