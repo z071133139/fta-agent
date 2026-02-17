@@ -2,11 +2,14 @@
 
 Validates that generated data:
 1. Conforms to schemas (correct columns, types)
-2. Contains expected volume (~500K+ postings, ~2,500 accounts)
+2. Contains expected volume (~1M+ postings, ~3,000+ accounts)
 3. Passes basic accounting sanity checks (balanced entries)
 4. Contains all 7 embedded MJE patterns
 5. Key person risk signal is present (JSMITH high volume)
 6. Has expected LOB, state, and period distributions
+7. Insurance-specific dimensions are populated
+8. Seasonal patterns, backdating, multi-line JEs, opening balances
+9. Historical complexity (multi-source, effective dates, inactive ratio)
 """
 
 from __future__ import annotations
@@ -21,6 +24,7 @@ from fta_agent.data.schemas import (
 )
 from fta_agent.data.synthetic import (
     MJE_PATTERNS,
+    NAIC_LINES,
     generate_synthetic_data,
 )
 
@@ -52,6 +56,21 @@ class TestSchemaConformance:
         actual_cols = set(data["trial_balance"].columns)
         assert expected_cols == actual_cols
 
+    def test_new_posting_columns_exist(self, data: dict[str, pl.DataFrame]) -> None:
+        """Verify new insurance-specific columns are present."""
+        for col in [
+            "financial_product", "statutory_line", "treaty_id",
+            "claim_type", "distribution_channel", "policy_year",
+        ]:
+            assert col in data["postings"].columns, f"Missing column: {col}"
+
+    def test_new_account_master_columns_exist(
+        self, data: dict[str, pl.DataFrame]
+    ) -> None:
+        """Verify new account master columns are present."""
+        for col in ["effective_from", "source_system"]:
+            assert col in data["account_master"].columns, f"Missing column: {col}"
+
 
 # ---------------------------------------------------------------------------
 # Volume checks
@@ -60,13 +79,22 @@ class TestSchemaConformance:
 
 class TestVolume:
     def test_posting_count_minimum(self, data: dict[str, pl.DataFrame]) -> None:
-        """Should have at least 500K posting records."""
-        assert len(data["postings"]) >= 500_000
+        """Should have at least 1M posting records."""
+        assert len(data["postings"]) >= 1_000_000
 
     def test_account_master_count(self, data: dict[str, pl.DataFrame]) -> None:
-        """Should have ~2,500 accounts."""
+        """Should have ~2,800-3,500 accounts."""
         count = len(data["account_master"])
-        assert 2400 <= count <= 2600
+        assert 2800 <= count <= 3500, f"Account count: {count}"
+
+    def test_inactive_ratio(self, data: dict[str, pl.DataFrame]) -> None:
+        """20-30% of accounts should be inactive."""
+        total = len(data["account_master"])
+        inactive = len(data["account_master"].filter(~pl.col("is_active")))
+        ratio = inactive / total
+        assert 0.15 <= ratio <= 0.35, (
+            f"Inactive ratio: {ratio:.2%} ({inactive}/{total})"
+        )
 
     def test_trial_balance_periods(self, data: dict[str, pl.DataFrame]) -> None:
         """TB should cover 12 periods."""
@@ -256,7 +284,6 @@ class TestKeyPersonRisk:
         )
         counts = mje_by_user["count"].to_list()
         if len(counts) >= 2:
-            # Jackie should have at least 2x the second-highest preparer
             assert counts[0] >= counts[1] * 1.5, (
                 f"JSMITH volume ({counts[0]}) not significantly higher "
                 f"than second ({counts[1]})"
@@ -295,6 +322,213 @@ class TestDistributions:
         assert len(inactive) >= 5, (
             f"Expected 5+ dormant accounts, found {len(inactive)}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Insurance-specific dimensions
+# ---------------------------------------------------------------------------
+
+
+class TestInsuranceDimensions:
+    def test_financial_product_populated(
+        self, data: dict[str, pl.DataFrame]
+    ) -> None:
+        """financial_product should be set on >=60% of premium/loss postings."""
+        prem_loss = data["postings"].filter(
+            pl.col("gl_account").str.starts_with("400")
+            | pl.col("gl_account").str.starts_with("500")
+            | pl.col("gl_account").str.starts_with("110")
+        )
+        populated = prem_loss.filter(pl.col("financial_product").is_not_null())
+        ratio = len(populated) / max(len(prem_loss), 1)
+        assert ratio >= 0.60, (
+            f"financial_product populated on {ratio:.1%} of prem/loss postings"
+        )
+
+    def test_statutory_line_populated(
+        self, data: dict[str, pl.DataFrame]
+    ) -> None:
+        """statutory_line should be set on >=40% of premium/loss postings."""
+        prem_loss = data["postings"].filter(
+            pl.col("gl_account").str.starts_with("400")
+            | pl.col("gl_account").str.starts_with("500")
+        )
+        populated = prem_loss.filter(pl.col("statutory_line").is_not_null())
+        ratio = len(populated) / max(len(prem_loss), 1)
+        assert ratio >= 0.40, (
+            f"statutory_line populated on {ratio:.1%} of prem/loss postings"
+        )
+
+    def test_treaty_id_on_reinsurance_postings(
+        self, data: dict[str, pl.DataFrame]
+    ) -> None:
+        """treaty_id should be set on reinsurance-related postings."""
+        ri_postings = data["postings"].filter(
+            pl.col("treaty_id").is_not_null()
+        )
+        assert len(ri_postings) > 0, "No postings have treaty_id set"
+        # Verify they touch reinsurance-related accounts
+        ri_accounts = ri_postings["gl_account"].unique().to_list()
+        # Should include ceded premium (400x20), RI recoverables (120xxx), etc.
+        has_ri_account = any(
+            a.startswith("120") or a.endswith("20") or a.startswith("230")
+            or a.startswith("250") or a.startswith("260") or a.startswith("750")
+            for a in ri_accounts
+        )
+        assert has_ri_account, f"treaty_id postings don't touch RI accounts: {ri_accounts}"
+
+    def test_naic_statutory_line_values_valid(
+        self, data: dict[str, pl.DataFrame]
+    ) -> None:
+        """statutory_line values should be valid NAIC line numbers."""
+        valid_lines = set(NAIC_LINES.keys())
+        actual_lines = (
+            data["postings"]
+            .filter(pl.col("statutory_line").is_not_null())["statutory_line"]
+            .unique()
+            .to_list()
+        )
+        invalid = [l for l in actual_lines if l not in valid_lines]
+        assert len(invalid) == 0, f"Invalid NAIC statutory lines: {invalid}"
+
+    def test_claim_type_populated(self, data: dict[str, pl.DataFrame]) -> None:
+        """claim_type should be set on claims postings."""
+        claims_with_ct = data["postings"].filter(
+            pl.col("claim_type").is_not_null()
+        )
+        assert len(claims_with_ct) > 0, "No postings have claim_type set"
+
+    def test_distribution_channel_populated(
+        self, data: dict[str, pl.DataFrame]
+    ) -> None:
+        """distribution_channel should be set on premium/commission postings."""
+        with_channel = data["postings"].filter(
+            pl.col("distribution_channel").is_not_null()
+        )
+        assert len(with_channel) > 0, "No postings have distribution_channel set"
+
+    def test_mixed_product_encoding(self, data: dict[str, pl.DataFrame]) -> None:
+        """Some postings use financial_product column, some use product-encoded accounts."""
+        # Product-encoded accounts: 500x70, 500x80, 600x40, 600x50 (6-digit)
+        product_encoded = data["postings"].filter(
+            pl.col("gl_account").str.contains(r"^500\d[78]0$")
+            | pl.col("gl_account").str.contains(r"^600\d[45]0$")
+        )
+        # Explicit financial_product
+        explicit_fp = data["postings"].filter(
+            pl.col("financial_product").is_not_null()
+        )
+        assert len(product_encoded) > 0, "No product-encoded account postings found"
+        assert len(explicit_fp) > 0, "No explicit financial_product postings found"
+
+
+# ---------------------------------------------------------------------------
+# Seasonal and temporal patterns
+# ---------------------------------------------------------------------------
+
+
+class TestSeasonalPatterns:
+    def test_cat_losses_concentrated_q2_q3(
+        self, data: dict[str, pl.DataFrame]
+    ) -> None:
+        """Catastrophe losses should be concentrated in months 4-9."""
+        cat_postings = data["postings"].filter(
+            pl.col("gl_account").str.contains(r"^500\d50$")  # Cat loss accounts
+        )
+        assert len(cat_postings) > 0, "No catastrophe loss postings found"
+        cat_by_month = cat_postings.group_by("fiscal_period").agg(
+            pl.len().alias("count")
+        )
+        q2q3 = cat_by_month.filter(
+            pl.col("fiscal_period").is_between(4, 9)
+        )["count"].sum()
+        total = cat_by_month["count"].sum()
+        ratio = q2q3 / max(total, 1)
+        assert ratio >= 0.80, (
+            f"Only {ratio:.1%} of cat losses in months 4-9, expected >=80%"
+        )
+
+    def test_backdated_entries_exist(self, data: dict[str, pl.DataFrame]) -> None:
+        """Some postings should have entry_date > posting_date."""
+        backdated = data["postings"].filter(
+            pl.col("entry_date") > pl.col("posting_date")
+        )
+        ratio = len(backdated) / len(data["postings"])
+        assert ratio >= 0.01, (
+            f"Only {ratio:.2%} backdated entries, expected >=1%"
+        )
+
+    def test_multi_line_jes_exist(self, data: dict[str, pl.DataFrame]) -> None:
+        """Some documents should have >5 line items."""
+        doc_lines = data["postings"].group_by("document_number").agg(
+            pl.len().alias("n_lines")
+        )
+        large_docs = doc_lines.filter(pl.col("n_lines") > 5)
+        assert len(large_docs) > 0, "No multi-line JEs (>5 lines) found"
+
+
+# ---------------------------------------------------------------------------
+# Opening balances
+# ---------------------------------------------------------------------------
+
+
+class TestOpeningBalances:
+    def test_bs_accounts_have_opening_balance(
+        self, data: dict[str, pl.DataFrame]
+    ) -> None:
+        """Balance sheet accounts should have non-zero period-1 opening balance."""
+        tb = data["trial_balance"]
+        am = data["account_master"]
+
+        # Get BS account types
+        bs_accounts = set(
+            am.filter(
+                pl.col("account_type").is_in(["A", "L", "E"])
+                & pl.col("is_active")
+            )["gl_account"].to_list()
+        )
+
+        p1 = tb.filter(
+            (pl.col("fiscal_period") == 1)
+            & pl.col("gl_account").is_in(list(bs_accounts))
+        )
+        nonzero_ob = p1.filter(pl.col("opening_balance") != 0.0)
+        assert len(nonzero_ob) > 0, "No BS accounts have non-zero opening balance"
+        ratio = len(nonzero_ob) / max(len(p1), 1)
+        assert ratio >= 0.3, (
+            f"Only {ratio:.1%} of BS accounts have non-zero OB, expected >=30%"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Historical complexity
+# ---------------------------------------------------------------------------
+
+
+class TestHistoricalComplexity:
+    def test_multi_source_systems(self, data: dict[str, pl.DataFrame]) -> None:
+        """Multiple source_system values should be present."""
+        sources = (
+            data["account_master"]
+            .filter(pl.col("source_system").is_not_null())["source_system"]
+            .unique()
+            .to_list()
+        )
+        assert len(sources) >= 3, f"Only {len(sources)} source systems: {sources}"
+        # Expect at least SAP, Legacy, MM-Acquired
+        assert "SAP" in sources, "Missing SAP source system"
+        assert "Legacy" in sources, "Missing Legacy source system"
+        assert "MM-Acquired" in sources, "Missing MM-Acquired source system"
+
+    def test_effective_dates_span(self, data: dict[str, pl.DataFrame]) -> None:
+        """effective_from should span from 2006 to 2024."""
+        eff_dates = data["account_master"].filter(
+            pl.col("effective_from").is_not_null()
+        )["effective_from"]
+        min_year = eff_dates.min().year  # type: ignore[union-attr]
+        max_year = eff_dates.max().year  # type: ignore[union-attr]
+        assert min_year <= 2009, f"Earliest effective_from year: {min_year}"
+        assert max_year >= 2020, f"Latest effective_from year: {max_year}"
 
 
 # ---------------------------------------------------------------------------

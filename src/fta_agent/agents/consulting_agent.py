@@ -17,10 +17,29 @@ from fta_agent.agents.gl_design_coach import gl_coach_node
 from fta_agent.agents.state import AgentState
 from fta_agent.llm.router import get_chat_model
 
-# Keywords that route to the GL Design Coach
+# Keywords that route to the GL Design Coach.
+# Uses \b at the start only — many terms are prefixes of inflected forms
+# (e.g., "reserve" → "reserves", "area" → "areas") so trailing \b is omitted.
 _GL_KEYWORDS = re.compile(
-    r"\b(gl|general\s+ledger|coa|chart\s+of\s+accounts"
-    r"|code\s*block|segment\s+design)\b",
+    r"\b(?:"
+    # Core GL/COA terms
+    r"gl\b|general\s+ledger|coa\b|chart\s+of\s+accounts"
+    r"|code\s*block|segment\s+design"
+    # SAP dimensions
+    r"|profit\s+cent(?:er|re)|cost\s+cent(?:er|re)"
+    r"|functional\s+area|business\s+area|company\s+code"
+    r"|trading\s+partner|segment|acdoca|document\s+splitting|copa\b"
+    # Insurance accounting
+    r"|loss\s+reserv|ibnr\b|case\s+reserv|\blae\b"
+    r"|unearned\s+premium|upr\b|reinsurance"
+    r"|salvage|subrogation|accident\s+year|underwriting\s+year"
+    # P&C regulatory
+    r"|naic\b|annual\s+statement|statutory|state[\s-]level"
+    # Design terms
+    r"|lob\b|line\s+of\s+business|account\s+structure|account\s+group"
+    r"|ledger|intercompany|mje\b|manual\s+journal"
+    r"|target\s+coa|coa\s+design"
+    r")",
     re.IGNORECASE,
 )
 

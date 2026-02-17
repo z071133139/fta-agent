@@ -47,6 +47,47 @@ class DocumentCategory(StrEnum):
     INTERFACE = "INT"  # Interface posting from subledger
 
 
+class FinancialProduct(StrEnum):
+    """Internal product codes for P&C insurance."""
+
+    PPA = "PPA"  # Private Passenger Auto
+    PPA_NF = "PPA-NF"  # PPA No-Fault
+    PPA_LI = "PPA-LI"  # PPA Liability
+    PPA_PD = "PPA-PD"  # PPA Physical Damage
+    MOTO = "MOTO"  # Motorcycle
+    HO3 = "HO3"  # Homeowners Special Form
+    HO5 = "HO5"  # Homeowners Comprehensive
+    HO4 = "HO4"  # Renters
+    BOP = "BOP"  # Business Owners Policy
+    CGL = "CGL"  # Commercial General Liability
+    CPP = "CPP"  # Commercial Package Policy
+    CAL = "CAL"  # Commercial Auto Liability
+    CAPD = "CAPD"  # Commercial Auto Physical Damage
+    WC = "WC"  # Workers Compensation
+    WC_GC = "WC-GC"  # WC Guaranteed Cost
+    WC_LD = "WC-LD"  # WC Large Deductible
+
+
+class ClaimType(StrEnum):
+    """Claim classification types."""
+
+    BI = "BI"  # Bodily Injury
+    PD = "PD"  # Property Damage
+    LIAB = "LIAB"  # Liability
+    COMP = "COMP"  # Comprehensive
+    COLL = "COLL"  # Collision
+    MED = "MED"  # Medical Payments
+
+
+class DistributionChannel(StrEnum):
+    """Distribution channel for policy sales."""
+
+    EA = "EA"  # Exclusive Agency
+    IA = "IA"  # Independent Agency
+    DIRECT = "DIRECT"  # Direct (call center)
+    DIGITAL = "DIGITAL"  # Digital/Online
+
+
 # ---------------------------------------------------------------------------
 # Pydantic models (for validation, serialization, API contracts)
 # ---------------------------------------------------------------------------
@@ -82,6 +123,13 @@ class PostingRecord(BaseModel):
     state: str | None = None  # US state code (2-letter)
     lob: str | None = None  # Line of business
     accident_year: int | None = None
+    # Insurance-specific dimensions
+    financial_product: str | None = None  # PPA, HO3, BOP, CGL, WC, etc.
+    statutory_line: str | None = None  # NAIC Annual Statement line
+    treaty_id: str | None = None  # Reinsurance treaty
+    claim_type: str | None = None  # BI, PD, LIAB, COMP, COLL, MED
+    distribution_channel: str | None = None  # EA, IA, DIRECT, DIGITAL
+    policy_year: int | None = None  # Underwriting year
 
 
 class AccountMasterRecord(BaseModel):
@@ -98,6 +146,8 @@ class AccountMasterRecord(BaseModel):
     statutory_category: str | None = None  # NAIC Annual Statement line
     functional_area_default: str | None = None
     is_active: bool = True
+    effective_from: date | None = None
+    source_system: str | None = None  # "SAP", "Legacy", "MM-Acquired", "Manual"
 
 
 class TrialBalanceRecord(BaseModel):
@@ -146,6 +196,12 @@ POSTING_SCHEMA = {
     "state": pl.Utf8,
     "lob": pl.Utf8,
     "accident_year": pl.Int32,
+    "financial_product": pl.Utf8,
+    "statutory_line": pl.Utf8,
+    "treaty_id": pl.Utf8,
+    "claim_type": pl.Utf8,
+    "distribution_channel": pl.Utf8,
+    "policy_year": pl.Int32,
 }
 
 ACCOUNT_MASTER_SCHEMA = {
@@ -159,6 +215,8 @@ ACCOUNT_MASTER_SCHEMA = {
     "statutory_category": pl.Utf8,
     "functional_area_default": pl.Utf8,
     "is_active": pl.Boolean,
+    "effective_from": pl.Date,
+    "source_system": pl.Utf8,
 }
 
 TRIAL_BALANCE_SCHEMA = {

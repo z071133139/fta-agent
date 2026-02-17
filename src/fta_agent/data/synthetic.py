@@ -43,15 +43,32 @@ LOBS = ["AUTO", "HOME", "COMML", "WC"]
 # US states (top 12 by premium volume)
 STATES = ["CA", "FL", "TX", "NY", "PA", "IL", "OH", "NJ", "GA", "NC", "MI", "VA"]
 
+# States with COMML detail (only 6 major states)
+COMML_STATES = ["CA", "FL", "TX", "NY", "PA", "IL"]
+
 # Functional areas (insurance-specific)
 FUNCTIONAL_AREAS = ["CLM", "ACQ", "ADM", "INV", "LAE", "PHD"]
 
-# Profit centers (one per LOB)
+# Profit centers — expanded hierarchy with product-level detail
 PROFIT_CENTERS = {
     "AUTO": "PC1000",
     "HOME": "PC2000",
     "COMML": "PC3000",
     "WC": "PC4000",
+}
+
+# Product-level profit centers
+PRODUCT_PROFIT_CENTERS: dict[str, str] = {
+    "PPA": "PC1100",
+    "MOTO": "PC1200",
+    "HO3": "PC2100",
+    "HO5": "PC2200",
+    "HO4": "PC2300",
+    "BOP": "PC3100",
+    "CGL": "PC3200",
+    "CPP": "PC3300",
+    "WC-GC": "PC4100",
+    "WC-LD": "PC4200",
 }
 
 SEGMENTS = {"AUTO": "PC", "HOME": "PC", "COMML": "PC", "WC": "PC"}
@@ -94,6 +111,88 @@ DOC_TYPES = {
     "RE": "REC",  # Recurring entry
     "CL": "CLR",  # Clearing
     "IF": "INT",  # Interface posting
+}
+
+# ---------------------------------------------------------------------------
+# Insurance-specific dimension mappings
+# ---------------------------------------------------------------------------
+
+# LOB → financial products
+LOB_PRODUCTS: dict[str, list[str]] = {
+    "AUTO": ["PPA", "PPA-NF", "PPA-LI", "PPA-PD", "MOTO"],
+    "HOME": ["HO3", "HO5", "HO4"],
+    "COMML": ["BOP", "CGL", "CPP", "CAL", "CAPD"],
+    "WC": ["WC", "WC-GC", "WC-LD"],
+}
+
+# LOB → distribution channels (weighted probabilities via ordering)
+LOB_CHANNELS: dict[str, list[str]] = {
+    "AUTO": ["EA", "DIRECT", "DIGITAL", "IA"],
+    "HOME": ["EA", "IA", "DIRECT", "DIGITAL"],
+    "COMML": ["IA", "EA", "DIRECT"],
+    "WC": ["IA", "EA"],
+}
+
+# LOB → claim types
+LOB_CLAIM_TYPES: dict[str, list[str]] = {
+    "AUTO": ["BI", "PD", "COMP", "COLL", "MED"],
+    "HOME": ["PD", "LIAB", "COMP"],
+    "COMML": ["BI", "PD", "LIAB"],
+    "WC": ["BI", "MED"],
+}
+
+# NAIC Annual Statement line mapping
+NAIC_LINES: dict[str, dict[str, str]] = {
+    "1": {"description": "Fire", "lob": "HOME"},
+    "2": {"description": "Allied Lines", "lob": "HOME"},
+    "2.1": {"description": "Federal Flood", "lob": "HOME"},
+    "4": {"description": "Homeowners Multi Peril", "lob": "HOME"},
+    "5.1": {"description": "Commercial Auto Liability", "lob": "COMML"},
+    "5.2": {"description": "Commercial Auto Physical Damage", "lob": "COMML"},
+    "6": {"description": "Workers Compensation", "lob": "WC"},
+    "12": {"description": "Earthquake", "lob": "HOME"},
+    "17": {"description": "Other Liability", "lob": "COMML"},
+    "19.1": {"description": "Private Passenger Auto No-Fault", "lob": "AUTO"},
+    "19.2": {"description": "Other Private Passenger Auto Liability", "lob": "AUTO"},
+    "19.3": {"description": "Private Passenger Auto Physical Damage", "lob": "AUTO"},
+    "21.1": {"description": "Commercial Multi Peril (Non-Liability)", "lob": "COMML"},
+    "21.2": {"description": "Commercial Multi Peril (Liability)", "lob": "COMML"},
+}
+
+# LOB → primary NAIC lines for posting generation
+LOB_STATUTORY_LINES: dict[str, list[str]] = {
+    "AUTO": ["19.1", "19.2", "19.3"],
+    "HOME": ["1", "2", "4", "12"],
+    "COMML": ["5.1", "5.2", "17", "21.1", "21.2"],
+    "WC": ["6"],
+}
+
+# Reinsurance treaties
+TREATIES = ["QS-2025-01", "XOL-2025-01", "QS-2025-02", "CAT-2025-01"]
+
+# Opening balance ranges for BS accounts (type → (lo, hi))
+OPENING_BALANCE_RANGES: dict[str, tuple[float, float]] = {
+    "CASH": (50_000_000.0, 200_000_000.0),
+    "INVST": (100_000_000.0, 500_000_000.0),
+    "PREC": (20_000_000.0, 80_000_000.0),
+    "REIN": (10_000_000.0, 50_000_000.0),
+    "DAC": (5_000_000.0, 20_000_000.0),
+    "FIXED": (1_000_000.0, 10_000_000.0),
+    "PREP": (500_000.0, 5_000_000.0),
+    "IC": (2_000_000.0, 15_000_000.0),
+    "AINC": (1_000_000.0, 8_000_000.0),
+    "SALV": (500_000.0, 3_000_000.0),
+    "INTANG": (5_000_000.0, 30_000_000.0),
+    "DTAX": (2_000_000.0, 15_000_000.0),
+    "MISC_A": (100_000.0, 1_000_000.0),
+    "LRSV": (-80_000_000.0, -20_000_000.0),
+    "UPR": (-40_000_000.0, -10_000_000.0),
+    "AP": (-5_000_000.0, -1_000_000.0),
+    "TAX": (-3_000_000.0, -500_000.0),
+    "ACCR": (-2_000_000.0, -500_000.0),
+    "DEBT": (-50_000_000.0, -10_000_000.0),
+    "MISC_L": (-1_000_000.0, -100_000.0),
+    "EQTY": (-100_000_000.0, -20_000_000.0),
 }
 
 
@@ -156,7 +255,17 @@ class SeededRNG:
 
 
 def _build_account_master() -> list[dict[str, Any]]:
-    """Build a realistic P&C account master (~2,500 accounts)."""
+    """Build a realistic P&C account master (~3,000+ accounts).
+
+    Includes 20 years of accumulated structural complexity:
+    - Core operational accounts (SAP, 2010+)
+    - Acquisition block (Midwest Mutual, 2014)
+    - Discontinued LOB (Professional Liability, exited 2018)
+    - Legacy numbering (pre-2010)
+    - System migration duplicates (2012)
+    - Regulatory-driven additions (2020+)
+    - Product-encoded accounts
+    """
     accounts: list[dict[str, Any]] = []
 
     def add(
@@ -170,6 +279,8 @@ def _build_account_master() -> list[dict[str, Any]]:
         stat_cat: str | None = None,
         fa: str | None = None,
         active: bool = True,
+        effective_from: date | None = None,
+        source_system: str | None = None,
     ) -> None:
         accounts.append(
             {
@@ -183,6 +294,8 @@ def _build_account_master() -> list[dict[str, Any]]:
                 "statutory_category": stat_cat,
                 "functional_area_default": fa,
                 "is_active": active,
+                "effective_from": effective_from,
+                "source_system": source_system,
             }
         )
 
@@ -197,6 +310,10 @@ def _build_account_master() -> list[dict[str, Any]]:
     add("101300", "Mortgage Loans", "A", "INVST")
     add("101400", "Real Estate Investments", "A", "INVST")
     add("101500", "Policy Loans", "A", "INVST")
+    add("101600", "LP Interests", "A", "INVST", source_system="SAP",
+        effective_from=date(2015, 1, 1))
+    add("101700", "Other Investments", "A", "INVST", source_system="SAP",
+        effective_from=date(2012, 1, 1))
 
     # Premiums receivable
     for lob in LOBS:
@@ -217,6 +334,9 @@ def _build_account_master() -> list[dict[str, Any]]:
             recon=True,
             oim=True,
         )
+
+    add("111000", "Allowance for Doubtful Accounts", "A", "PREC",
+        recon=True, source_system="SAP", effective_from=date(2012, 1, 1))
 
     # Reinsurance recoverables
     add(
@@ -254,11 +374,23 @@ def _build_account_master() -> list[dict[str, Any]]:
     add("140100", "Accumulated Depreciation - F&E", "A", "FIXED")
     add("141000", "Software", "A", "FIXED")
     add("141100", "Accumulated Amortization - Software", "A", "FIXED")
+    add("142000", "Goodwill", "A", "INTANG", source_system="SAP",
+        effective_from=date(2014, 7, 1))
+    add("142100", "Purchased Intangibles", "A", "INTANG", source_system="SAP",
+        effective_from=date(2014, 7, 1))
+    add("142200", "Accum Amort - Intangibles", "A", "INTANG", source_system="SAP",
+        effective_from=date(2014, 7, 1))
     add("150000", "Prepaid Expenses", "A", "PREP")
     add("150100", "Prepaid Reinsurance", "A", "PREP")
     add("160000", "Intercompany Receivable", "A", "IC", recon=True, oim=True)
     add("170000", "Accrued Investment Income", "A", "AINC")
     add("180000", "Salvage and Subrogation Receivable", "A", "SALV", stat_cat="Salvage")
+    add("190000", "Suspense - Premium Clearing", "A", "SUSP", oim=True,
+        source_system="SAP", effective_from=date(2012, 1, 1))
+    add("190100", "Suspense - Claims Clearing", "A", "SUSP", oim=True,
+        source_system="SAP", effective_from=date(2012, 1, 1))
+    add("190200", "Deferred Tax Asset", "A", "DTAX", source_system="SAP",
+        effective_from=date(2018, 1, 1))
 
     # ---- Liabilities (2xxxxx) ----
     # Loss reserves (the core P&C complexity)
@@ -330,10 +462,24 @@ def _build_account_master() -> list[dict[str, Any]]:
         "REIN",
         stat_cat="Reinsurance",
     )
+    add("270000", "Deferred Tax Liability", "L", "DTAX", source_system="SAP",
+        effective_from=date(2018, 1, 1))
+    add("280000", "Short-Term Borrowings", "L", "DEBT", source_system="SAP",
+        effective_from=date(2012, 1, 1))
+    add("280100", "Current Portion LTD", "L", "DEBT", source_system="SAP",
+        effective_from=date(2012, 1, 1))
+    add("285000", "Senior Notes Payable", "L", "DEBT", source_system="SAP",
+        effective_from=date(2012, 1, 1))
+    add("285100", "Subordinated Notes", "L", "DEBT", source_system="SAP",
+        effective_from=date(2015, 1, 1))
+    add("286000", "Preferred Stock - Liability", "L", "DEBT", source_system="SAP",
+        effective_from=date(2016, 1, 1), active=False)
 
     # ---- Equity (3xxxxx) ----
     add("300000", "Common Stock", "E", "EQTY")
     add("300100", "Additional Paid-In Capital", "E", "EQTY")
+    add("300200", "Preferred Stock", "E", "EQTY", source_system="SAP",
+        effective_from=date(2016, 1, 1))
     add("310000", "Retained Earnings", "E", "EQTY")
     add("320000", "Unrealized Gains/Losses - Investments", "E", "EQTY")
     add("330000", "Treasury Stock", "E", "EQTY")
@@ -389,6 +535,8 @@ def _build_account_master() -> list[dict[str, Any]]:
     # Other revenue
     add("420000", "Fee Income", "R", "OREV")
     add("420100", "Service Revenue", "R", "OREV")
+    add("420200", "Intersegment Revenue", "R", "OREV", source_system="SAP",
+        effective_from=date(2014, 7, 1))
 
     # ---- Expenses (5xxxxx - 7xxxxx) ----
     # Losses and LAE (5xxxxx)
@@ -435,6 +583,22 @@ def _build_account_master() -> list[dict[str, Any]]:
             stat_cat="Salvage",
         )
 
+    # Catastrophe losses + prior year reserve development + product-encoded losses
+    for lob in LOBS:
+        idx = LOBS.index(lob)
+        add(f"500{idx}50", f"Catastrophe Losses - {lob}", "X", "LOSS", fa="LAE",
+            stat_cat="Cat Losses", source_system="SAP", effective_from=date(2012, 1, 1))
+        add(f"500{idx}60", f"Prior Year Reserve Development - {lob}", "X", "LOSS",
+            fa="LAE", stat_cat="Reserve Development", source_system="SAP",
+            effective_from=date(2012, 1, 1))
+        # Product-encoded loss accounts (BI / PD split)
+        add(f"500{idx}70", f"Losses Incurred - {lob} - Bodily Injury", "X", "LOSS",
+            fa="LAE", stat_cat="Losses Incurred", source_system="SAP",
+            effective_from=date(2020, 1, 1))
+        add(f"500{idx}80", f"Losses Incurred - {lob} - Property Damage", "X", "LOSS",
+            fa="LAE", stat_cat="Losses Incurred", source_system="SAP",
+            effective_from=date(2020, 1, 1))
+
     # Acquisition costs (6xxxxx)
     for lob in LOBS:
         idx = LOBS.index(lob)
@@ -456,6 +620,16 @@ def _build_account_master() -> list[dict[str, Any]]:
             fa="ACQ",
             stat_cat="DAC Amort",
         )
+
+    # Channel-encoded commission accounts
+    for lob in LOBS:
+        idx = LOBS.index(lob)
+        add(f"600{idx}40", f"Commission Expense - {lob} - Independent Agent", "X",
+            "AQCST", fa="ACQ", stat_cat="Commissions", source_system="SAP",
+            effective_from=date(2018, 1, 1))
+        add(f"600{idx}50", f"Commission Expense - {lob} - Direct/Digital", "X",
+            "AQCST", fa="ACQ", stat_cat="Commissions", source_system="SAP",
+            effective_from=date(2018, 1, 1))
 
     # Operating expenses (7xxxxx)
     # Claims operations
@@ -489,6 +663,19 @@ def _build_account_master() -> list[dict[str, Any]]:
     # Reinsurance expense
     add("750000", "Reinsurance Ceding Commission", "X", "REIN", stat_cat="Reinsurance")
     add("750100", "Reinsurance Premium Expense", "X", "REIN", stat_cat="Reinsurance")
+    # Interest expense
+    add("770000", "Interest Expense - Senior Debt", "X", "INTEXP",
+        source_system="SAP", effective_from=date(2012, 1, 1))
+    add("770100", "Interest Expense - Subordinated Debt", "X", "INTEXP",
+        source_system="SAP", effective_from=date(2015, 1, 1))
+    # Service and restructuring
+    add("780000", "Service Expenses", "X", "OPEX", fa="ADM",
+        source_system="SAP", effective_from=date(2014, 7, 1))
+    add("790000", "Restructuring Charges", "X", "OPEX", fa="ADM",
+        source_system="SAP", effective_from=date(2019, 1, 1))
+    # Intangible amortization
+    add("720250", "Amort of Purchased Intangibles", "X", "OPEX", fa="ADM",
+        source_system="SAP", effective_from=date(2014, 7, 1))
     # Policyholder dividends
     add(
         "760000",
@@ -499,51 +686,218 @@ def _build_account_master() -> list[dict[str, Any]]:
         stat_cat="Policyholder Dividends",
     )
 
-    # ---- Dormant / low-activity accounts ----
-    # Historical accounts no longer actively used
-    add("190000", "Legacy Suspense Account", "A", "SUSP", active=False)
-    add("190100", "Prior Acquisition Receivable", "A", "MISC", active=False)
-    add("290000", "Legacy Reserve - Discontinued LOB", "L", "LRSV", active=False)
-    add("490000", "Discontinued Product Revenue", "R", "MISC", active=False)
-    add("590000", "Discontinued LOB Losses", "X", "MISC", active=False)
+    # ---- Dormant / low-activity accounts (renamed 190000 series) ----
+    add("191000", "Legacy Suspense Account", "A", "SUSP", active=False,
+        source_system="Legacy", effective_from=date(2006, 1, 1))
+    add("191100", "Prior Acquisition Receivable", "A", "MISC", active=False,
+        source_system="Legacy", effective_from=date(2008, 1, 1))
+    add("290000", "Legacy Reserve - Discontinued LOB", "L", "LRSV", active=False,
+        source_system="Legacy", effective_from=date(2007, 1, 1))
+    add("490000", "Discontinued Product Revenue", "R", "MISC", active=False,
+        source_system="Legacy", effective_from=date(2008, 1, 1))
+    add("590000", "Discontinued LOB Losses", "X", "MISC", active=False,
+        source_system="Legacy", effective_from=date(2008, 1, 1))
 
-    # Now bulk-generate additional accounts to reach ~2,500
-    # These are sub-accounts and state-level detail accounts
+    # ================================================================
+    # State-level premium and loss accounts per LOB
+    # ================================================================
     rng = SeededRNG(SEED + 1000)
     existing = {a["gl_account"] for a in accounts}
-    # State-level premium and loss accounts per LOB
+
     for lob in LOBS:
         idx = LOBS.index(lob)
-        for si, st in enumerate(STATES):
+        states_for_lob = STATES if lob in ("AUTO", "HOME") else COMML_STATES
+        for si, st in enumerate(states_for_lob):
             acct_prem = f"40{idx}{si + 50:02d}"
             if acct_prem not in existing:
-                add(acct_prem, f"Premium Written - {lob} - {st}", "R", "PREM")
+                add(acct_prem, f"Premium Written - {lob} - {st}", "R", "PREM",
+                    source_system="SAP")
                 existing.add(acct_prem)
             acct_loss = f"50{idx}{si + 50:02d}"
             if acct_loss not in existing:
-                add(acct_loss, f"Loss Incurred - {lob} - {st}", "X", "LOSS", fa="LAE")
+                add(acct_loss, f"Loss Incurred - {lob} - {st}", "X", "LOSS",
+                    fa="LAE", source_system="SAP")
                 existing.add(acct_loss)
 
-    # Generate filler accounts to get closer to 2,500
+    # ================================================================
+    # Part 3a: Acquisition block — "Midwest Mutual" (acquired ~2014)
+    # ~40 accounts, 800100-800199, "MM-" prefix, 60% inactive
+    # ================================================================
+    mm_acq_date = date(2014, 7, 1)
+    mm_categories = [
+        ("A", "CASH", "MM-Cash Account"),
+        ("A", "PREC", "MM-Premium Receivable"),
+        ("A", "INVST", "MM-Investment"),
+        ("L", "LRSV", "MM-Loss Reserve"),
+        ("L", "UPR", "MM-Unearned Premium"),
+        ("L", "AP", "MM-Accounts Payable"),
+        ("R", "PREM", "MM-Premium"),
+        ("X", "LOSS", "MM-Loss Expense"),
+        ("X", "OPEX", "MM-Operating Expense"),
+    ]
+    for i in range(40):
+        acct_str = f"80{100 + i:04d}"
+        if acct_str not in existing:
+            cat = mm_categories[i % len(mm_categories)]
+            is_active = rng.random() > 0.60  # 60% inactive (migrated off)
+            add(acct_str, f"{cat[2]} {i + 1:03d}", cat[0], cat[1],
+                active=is_active, effective_from=mm_acq_date,
+                source_system="MM-Acquired")
+            existing.add(acct_str)
+
+    # ================================================================
+    # Part 3b: Discontinued LOB — Professional Liability (exited ~2018)
+    # ~15 accounts, all inactive
+    # ================================================================
+    pl_accounts = [
+        ("850000", "Prof Liab - Direct Premiums Written", "R", "PREM", "11"),
+        ("850010", "Prof Liab - Premiums Earned", "R", "PREM", "17"),
+        ("850100", "Prof Liab - Losses Incurred", "X", "LOSS", "11"),
+        ("850110", "Prof Liab - Case Reserves", "X", "LOSS", "11"),
+        ("850120", "Prof Liab - IBNR Reserves", "X", "LOSS", "11"),
+        ("850130", "Prof Liab - LAE", "X", "LOSS", "17"),
+        ("850200", "Prof Liab - Commission Expense", "X", "AQCST", None),
+        ("850300", "Prof Liab - Case Reserve Liability", "L", "LRSV", "11"),
+        ("850310", "Prof Liab - IBNR Reserve Liability", "L", "LRSV", "11"),
+        ("850320", "Prof Liab - LAE Reserve Liability", "L", "LRSV", "17"),
+        ("850400", "Prof Liab - UPR", "L", "UPR", None),
+        ("850500", "Prof Liab - Reinsurance Recoverable", "A", "REIN", None),
+        ("850600", "Prof Liab - Ceded Premium", "R", "PREM", None),
+        ("850700", "Prof Liab - Premiums Receivable", "A", "PREC", None),
+        ("850800", "Prof Liab - DAC", "A", "DAC", None),
+    ]
+    for acct_str, desc, atype, group, stat in pl_accounts:
+        eff = date(rng.randint(2008, 2012), 1, 1)
+        add(acct_str, desc, atype, group, active=False, stat_cat=stat,
+            effective_from=eff, source_system="SAP")
+        existing.add(acct_str)
+
+    # ================================================================
+    # Part 3c: Legacy numbering (pre-2010 era) — ~20 accounts
+    # ================================================================
+    legacy_descs = [
+        ("860000", "A", "MISC", "Old Cash - Main"),
+        ("860100", "A", "MISC", "Old Investment Pool A"),
+        ("860200", "A", "MISC", "Old Investment Pool B"),
+        ("860300", "A", "MISC", "Old Receivables - Combined"),
+        ("860400", "A", "MISC", "Old Prepaid - General"),
+        ("861000", "L", "MISC", "Old Reserves - Combined"),
+        ("861100", "L", "MISC", "Old AP - Combined"),
+        ("861200", "L", "MISC", "Old UPR - Combined"),
+        ("862000", "R", "MISC", "Old Premium Income - Combined"),
+        ("862100", "R", "MISC", "Old Investment Income"),
+        ("863000", "X", "MISC", "Old Loss Expense - Combined"),
+        ("863100", "X", "MISC", "Old Commission - Combined"),
+        ("863200", "X", "MISC", "Old Operating - Salaries"),
+        ("863300", "X", "MISC", "Old Operating - Rent"),
+        ("863400", "X", "MISC", "Old Operating - Other"),
+        ("864000", "E", "MISC", "Old Retained Earnings"),
+        ("864100", "E", "MISC", "Old Capital Stock"),
+        ("865000", "A", "MISC", "Old Reinsurance Recv"),
+        ("865100", "L", "MISC", "Old Reinsurance Payable"),
+        ("866000", "X", "MISC", "Old Tax Expense - Combined"),
+    ]
+    for acct_str, atype, group, desc in legacy_descs:
+        eff = date(rng.randint(2006, 2009), 1, 1)
+        add(acct_str, desc, atype, group, active=False,
+            effective_from=eff, source_system="Legacy")
+        existing.add(acct_str)
+
+    # ================================================================
+    # Part 3d: System migration duplicates (~2012 SAP migration) — ~25 pairs
+    # Legacy account maps to new SAP account
+    # ================================================================
+    migration_pairs = [
+        ("867000", "100000", "Cash - Main (Legacy)"),
+        ("867100", "101100", "FMS (Legacy)"),
+        ("867200", "101200", "Equities (Legacy)"),
+        ("867300", "110000", "Prem Recv AUTO (Legacy)"),
+        ("867400", "110100", "Prem Recv HOME (Legacy)"),
+        ("867500", "120000", "RI Recv Paid (Legacy)"),
+        ("867600", "200000", "Case Rsv AUTO (Legacy)"),
+        ("867700", "200100", "Case Rsv HOME (Legacy)"),
+        ("867800", "210000", "UPR AUTO (Legacy)"),
+        ("867900", "210100", "UPR HOME (Legacy)"),
+        ("868000", "220000", "AP (Legacy)"),
+        ("868100", "300000", "Common Stock (Legacy)"),
+        ("868200", "310000", "Retained Earnings (Legacy)"),
+        ("868300", "400000", "DPW AUTO (Legacy)"),
+        ("868400", "400100", "DPW HOME (Legacy)"),
+        ("868500", "500000", "Loss AUTO (Legacy)"),
+        ("868600", "500100", "Loss HOME (Legacy)"),
+        ("868700", "600000", "Comm AUTO (Legacy)"),
+        ("868800", "600100", "Comm HOME (Legacy)"),
+        ("868900", "700000", "Claims Sal (Legacy)"),
+        ("869000", "720000", "Admin Sal (Legacy)"),
+        ("869100", "740000", "Premium Tax (Legacy)"),
+        ("869200", "410000", "Inv Income (Legacy)"),
+        ("869300", "170000", "Accrued Inv Inc (Legacy)"),
+        ("869400", "150000", "Prepaid Exp (Legacy)"),
+    ]
+    for old_acct, _new_acct, desc in migration_pairs:
+        atype = "A"  # simplified — actual type doesn't matter since inactive
+        if old_acct in ("868000", "868100", "868200"):
+            atype = "L" if old_acct == "868000" else "E"
+        elif old_acct >= "868300" and old_acct <= "868400":
+            atype = "R"
+        elif old_acct >= "868500":
+            atype = "X"
+        add(old_acct, desc, atype, "MISC", active=False,
+            effective_from=date(2008, 1, 1), source_system="Legacy")
+        existing.add(old_acct)
+
+    # ================================================================
+    # Part 3e: Regulatory-driven additions (post-2020)
+    # ================================================================
+    regulatory_accounts = [
+        ("500090", "COVID-19 Loss Reserve - AUTO", "X", "LOSS", date(2020, 3, 1)),
+        ("500190", "COVID-19 Loss Reserve - HOME", "X", "LOSS", date(2020, 3, 1)),
+        ("200090", "COVID-19 Case Reserve - AUTO", "L", "LRSV", date(2020, 3, 1)),
+        ("200190", "COVID-19 Case Reserve - HOME", "L", "LRSV", date(2020, 3, 1)),
+        ("500095", "Cyber Risk Losses - COMML", "X", "LOSS", date(2021, 1, 1)),
+        ("200295", "Cyber Risk Reserve - COMML", "L", "LRSV", date(2021, 1, 1)),
+        ("500096", "Climate Cat Model Adjustment - HOME", "X", "LOSS", date(2022, 1, 1)),
+        ("500097", "Climate Cat Model Adjustment - AUTO", "X", "LOSS", date(2022, 1, 1)),
+        ("200196", "LDTI Reserve Adjustment - HOME", "L", "LRSV", date(2023, 1, 1)),
+        ("200296", "LDTI Reserve Adjustment - COMML", "L", "LRSV", date(2023, 1, 1)),
+        ("740400", "Climate Risk Disclosure Expense", "X", "TAX", date(2023, 7, 1)),
+        ("720950", "ESG Reporting Expense", "X", "OPEX", date(2023, 1, 1)),
+        ("720960", "Cyber Security Expense", "X", "OPEX", date(2021, 6, 1)),
+        ("101800", "Digital Asset Holdings", "A", "INVST", date(2024, 1, 1)),
+        ("740500", "Digital Asset Regulatory Fee", "X", "TAX", date(2024, 1, 1)),
+    ]
+    for acct_str, desc, atype, group, eff in regulatory_accounts:
+        if acct_str not in existing:
+            add(acct_str, desc, atype, group, effective_from=eff,
+                source_system="SAP")
+            existing.add(acct_str)
+
+    # ================================================================
+    # Generate filler accounts to reach ~3,000+
+    # ================================================================
     categories = [
         ("15", "A", "Prepaid - Misc"),
         ("16", "A", "Receivable - Misc"),
         ("22", "L", "Payable - Misc"),
         ("72", "X", "Operating Expense - Misc"),
     ]
-    target_total = 2500
-    acct_num = 800000
+    target_total = 3100
+    acct_num = 870000
     while len(accounts) < target_total:
         cat = categories[rng.randint(0, len(categories) - 1)]
         acct_str = str(acct_num)
         if acct_str not in existing:
-            is_active = rng.random() > 0.15  # 15% dormant
+            is_active = rng.random() > 0.20  # 20% dormant
+            eff_year = rng.randint(2008, 2023)
+            src = "SAP" if eff_year >= 2012 else "Legacy"
             add(
                 acct_str,
-                f"{cat[2]} {acct_num - 800000 + 1:04d}",
+                f"{cat[2]} {acct_num - 870000 + 1:04d}",
                 cat[1],
                 "MISC",
                 active=is_active,
+                effective_from=date(eff_year, 1, 1),
+                source_system=src,
             )
             existing.add(acct_str)
         acct_num += 1
@@ -642,7 +996,12 @@ MJE_PATTERNS: dict[str, dict[str, Any]] = {
 
 
 def _generate_postings(rng: SeededRNG) -> list[dict[str, Any]]:
-    """Generate ~500K-750K posting records for 12 months."""
+    """Generate ~1M-2M posting records for 12 months.
+
+    Includes scaled operational postings with insurance-specific dimensions,
+    seasonal patterns, cat losses, reinsurance, multi-line JEs, backdated
+    entries, suspense clearing, cross-LOB allocations, and all 7 MJE patterns.
+    """
     postings: list[dict[str, Any]] = []
     doc_counter = 0
 
@@ -696,15 +1055,29 @@ def _generate_postings(rng: SeededRNG) -> list[dict[str, Any]]:
                     "state": line.get("state"),
                     "lob": line.get("lob"),
                     "accident_year": line.get("accident_year"),
+                    "financial_product": line.get("financial_product"),
+                    "statutory_line": line.get("statutory_line"),
+                    "treaty_id": line.get("treaty_id"),
+                    "claim_type": line.get("claim_type"),
+                    "distribution_channel": line.get("distribution_channel"),
+                    "policy_year": line.get("policy_year"),
                 }
             )
 
     # --- 1. Standard operational postings (bulk of volume) ---
     for month in range(1, 13):
+        # Determine backdating rate for this month's postings
+        is_year_end = month >= 11
+
         # Premium postings -- multiple per day per LOB per state
         for lob in LOBS:
             idx = LOBS.index(lob)
             pc = PROFIT_CENTERS[lob]
+            products = LOB_PRODUCTS[lob]
+            channels = LOB_CHANNELS[lob]
+            stat_lines = LOB_STATUTORY_LINES[lob]
+            states_for_lob = STATES if lob in ("AUTO", "HOME") else (
+                COMML_STATES if lob == "COMML" else ["CA"])  # WC: LOB-level only
             base_prem = {
                 "AUTO": 8_000_000,
                 "HOME": 5_000_000,
@@ -712,94 +1085,126 @@ def _generate_postings(rng: SeededRNG) -> list[dict[str, Any]]:
                 "WC": 3_000_000,
             }[lob]
 
-            # ~3500-4200 premium transactions per LOB per month
-            n_prem = rng.randint(3500, 4200)
+            # HOME seasonality: heavier spring renewals
+            prem_seasonal = 1.0
+            if lob == "HOME" and month in (3, 4, 5, 6):
+                prem_seasonal = 1.3
+            elif lob == "HOME" and month in (11, 12):
+                prem_seasonal = 0.7
+
+            # ~6000-8000 premium transactions per LOB per month (scaled up)
+            n_prem = int(rng.randint(6000, 8000) * prem_seasonal)
             for _ in range(n_prem):
                 day = rng.randint(1, 28)
-                st = rng.choice(STATES)
-                amt = round(base_prem / n_prem * (0.5 + rng.random()), 2)
+                st = rng.choice(states_for_lob)
+                amt = round(base_prem / 7000 * (0.5 + rng.random()), 2)
                 ay = rng.choice([2024, 2025])
+                fp = rng.choice(products)
+                ch = rng.choice(channels)
+                sl = rng.choice(stat_lines)
+                py = rng.choice([2024, 2025])
+                # Product profit center (AUTO uses financial_product column)
+                ppc = PRODUCT_PROFIT_CENTERS.get(fp, pc)
+
+                # Backdating: ~2% of postings
+                bd_offset = 0
+                if rng.random() < 0.02:
+                    bd_offset = rng.randint(3, 30)
+
                 post(
-                    month,
-                    day,
-                    "SA",
+                    month, day, "SA",
                     [
                         {
-                            "account": f"110{idx}00",
-                            "amount": amt,
-                            "profit_center": pc,
-                            "lob": lob,
-                            "state": st,
-                            "accident_year": ay,
+                            "account": f"110{idx}00", "amount": amt,
+                            "profit_center": ppc, "lob": lob, "state": st,
+                            "accident_year": ay, "financial_product": fp,
+                            "statutory_line": sl, "distribution_channel": ch,
+                            "policy_year": py,
                         },
                         {
-                            "account": f"400{idx}00",
-                            "amount": -amt,
-                            "profit_center": pc,
-                            "lob": lob,
-                            "state": st,
-                            "accident_year": ay,
+                            "account": f"400{idx}00", "amount": -amt,
+                            "profit_center": ppc, "lob": lob, "state": st,
+                            "accident_year": ay, "financial_product": fp,
+                            "statutory_line": sl, "distribution_channel": ch,
+                            "policy_year": py,
                         },
                     ],
+                    entry_day_offset=bd_offset,
                 )
 
-            # Claims payments -- fewer but larger
-            n_claims = rng.randint(600, 1000)
+            # Claims payments -- scaled up with claim type + statutory line
+            n_claims = rng.randint(1500, 2500)
+            claim_types = LOB_CLAIM_TYPES[lob]
             for _ in range(n_claims):
                 day = rng.randint(1, 28)
-                st = rng.choice(STATES)
+                st = rng.choice(states_for_lob)
                 amt = round(rng.gauss(15000, 8000), 2)
                 if amt < 100:
                     amt = round(100 + rng.random() * 5000, 2)
                 ay = rng.choice([2022, 2023, 2024, 2025])
+                ct = rng.choice(claim_types)
+                fp = rng.choice(products)
+                sl = rng.choice(stat_lines)
+                # Use product-encoded accounts for ~40% of claims (BI/PD split)
+                loss_acct = f"500{idx}00"
+                if ct == "BI" and rng.random() < 0.4:
+                    loss_acct = f"500{idx}70"
+                elif ct == "PD" and rng.random() < 0.4:
+                    loss_acct = f"500{idx}80"
+
+                bd_offset = 0
+                if rng.random() < 0.02:
+                    bd_offset = rng.randint(3, 30)
+                    if rng.random() < 0.05:  # rare extreme backdating
+                        bd_offset = rng.randint(60, 90)
+
                 post(
-                    month,
-                    day,
-                    "KR",
+                    month, day, "KR",
                     [
                         {
-                            "account": f"500{idx}00",
-                            "amount": amt,
-                            "profit_center": pc,
-                            "lob": lob,
-                            "state": st,
-                            "functional_area": "LAE",
-                            "accident_year": ay,
+                            "account": loss_acct, "amount": amt,
+                            "profit_center": pc, "lob": lob, "state": st,
+                            "functional_area": "LAE", "accident_year": ay,
+                            "claim_type": ct, "financial_product": fp,
+                            "statutory_line": sl,
                         },
                         {
-                            "account": "100100",
-                            "amount": -amt,
-                            "profit_center": pc,
-                            "lob": lob,
-                            "state": st,
+                            "account": "100100", "amount": -amt,
+                            "profit_center": pc, "lob": lob, "state": st,
                         },
                     ],
+                    entry_day_offset=bd_offset,
                 )
 
-            # Commission payments
-            n_comm = rng.randint(300, 500)
+            # Commission payments -- scaled up with channel split
+            n_comm = rng.randint(600, 1000)
             for _ in range(n_comm):
                 day = rng.randint(1, 28)
                 amt = round(rng.gauss(3000, 1500), 2)
                 if amt < 50:
                     amt = round(50 + rng.random() * 1000, 2)
+                ch = rng.choice(channels)
+                fp = rng.choice(products)
+                # Channel-encoded commission accounts for ~50%
+                if ch in ("IA",) and rng.random() < 0.5:
+                    comm_acct = f"600{idx}40"
+                elif ch in ("DIRECT", "DIGITAL") and rng.random() < 0.5:
+                    comm_acct = f"600{idx}50"
+                else:
+                    comm_acct = f"600{idx}00"
                 post(
-                    month,
-                    day,
-                    "KR",
+                    month, day, "KR",
                     [
                         {
-                            "account": f"600{idx}00",
-                            "amount": amt,
-                            "profit_center": pc,
-                            "lob": lob,
+                            "account": comm_acct, "amount": amt,
+                            "profit_center": pc, "lob": lob,
                             "functional_area": "ACQ",
+                            "distribution_channel": ch,
+                            "financial_product": fp,
                         },
                         {
-                            "account": "220100",
-                            "amount": -amt,
-                            "profit_center": pc,
-                            "lob": lob,
+                            "account": "220100", "amount": -amt,
+                            "profit_center": pc, "lob": lob,
                         },
                     ],
                 )
@@ -807,23 +1212,18 @@ def _generate_postings(rng: SeededRNG) -> list[dict[str, Any]]:
             # Reserve movements (month-end)
             for res_suffix, _res_type in [("10", "Case"), ("20", "IBNR")]:
                 amt = round(rng.gauss(500000, 200000), 2)
+                sl = rng.choice(stat_lines)
                 post(
-                    month,
-                    28,
-                    "IF",
+                    month, 28, "IF",
                     [
                         {
-                            "account": f"500{idx}{res_suffix}",
-                            "amount": amt,
-                            "profit_center": pc,
-                            "lob": lob,
-                            "functional_area": "LAE",
+                            "account": f"500{idx}{res_suffix}", "amount": amt,
+                            "profit_center": pc, "lob": lob,
+                            "functional_area": "LAE", "statutory_line": sl,
                         },
                         {
-                            "account": f"200{idx}{res_suffix[0]}0",
-                            "amount": -amt,
-                            "profit_center": pc,
-                            "lob": lob,
+                            "account": f"200{idx}{res_suffix[0]}0", "amount": -amt,
+                            "profit_center": pc, "lob": lob,
                         },
                     ],
                     user="RLOPEZ",
@@ -832,32 +1232,135 @@ def _generate_postings(rng: SeededRNG) -> list[dict[str, Any]]:
             # UPR movement (month-end)
             upr_amt = round(base_prem * 0.4 * (0.8 + rng.random() * 0.4), 2)
             post(
-                month,
-                28,
-                "IF",
+                month, 28, "IF",
                 [
                     {
-                        "account": f"400{idx}10",
-                        "amount": upr_amt,
-                        "profit_center": pc,
-                        "lob": lob,
+                        "account": f"400{idx}10", "amount": upr_amt,
+                        "profit_center": pc, "lob": lob,
                     },
                     {
-                        "account": f"210{LOBS.index(lob)}00",
-                        "amount": -upr_amt,
-                        "profit_center": pc,
-                        "lob": lob,
+                        "account": f"210{idx}00", "amount": -upr_amt,
+                        "profit_center": pc, "lob": lob,
                     },
                 ],
                 user="RLOPEZ",
             )
 
-        # Operating expenses (spread across cost centers)
+            # --- Cat losses: concentrated in Q2-Q3 (months 4-9) ---
+            if 4 <= month <= 9:
+                # 2-3 cat events in months 4-9
+                is_cat_month = rng.random() < 0.5
+                if is_cat_month:
+                    n_cat = rng.randint(200, 500)
+                    for _ in range(n_cat):
+                        day = rng.randint(1, 28)
+                        st = rng.choice(states_for_lob)
+                        amt = round(rng.gauss(25000, 15000), 2)
+                        if amt < 500:
+                            amt = round(500 + rng.random() * 10000, 2)
+                        ct = rng.choice(claim_types)
+                        post(
+                            month, day, "KR",
+                            [
+                                {
+                                    "account": f"500{idx}50", "amount": amt,
+                                    "profit_center": pc, "lob": lob,
+                                    "state": st, "functional_area": "LAE",
+                                    "accident_year": 2025,
+                                    "claim_type": ct,
+                                    "statutory_line": rng.choice(stat_lines),
+                                    "text": "Catastrophe loss",
+                                },
+                                {
+                                    "account": "100100", "amount": -amt,
+                                    "profit_center": pc, "lob": lob,
+                                    "state": st,
+                                },
+                            ],
+                        )
+
+            # --- Prior year reserve development (quarterly: 3, 6, 9, 12) ---
+            if month in (3, 6, 9, 12):
+                dev_amt = round(rng.gauss(1_000_000, 500_000), 2)
+                sign = 1 if rng.random() < 0.6 else -1  # 60% unfavorable
+                dev_amt = dev_amt * sign
+                post(
+                    month, 28, "IF",
+                    [
+                        {
+                            "account": f"500{idx}60", "amount": dev_amt,
+                            "profit_center": pc, "lob": lob,
+                            "functional_area": "LAE",
+                            "accident_year": rng.choice([2022, 2023, 2024]),
+                            "text": "Prior year reserve development",
+                            "statutory_line": rng.choice(stat_lines),
+                        },
+                        {
+                            "account": f"200{idx}10", "amount": -dev_amt,
+                            "profit_center": pc, "lob": lob,
+                        },
+                    ],
+                    user="RLOPEZ",
+                )
+
+            # --- Reinsurance transactions (with treaty_id) ---
+            # Ceded premium
+            n_ri = rng.randint(150, 250)
+            for _ in range(n_ri):
+                day = rng.randint(1, 28)
+                amt = round(rng.gauss(8000, 4000), 2)
+                if amt < 200:
+                    amt = round(200 + rng.random() * 2000, 2)
+                treaty = rng.choice(TREATIES)
+                post(
+                    month, day, "SA",
+                    [
+                        {
+                            "account": f"400{idx}20", "amount": amt,
+                            "profit_center": pc, "lob": lob,
+                            "treaty_id": treaty,
+                            "text": f"Ceded premium - {treaty}",
+                        },
+                        {
+                            "account": "260000", "amount": -amt,
+                            "profit_center": pc, "lob": lob,
+                            "treaty_id": treaty,
+                        },
+                    ],
+                )
+
+            # Ceded loss recovery (higher in cat months)
+            n_ri_loss = rng.randint(50, 100)
+            if 4 <= month <= 9:
+                n_ri_loss = rng.randint(100, 200)
+            for _ in range(n_ri_loss):
+                day = rng.randint(1, 28)
+                amt = round(rng.gauss(12000, 8000), 2)
+                if amt < 500:
+                    amt = round(500 + rng.random() * 3000, 2)
+                treaty = rng.choice(TREATIES)
+                post(
+                    month, day, "SA",
+                    [
+                        {
+                            "account": "120000", "amount": amt,
+                            "profit_center": pc, "lob": lob,
+                            "treaty_id": treaty,
+                        },
+                        {
+                            "account": f"500{idx}00", "amount": -amt,
+                            "profit_center": pc, "lob": lob,
+                            "treaty_id": treaty,
+                            "text": f"Ceded loss recovery - {treaty}",
+                        },
+                    ],
+                )
+
+        # Operating expenses (spread across cost centers) -- scaled up
         for cc in COST_CENTERS:
-            n_opex = rng.randint(80, 150)
+            n_opex = rng.randint(150, 250)
             for _ in range(n_opex):
                 day = rng.randint(1, 28)
-                # Pick an opex account based on cost center
                 if "CC1" in cc:
                     accts = ["700000", "700100", "700200", "700300"]
                     fa = "CLM"
@@ -872,16 +1375,10 @@ def _generate_postings(rng: SeededRNG) -> list[dict[str, Any]]:
                 if amt < 100:
                     amt = round(100 + rng.random() * 2000, 2)
                 post(
-                    month,
-                    day,
-                    "KR",
+                    month, day, "KR",
                     [
-                        {
-                            "account": acct,
-                            "amount": amt,
-                            "cost_center": cc,
-                            "functional_area": fa,
-                        },
+                        {"account": acct, "amount": amt,
+                         "cost_center": cc, "functional_area": fa},
                         {"account": "220000", "amount": -amt},
                     ],
                 )
@@ -889,26 +1386,299 @@ def _generate_postings(rng: SeededRNG) -> list[dict[str, Any]]:
         # Investment income (monthly)
         inv_amt = round(rng.gauss(2_000_000, 500_000), 2)
         post(
-            month,
-            28,
-            "SA",
+            month, 28, "SA",
             [
                 {"account": "170000", "amount": inv_amt, "functional_area": "INV"},
                 {"account": "410000", "amount": -inv_amt, "functional_area": "INV"},
             ],
         )
 
+        # Bond interest income detail
+        bond_int = round(rng.gauss(1_500_000, 300_000), 2)
+        post(
+            month, 28, "SA",
+            [
+                {"account": "101100", "amount": bond_int, "functional_area": "INV"},
+                {"account": "410100", "amount": -bond_int, "functional_area": "INV"},
+            ],
+        )
+
         # Tax payments (monthly accrual)
         tax_amt = round(rng.gauss(800_000, 200_000), 2)
         post(
-            month,
-            28,
-            "SA",
+            month, 28, "SA",
             [
                 {"account": "740000", "amount": tax_amt},
                 {"account": "220200", "amount": -tax_amt},
             ],
         )
+
+        # --- Suspense account clearing patterns ---
+        # ~500 suspense entries/month with clearing 1-5 days later
+        n_suspense = rng.randint(400, 600)
+        uncleared_pct = 0.03  # ~3% remain uncleared at month-end
+        for _ in range(n_suspense):
+            day = rng.randint(1, 25)
+            amt = round(rng.gauss(5000, 3000), 2)
+            if amt < 100:
+                amt = round(100 + rng.random() * 2000, 2)
+            lob = rng.choice(LOBS)
+            lidx = LOBS.index(lob)
+            # Hit suspense
+            post(
+                month, day, "SA",
+                [
+                    {"account": "190000", "amount": amt, "lob": lob,
+                     "text": "Premium payment - pending classification"},
+                    {"account": "100000", "amount": -amt},
+                ],
+            )
+            # Clear suspense (unless uncleared)
+            if rng.random() > uncleared_pct:
+                clear_day = min(day + rng.randint(1, 5), 28)
+                post(
+                    month, clear_day, "CL",
+                    [
+                        {"account": f"110{lidx}00", "amount": amt, "lob": lob,
+                         "text": "Suspense clearing - premium classified"},
+                        {"account": "190000", "amount": -amt, "lob": lob,
+                         "text": "Suspense clearing"},
+                    ],
+                )
+
+        # --- Cross-LOB allocations (monthly, multi-line JEs) ---
+        # Shared services allocated from corporate to LOBs
+        for alloc_acct, alloc_base, alloc_text in [
+            ("720400", 200_000, "IT cost allocation"),
+            ("720100", 150_000, "Rent allocation"),
+            ("720000", 300_000, "Shared admin allocation"),
+        ]:
+            total = round(alloc_base * (0.8 + rng.random() * 0.4), 2)
+            lines: list[dict[str, Any]] = [
+                {"account": alloc_acct, "amount": -total,
+                 "cost_center": "CC4000", "functional_area": "ADM",
+                 "text": f"{alloc_text} - corporate"},
+            ]
+            # Allocate to LOBs based on weights
+            weights = [0.35, 0.25, 0.25, 0.15]
+            running = 0.0
+            for i, lob in enumerate(LOBS):
+                if i == len(LOBS) - 1:
+                    lob_amt = round(total - running, 2)
+                else:
+                    lob_amt = round(total * weights[i], 2)
+                    running += lob_amt
+                lines.append({
+                    "account": alloc_acct, "amount": lob_amt,
+                    "profit_center": PROFIT_CENTERS[lob], "lob": lob,
+                    "functional_area": "ADM",
+                    "text": f"{alloc_text} - {lob}",
+                })
+            post(month, 28, "MJ", lines, user="MBROWN")
+
+        # --- Multi-line reinsurance settlement JEs (8-15 lines, monthly) ---
+        n_ri_settlements = rng.randint(3, 6)
+        for _ in range(n_ri_settlements):
+            treaty = rng.choice(TREATIES)
+            ri_lines: list[dict[str, Any]] = []
+            ri_total = 0.0
+            n_lob_lines = rng.randint(3, 6)
+            for __ in range(n_lob_lines):
+                lob = rng.choice(LOBS)
+                lidx = LOBS.index(lob)
+                amt = round(rng.gauss(50000, 20000), 2)
+                if amt < 5000:
+                    amt = 5000.0
+                ri_lines.append({
+                    "account": f"400{lidx}20", "amount": amt,
+                    "profit_center": PROFIT_CENTERS[lob], "lob": lob,
+                    "treaty_id": treaty,
+                    "text": f"RI settlement ceded prem - {treaty}",
+                })
+                ri_total += amt
+            # Ceding commission (credit)
+            comm_amt = round(ri_total * 0.25, 2)
+            ri_lines.append({
+                "account": "750000", "amount": -comm_amt,
+                "treaty_id": treaty,
+                "text": f"Ceding commission - {treaty}",
+            })
+            # Net settlement
+            net = round(ri_total - comm_amt, 2)
+            ri_lines.append({
+                "account": "230000", "amount": -net,
+                "treaty_id": treaty,
+                "text": f"RI payable - {treaty}",
+            })
+            post(month, rng.randint(20, 28), "SA", ri_lines)
+
+        # --- Investment portfolio transactions ---
+        # Bond maturity / purchase (quarterly)
+        if month in (3, 6, 9, 12):
+            mat_amt = round(rng.gauss(5_000_000, 2_000_000), 2)
+            gain = round(rng.gauss(50_000, 30_000), 2)
+            post(
+                month, 15, "SA",
+                [
+                    {"account": "100000", "amount": mat_amt + gain,
+                     "functional_area": "INV", "text": "Bond maturity proceeds"},
+                    {"account": "101100", "amount": -(mat_amt),
+                     "functional_area": "INV", "text": "Bond maturity - cost basis"},
+                    {"account": "410300", "amount": -gain,
+                     "functional_area": "INV", "text": "Realized gain on maturity"},
+                ],
+            )
+
+            # LP capital call (quarterly)
+            lp_amt = round(rng.gauss(2_000_000, 500_000), 2)
+            post(
+                month, 10, "SA",
+                [
+                    {"account": "101600", "amount": lp_amt,
+                     "functional_area": "INV", "text": "LP capital call"},
+                    {"account": "100000", "amount": -lp_amt,
+                     "functional_area": "INV"},
+                ],
+            )
+
+        # Mark-to-market on equity securities (monthly)
+        mtm_amt = round(rng.gauss(500_000, 300_000), 2)
+        mtm_sign = 1 if rng.random() < 0.55 else -1
+        mtm_amt = mtm_amt * mtm_sign
+        post(
+            month, 28, "SA",
+            [
+                {"account": "101200", "amount": mtm_amt,
+                 "functional_area": "INV", "text": "MTM equity securities"},
+                {"account": "410500", "amount": -mtm_amt,
+                 "functional_area": "INV", "text": "Unrealized gain/loss - equities"},
+            ],
+        )
+
+        # --- Debt service (monthly) ---
+        int_amt = round(rng.gauss(800_000, 100_000), 2)
+        post(
+            month, 28, "SA",
+            [
+                {"account": "770000", "amount": int_amt,
+                 "text": "Interest expense - senior debt"},
+                {"account": "100000", "amount": -int_amt},
+            ],
+        )
+
+        # --- Intangible amortization (monthly) ---
+        amort_amt = round(rng.gauss(200_000, 30_000), 2)
+        post(
+            month, 28, "SA",
+            [
+                {"account": "720250", "amount": amort_amt,
+                 "functional_area": "ADM",
+                 "text": "Amort of purchased intangibles"},
+                {"account": "142200", "amount": -amort_amt,
+                 "text": "Accum amort - intangibles"},
+            ],
+        )
+
+        # --- Deferred tax (quarterly) ---
+        if month in (3, 6, 9, 12):
+            dta_amt = round(rng.gauss(500_000, 200_000), 2)
+            post(
+                month, 28, "SA",
+                [
+                    {"account": "190200", "amount": dta_amt,
+                     "text": "Deferred tax asset adjustment"},
+                    {"account": "740200", "amount": -dta_amt,
+                     "text": "Deferred tax benefit"},
+                ],
+            )
+
+        # --- Service expenses (monthly) ---
+        svc_amt = round(rng.gauss(150_000, 50_000), 2)
+        post(
+            month, 28, "SA",
+            [
+                {"account": "780000", "amount": svc_amt,
+                 "functional_area": "ADM", "text": "Service expenses"},
+                {"account": "220400", "amount": -svc_amt},
+            ],
+        )
+
+        # --- Bad debt provision (monthly) ---
+        bd_amt = round(rng.gauss(100_000, 40_000), 2)
+        post(
+            month, 28, "SA",
+            [
+                {"account": "720900", "amount": bd_amt,
+                 "text": "Bad debt provision"},
+                {"account": "111000", "amount": -bd_amt,
+                 "text": "Allowance for doubtful accounts"},
+            ],
+        )
+
+        # --- Intercompany netting (quarterly) ---
+        if month in (3, 6, 9, 12):
+            ic_net = round(rng.gauss(2_000_000, 800_000), 2)
+            # Partial netting — leaves residual
+            net_pct = 0.6 + rng.random() * 0.2
+            net_amt = round(ic_net * net_pct, 2)
+            post(
+                month, 28, "SA",
+                [
+                    {"account": "240000", "amount": net_amt,
+                     "trading_partner": IC_COMPANY_CODE,
+                     "text": "IC netting - payable reduction"},
+                    {"account": "160000", "amount": -net_amt,
+                     "trading_partner": IC_COMPANY_CODE,
+                     "text": "IC netting - receivable reduction"},
+                ],
+            )
+
+        # --- Year-end surge: extra MJE activity in months 11-12 ---
+        if is_year_end:
+            n_ye = rng.randint(30, 60)
+            for _ in range(n_ye):
+                day = rng.randint(20, 28)
+                amt = round(rng.gauss(50000, 25000), 2)
+                if amt < 1000:
+                    amt = 1000.0
+                acct_pairs = [
+                    ("720900", "720300"), ("720400", "720200"),
+                    ("700000", "700100"), ("500000", "500010"),
+                ]
+                pair = rng.choice(acct_pairs)
+                post(
+                    month, day, "MJ",
+                    [
+                        {"account": pair[0], "amount": amt,
+                         "text": "Year-end adjustment"},
+                        {"account": pair[1], "amount": -amt,
+                         "text": "Year-end adjustment"},
+                    ],
+                    user="JSMITH",
+                    entry_day_offset=rng.randint(0, 5),
+                )
+
+        # --- Partial reversals (~1% of a sample of entries) ---
+        n_partial = rng.randint(20, 40)
+        for _ in range(n_partial):
+            day = rng.randint(5, 28)
+            lob = rng.choice(LOBS)
+            lidx = LOBS.index(lob)
+            orig_amt = round(rng.gauss(10000, 5000), 2)
+            if orig_amt < 500:
+                orig_amt = 500.0
+            partial = round(orig_amt * (0.2 + rng.random() * 0.6), 2)
+            post(
+                month, day, "CL",
+                [
+                    {"account": f"500{lidx}00", "amount": -partial,
+                     "lob": lob, "profit_center": PROFIT_CENTERS[lob],
+                     "text": "Partial reversal"},
+                    {"account": "100100", "amount": partial,
+                     "lob": lob, "profit_center": PROFIT_CENTERS[lob],
+                     "text": "Partial reversal"},
+                ],
+            )
 
     # --- 2. Embedded MJE patterns ---
 
@@ -1160,13 +1930,36 @@ def _generate_postings(rng: SeededRNG) -> list[dict[str, Any]]:
 
 
 def _generate_trial_balance(
-    postings_df: pl.DataFrame, accounts_df: pl.DataFrame
+    postings_df: pl.DataFrame, accounts_df: pl.DataFrame, rng: SeededRNG
 ) -> pl.DataFrame:
     """Derive trial balance from posting data.
 
     Computes opening balance, period debits/credits, closing balance,
     and cumulative balance for each account and period.
+    Balance sheet accounts (A, L, E) get non-zero opening balances.
+    Income statement accounts (R, X) start at 0.
     """
+    # Build opening balance map for BS accounts
+    ob_map: dict[str, float] = {}
+    for row in accounts_df.iter_rows(named=True):
+        atype = row["account_type"]
+        group = row["account_group"]
+        acct = row["gl_account"]
+        if atype in ("A", "L", "E") and row["is_active"]:
+            # Determine range based on group
+            if group in OPENING_BALANCE_RANGES:
+                lo, hi = OPENING_BALANCE_RANGES[group]
+            elif atype == "A":
+                lo, hi = OPENING_BALANCE_RANGES["MISC_A"]
+            elif atype == "L":
+                lo, hi = OPENING_BALANCE_RANGES["MISC_L"]
+            else:
+                lo, hi = OPENING_BALANCE_RANGES["EQTY"]
+            # Assets: positive; Liabilities/Equity: negative (natural sign)
+            # For debit-balance accounts, use positive OB
+            raw = lo + rng.random() * (hi - lo)
+            ob_map[acct] = round(raw, 2)
+
     # Compute period-level aggregates from postings
     period_agg = postings_df.group_by(["gl_account", "fiscal_period"]).agg(
         pl.col("amount")
@@ -1179,7 +1972,6 @@ def _generate_trial_balance(
         .alias("period_credits"),
     )
 
-    # Fill nulls with 0
     period_agg = period_agg.with_columns(
         pl.col("period_debits").fill_null(0.0),
         pl.col("period_credits").fill_null(0.0),
@@ -1198,12 +1990,18 @@ def _generate_trial_balance(
         pl.col("period_credits").fill_null(0.0),
     )
 
-    # Compute balances
+    # Map opening balances (only period 1 gets the OB; later periods carry forward)
+    ob_series = tb["gl_account"].map_elements(
+        lambda a: ob_map.get(a, 0.0), return_dtype=pl.Float64
+    )
     tb = tb.with_columns(
+        pl.when(pl.col("fiscal_period") == 1)
+        .then(ob_series)
+        .otherwise(0.0)
+        .alias("opening_balance"),
         pl.lit(COMPANY_CODE).alias("company_code"),
         pl.lit(FISCAL_YEAR).alias("fiscal_year"),
         pl.lit(CURRENCY).alias("currency"),
-        pl.lit(0.0).alias("opening_balance"),
     )
 
     # Closing = opening + debits - credits
@@ -1215,10 +2013,14 @@ def _generate_trial_balance(
         ).alias("closing_balance")
     )
 
-    # Cumulative balance (sort by period, cumsum of net)
+    # Cumulative balance (sort by period, cumsum of net + opening balance)
     tb = tb.sort(["gl_account", "fiscal_period"])
     tb = tb.with_columns(
-        (pl.col("period_debits") - pl.col("period_credits"))
+        (
+            pl.col("opening_balance")
+            + pl.col("period_debits")
+            - pl.col("period_credits")
+        )
         .cum_sum()
         .over("gl_account")
         .alias("cumulative_balance")
@@ -1261,8 +2063,9 @@ def generate_synthetic_data(
     postings_raw = _generate_postings(rng)
     postings_df = pl.DataFrame(postings_raw, schema=POSTING_SCHEMA)
 
-    # Trial balance (derived from postings)
-    tb_df = _generate_trial_balance(postings_df, accounts_df)
+    # Trial balance (derived from postings, with opening balances for BS accounts)
+    tb_rng = SeededRNG(seed + 9999)  # separate RNG for TB opening balances
+    tb_df = _generate_trial_balance(postings_df, accounts_df, tb_rng)
 
     return {
         "postings": postings_df,

@@ -1,7 +1,8 @@
 """GL Design Coach sub-agent graph.
 
 Specialises in chart-of-accounts design, GL code-block structure,
-and general ledger best practices.
+and general ledger best practices for P&C insurance implementations.
+Uses the assembled domain prompt from the prompts package.
 """
 
 from __future__ import annotations
@@ -12,15 +13,11 @@ from langchain_core.messages import SystemMessage
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
+from fta_agent.agents.prompts import build_system_prompt
 from fta_agent.agents.state import AgentState
 from fta_agent.llm.router import get_chat_model
 
-GL_SYSTEM_PROMPT = (
-    "You are an expert GL Design Coach specialising in chart-of-accounts "
-    "design, GL code-block structure, segment design, and general ledger "
-    "best practices for mid-market and enterprise ERP implementations. "
-    "Give concise, actionable advice."
-)
+GL_SYSTEM_PROMPT = build_system_prompt()
 
 
 def gl_coach_node(state: AgentState) -> dict[str, Any]:
