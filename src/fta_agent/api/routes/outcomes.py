@@ -7,6 +7,7 @@ updates for interactive status changes from the dashboard.
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
@@ -32,7 +33,8 @@ _engine: DataEngine | None = None
 def _get_engine() -> DataEngine:
     global _engine
     if _engine is None:
-        _engine = DataEngine()
+        db_path = os.environ.get("FTA_DUCKDB_PATH", ":memory:")
+        _engine = DataEngine(db_path=db_path)
     return _engine
 
 

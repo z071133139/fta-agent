@@ -28,7 +28,7 @@ async function fetchJSON<T>(path: string): Promise<T> {
 
 export async function getProfiles(): Promise<AccountProfile[]> {
   try {
-    return await fetchJSON<AccountProfile[]>("/api/profiles");
+    return await fetchJSON<AccountProfile[]>("/api/outcomes/analysis/profiles");
   } catch (err) {
     console.error("Failed to fetch profiles:", err);
     return [];
@@ -37,7 +37,7 @@ export async function getProfiles(): Promise<AccountProfile[]> {
 
 export async function getFindings(): Promise<AnalysisFinding[]> {
   try {
-    return await fetchJSON<AnalysisFinding[]>("/api/findings");
+    return await fetchJSON<AnalysisFinding[]>("/api/outcomes/analysis/findings");
   } catch (err) {
     console.error("Failed to fetch findings:", err);
     return [];
@@ -46,7 +46,7 @@ export async function getFindings(): Promise<AnalysisFinding[]> {
 
 export async function getDecisions(): Promise<DimensionalDecision[]> {
   try {
-    return await fetchJSON<DimensionalDecision[]>("/api/decisions");
+    return await fetchJSON<DimensionalDecision[]>("/api/outcomes/design/decisions");
   } catch (err) {
     console.error("Failed to fetch decisions:", err);
     return [];
@@ -55,7 +55,7 @@ export async function getDecisions(): Promise<DimensionalDecision[]> {
 
 export async function getTargetAccounts(): Promise<TargetAccount[]> {
   try {
-    return await fetchJSON<TargetAccount[]>("/api/target-accounts");
+    return await fetchJSON<TargetAccount[]>("/api/outcomes/target-coa/accounts");
   } catch (err) {
     console.error("Failed to fetch target accounts:", err);
     return [];
@@ -64,7 +64,7 @@ export async function getTargetAccounts(): Promise<TargetAccount[]> {
 
 export async function getMappings(): Promise<AccountMapping[]> {
   try {
-    return await fetchJSON<AccountMapping[]>("/api/mappings");
+    return await fetchJSON<AccountMapping[]>("/api/outcomes/mapping");
   } catch (err) {
     console.error("Failed to fetch mappings:", err);
     return [];
@@ -73,7 +73,7 @@ export async function getMappings(): Promise<AccountMapping[]> {
 
 export async function getMJEPatterns(): Promise<MJEPattern[]> {
   try {
-    return await fetchJSON<MJEPattern[]>("/api/mje-patterns");
+    return await fetchJSON<MJEPattern[]>("/api/outcomes/mje/patterns");
   } catch (err) {
     console.error("Failed to fetch MJE patterns:", err);
     return [];
@@ -82,7 +82,7 @@ export async function getMJEPatterns(): Promise<MJEPattern[]> {
 
 export async function getReconciliation(): Promise<ReconciliationResult[]> {
   try {
-    return await fetchJSON<ReconciliationResult[]>("/api/reconciliation");
+    return await fetchJSON<ReconciliationResult[]>("/api/outcomes/validation");
   } catch (err) {
     console.error("Failed to fetch reconciliation results:", err);
     return [];
@@ -97,7 +97,7 @@ export async function patchFinding(
   id: string,
   patch: { status?: string; resolution?: string },
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/findings/${id}`, {
+  const res = await fetch(`${API_BASE}/api/outcomes/analysis/findings/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -111,7 +111,7 @@ export async function patchDecision(
   id: string,
   patch: { status?: string; decided_by?: string },
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/decisions/${id}`, {
+  const res = await fetch(`${API_BASE}/api/outcomes/design/decisions/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
@@ -125,7 +125,7 @@ export async function patchMapping(
   id: string,
   patch: { status?: string; validated_by?: string },
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/mappings/${id}`, {
+  const res = await fetch(`${API_BASE}/api/outcomes/mapping/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
