@@ -114,7 +114,7 @@ function EngagementCard({
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div>
-          <h3 className="font-serif text-lg text-foreground leading-tight">
+          <h3 className="text-base font-semibold text-foreground leading-tight tracking-tight">
             {engagement.client_name}
           </h3>
           <p className="text-xs text-muted mt-0.5">
@@ -307,10 +307,10 @@ export default function LandingPage() {
         }}
       />
 
-      <div className="relative mx-auto max-w-5xl px-8 py-16">
+      <div className="relative mx-auto max-w-5xl px-8 py-8">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between mb-16">
+        <div className="flex items-center justify-between mb-8">
           <span className="font-serif text-xl text-foreground tracking-tight">FTA</span>
           <button
             onClick={logout}
@@ -321,8 +321,8 @@ export default function LandingPage() {
         </div>
 
         {/* Greeting */}
-        <div className="mb-14">
-          <h1 className="font-serif text-[2.75rem] leading-tight text-foreground mb-3 min-h-[3.5rem]">
+        <div className="mb-8">
+          <h1 className="text-xl font-semibold text-foreground mb-2 min-h-[1.75rem]">
             {greeting.displayed}
             {!greeting.done && <span className="cursor-blink" />}
           </h1>
