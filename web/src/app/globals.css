@@ -1,21 +1,52 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #0F172A;
-  --color-surface: #1E293B;
-  --color-surface-hover: #334155;
-  --color-border: #475569;
-  --color-foreground: #F8FAFC;
-  --color-muted: #CBD5E1;
-  --color-accent: #3B82F6;
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-  --color-info: #06B6D4;
-  --color-purple: #A855F7;
-  --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
+  /* Base */
+  --color-background:    #0F172A;  /* slate-900 */
+  --color-surface:       #1E293B;  /* slate-800 */
+  --color-surface-alt:   #334155;  /* slate-700 */
+  --color-border:        #475569;  /* slate-600 */
+  --color-foreground:    #F1F5F9;  /* slate-100 */
+  --color-muted:         #94A3B8;  /* slate-400 */
+
+  /* Accent */
+  --color-accent:        #3B82F6;  /* blue-500 */
+  --color-purple:        #A855F7;
+
+  /* Semantic */
+  --color-success:       #10B981;  /* emerald-500 */
+  --color-warning:       #F59E0B;  /* amber-500 */
+  --color-error:         #EF4444;  /* red-500 */
+  --color-info:          #06B6D4;  /* cyan-500 */
+
+  /* Agent state — exclusive semantics */
+  --color-agent-thinking: #3B82F6;
+  --color-agent-waiting:  #F59E0B;
+  --color-agent-success:  #10B981;
+  --color-agent-error:    #EF4444;
+
+  /* Domain confidence */
+  --color-confidence-high:   #10B981;
+  --color-confidence-medium: #3B82F6;
+  --color-confidence-low:    #94A3B8;
+
+  /* Severity */
+  --color-severity-critical: #EF4444;
+  --color-severity-high:     #F59E0B;
+  --color-severity-medium:   #EAB308;
+  --color-severity-low:      #94A3B8;
+
+  /* Engagement phase (for card borders) */
+  --color-phase-discovery:     #06B6D4;  /* cyan */
+  --color-phase-current-state: #F59E0B;  /* amber */
+  --color-phase-design:        #3B82F6;  /* blue */
+  --color-phase-build:         #A855F7;  /* purple */
+  --color-phase-test:          #10B981;  /* emerald */
+
+  /* Typography */
+  --font-sans:  "DM Sans", system-ui, -apple-system, sans-serif;
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-mono:  "JetBrains Mono", "Fira Code", monospace;
 }
 
 body {
@@ -25,14 +56,37 @@ body {
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-surface); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+
+/* Typewriter cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
-::-webkit-scrollbar-track {
-  background: var(--color-surface);
+.cursor-blink {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--color-accent);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
 }
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
+
+/* Agent thinking pulse */
+@keyframes agent-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
 }
+.agent-thinking {
+  animation: agent-pulse 2s ease-in-out infinite;
+}
+
+/* Engagement card phase border */
+.phase-discovery     { border-left-color: var(--color-phase-discovery); }
+.phase-current-state { border-left-color: var(--color-phase-current-state); }
+.phase-design        { border-left-color: var(--color-phase-design); }
+.phase-build         { border-left-color: var(--color-phase-build); }
+.phase-test          { border-left-color: var(--color-phase-test); }
