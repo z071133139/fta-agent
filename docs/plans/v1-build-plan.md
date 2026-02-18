@@ -1,8 +1,8 @@
 # GL Design Coach V1 -- Build Plan
 
-> Status: APPROVED (Session 005, updated Session 006)
+> Status: APPROVED (Session 005, updated Sessions 006, 008)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-02-16 (Session 006)
+> Last updated: 2026-02-18 (Session 008)
 
 ## Plan Philosophy
 
@@ -174,11 +174,11 @@
 
 **Build:**
 - Upgrade Consulting Agent from keyword router to full orchestrator
-- Engagement onboarding flow (capture client details, create engagement record)
+- Engagement onboarding flow — invoke `build_pc_plan_design_template()` (built Session 008) to create workplan on engagement creation
 - Decision registry: central view of all decisions across agents
 - Open items tracking: unresolved questions linked to workstreams
 - Status synthesis: natural language engagement status from structured state
-- Workplan management: basic phase/milestone/task tracking
+- Workplan management: wire scope changes and status updates to API (frontend WorkplanPanel local state → backend persistence)
 
 ### 1.5D: GL Design Coach Tool Wiring
 
@@ -467,7 +467,7 @@ Iteration 0 (Test Data + Eval)     ✅ DONE
          │
 Iteration 1 (Domain Knowledge)    ✅ DONE
          │
-Iteration 1.5 (Agent Harness)     ← NEXT
+Iteration 1.5 (Agent Harness)     ← IN PROGRESS (1.5A next)
          │
          ├── Informs ──► Iteration 2 (Persistence / DuckDB)
          │                               │

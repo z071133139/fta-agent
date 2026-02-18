@@ -11,6 +11,7 @@ import {
   type Engagement,
   type EngagementPhase,
 } from "@/lib/mock-data";
+import { WorkplanPanel } from "@/components/WorkplanPanel";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -355,12 +356,26 @@ export default function LandingPage() {
                 <EngagementCard
                   key={eng.engagement_id}
                   engagement={eng}
-                  selected={primaryEngagement?.engagement_id === eng.engagement_id}
-                  onSelect={() => setSelectedId(eng.engagement_id)}
+                  selected={selectedId === eng.engagement_id}
+                  onSelect={() =>
+                    setSelectedId((prev) =>
+                      prev === eng.engagement_id ? null : eng.engagement_id
+                    )
+                  }
                 />
               ))}
             </div>
           )}
+
+          {/* Workplan panel — full-width, slides in below cards */}
+          <AnimatePresence mode="wait">
+            {selectedId && primaryEngagement && (
+              <WorkplanPanel
+                key={selectedId}
+                engagement={primaryEngagement}
+              />
+            )}
+          </AnimatePresence>
         </section>
 
         {/* Agent team section */}

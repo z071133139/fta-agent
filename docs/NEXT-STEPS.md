@@ -1,6 +1,6 @@
 # Next Steps
 
-> Last updated: 2026-02-17 (after Session 007)
+> Last updated: 2026-02-18 (after Session 008)
 
 ## How to Use This Document
 
@@ -8,7 +8,7 @@ This is the primary pickup point between sessions. Before starting any new sessi
 
 ## Current Phase: Build -- Phase 1, Iteration 1.5 (Agent Harness)
 
-Interaction model refined (Session 007). Infrastructure plan drafted. AI-native landing screen designed. Next session: approve 1.5A plan and begin building.
+AI-native landing screen complete (Sessions 007–008). Workplan panel with scope editing built and wired to landing page. Backend workplan models and P&C template factory ready. Next priority: Iteration 1.5A agent infrastructure.
 
 ---
 
@@ -62,14 +62,15 @@ Interaction model refined (Session 007). Infrastructure plan drafted. AI-native 
 
 ### Also In This Iteration: AI-Native Landing Screen
 
-Design approved (Session 007). Ready to build alongside 1.5A.
+**Status: Complete** (Sessions 007–008)
 
-- [ ] Login screen (`/login`) — Supabase auth, dark floating fields, FTA wordmark in serif, subtle animated background
-- [ ] Consultant landing (`/`) — typewriter greeting, engagement cards (phase-colored left border, stats, agent buttons), agent team cards (availability status, domain stats, "Open for [Client]")
-- [ ] Next.js route groups: `(auth)/` for login, `(workspace)/` for agent workspaces with sidebar
-- [ ] Client-side auth context with mock mode (`NEXT_PUBLIC_MOCK_AUTH=true`)
-- [ ] Font loading fix (DM Sans + Instrument Serif via next/font)
-- [ ] Sidebar: consultant name + logout in footer
+- [x] Login screen (`/login`) — dark floating fields, FTA wordmark in serif, mock auth
+- [x] Consultant landing (`/`) — typewriter greeting, engagement cards (phase-colored left border, stats, agent buttons), agent team cards (availability status, domain stats, "Open for [Client]")
+- [x] Client-side auth context with mock mode (`NEXT_PUBLIC_MOCK_AUTH=true`)
+- [x] Workplan panel — full-width accordion below engagement grid; workstream filter pills; scope editing per deliverable and per workstream; progress tracking excludes OOS items
+- [x] Backend workplan models (`workplan.py`) + P&C template factory (`workplan_template.py`)
+- [ ] Supabase auth swap (replace mock auth) — deferred until 1.5A Supabase integration
+- [ ] Deliverable linking to artifacts — deferred to Phase 2 (see deferred table)
 
 ---
 
@@ -127,6 +128,7 @@ These items are explicitly deferred but documented:
 | Multi-consultant flow | Phase 2 | docs/features/shared-backlog.md |
 | Life/Annuity sub-segment | Phase 2 | DEC-026 |
 | Deck generation (full set) | Phase 2 | docs/agents/functional-consultant.md |
+| Workplan deliverable linking | Phase 2 | Each deliverable row should link to its artifact (document, agent workspace, output page). Deliverable model will need a `url` or `artifact_ref` field. Clicking a deliverable navigates to the relevant workspace or opens a preview. |
 | Dependency management | Phase 2 | docs/agents/consulting-agent.md |
 | Timeline tracking | Phase 2 | docs/agents/consulting-agent.md |
 | Meeting prep | Phase 2 | docs/agents/consulting-agent.md |
@@ -145,3 +147,4 @@ These items are explicitly deferred but documented:
 | 005 | 2026-02-16 | Master plan + V1 build plan | Full product roadmap (3 phases), detailed V1 build plan (7 iterations). Corrected sequence: domain knowledge first. Plans approved. |
 | [006](sessions/2026-02-16-session-006-mvp-agent-design.md) | 2026-02-16 | MVP agent design | Three-agent architecture, skills specification, interaction model. Functional Consultant agent created. 6 decisions (DEC-029 through DEC-034). Agent harness is next build target. |
 | [007](sessions/2026-02-17-session-007-interaction-model-and-landing-screen.md) | 2026-02-17 | Interaction model + landing screen | Reframed: consultants are users, agents are virtual team. Tool-level locking, Supabase auth, hub-and-spoke routing, agent registry pattern, Supabase replaces DuckDB for context. AI-native landing screen designed. CLAUDE.md expanded. 6 decisions (DEC-035 through DEC-040). |
+| [008](sessions/2026-02-18-session-008-workplan-panel.md) | 2026-02-18 | Workplan panel | WorkplanPanel component with accordion, filter pills, scope editing (deliverable + workstream level). P&C standard workplan mock data (7 workstreams, 38 deliverables). Backend Pydantic models + template factory. Landing screen now complete. |
