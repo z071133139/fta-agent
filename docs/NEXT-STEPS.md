@@ -1,6 +1,6 @@
 # Next Steps
 
-> Last updated: 2026-02-16 (after Session 006)
+> Last updated: 2026-02-17 (after Session 007)
 
 ## How to Use This Document
 
@@ -8,24 +8,36 @@ This is the primary pickup point between sessions. Before starting any new sessi
 
 ## Current Phase: Build -- Phase 1, Iteration 1.5 (Agent Harness)
 
-MVP agent design complete. Three-agent architecture specified. Next: build the agent harness.
+Interaction model refined (Session 007). Infrastructure plan drafted. AI-native landing screen designed. Next session: approve 1.5A plan and begin building.
 
 ---
 
 ## Current: Iteration 1.5 -- Agent Harness (Three-Agent System)
 
-**Why now:** The agent design is complete (Session 006). We know what agents exist, what skills they have, how they interact, and what shared infrastructure connects them. Time to build it.
+**Why now:** The agent design is complete (Session 006) and the interaction model is fully defined (Session 007). Infrastructure plan drafted and ready for approval.
 
 **Reference:** [mvp-agent-design.md](design/mvp-agent-design.md) | [v1-build-plan.md](plans/v1-build-plan.md) Iteration 1.5
 
+### Interaction Model (Session 007 — Finalized)
+
+- **Users are consultants** — FTA agents are a virtual consulting team serving human consultants, not the end client
+- **Tool-level locking** — exclusive tools (GL data analysis) block concurrent use per engagement; other tools are multi-user
+- **Supabase auth** — no custom auth; RLS for engagement isolation
+- **Hub-and-spoke routing** — Consulting Agent is the only router; specialists don't hand off to each other
+- **Agent registry** — declarative dict; adding a new agent = one entry; router reads from it dynamically
+- **Supabase Postgres** replaces DuckDB for engagement context persistence (DEC-040); DuckDB stays for GL analytics only
+
 ### What needs to happen:
 
-**1.5A: Agent Infrastructure**
-- [ ] Extended AgentState with engagement context fields
+**1.5A: Agent Infrastructure** ← Plan drafted, needs approval
+- [ ] Extended AgentState with consultant context + engagement metadata
+- [ ] Supabase auth integration (replace placeholder auth)
+- [ ] Engagement context store (Supabase Postgres tables: engagements, tool_locks, audit_log, outcome tables)
+- [ ] Tool framework with lock enforcement and audit trail
+- [ ] Agent registry (declarative dict, router reads from it)
 - [ ] LLM-based intent router (replace keyword regex in `consulting_agent.py`)
-- [ ] Handoff protocol: context packaging --> sub-agent invocation --> structured outcome return
+- [ ] Handoff protocol: context packaging → sub-agent invocation → structured outcome return
 - [ ] Tool definitions: `capture_decision`, `capture_finding`, `capture_requirement`, `capture_mapping`, `query_context`
-- [ ] Agent self-introduction logic
 
 **1.5B: Functional Consultant Agent**
 - [ ] New LangGraph graph for Functional Consultant
@@ -47,6 +59,17 @@ MVP agent design complete. Three-agent architecture specified. Next: build the a
 - [ ] Progressive disclosure tools
 
 **Checkpoint:** Three agents route correctly, capture structured outcomes, share engagement context.
+
+### Also In This Iteration: AI-Native Landing Screen
+
+Design approved (Session 007). Ready to build alongside 1.5A.
+
+- [ ] Login screen (`/login`) — Supabase auth, dark floating fields, FTA wordmark in serif, subtle animated background
+- [ ] Consultant landing (`/`) — typewriter greeting, engagement cards (phase-colored left border, stats, agent buttons), agent team cards (availability status, domain stats, "Open for [Client]")
+- [ ] Next.js route groups: `(auth)/` for login, `(workspace)/` for agent workspaces with sidebar
+- [ ] Client-side auth context with mock mode (`NEXT_PUBLIC_MOCK_AUTH=true`)
+- [ ] Font loading fix (DM Sans + Instrument Serif via next/font)
+- [ ] Sidebar: consultant name + logout in footer
 
 ---
 
@@ -121,3 +144,4 @@ These items are explicitly deferred but documented:
 | 004 | 2026-02-15 | Skeleton build + MVP tiering | Project skeleton running end-to-end. GL Design Coach tiered: V1 = P&C only, real data from day one, hybrid knowledge encoding. 3 decisions (DEC-026 through DEC-028) |
 | 005 | 2026-02-16 | Master plan + V1 build plan | Full product roadmap (3 phases), detailed V1 build plan (7 iterations). Corrected sequence: domain knowledge first. Plans approved. |
 | [006](sessions/2026-02-16-session-006-mvp-agent-design.md) | 2026-02-16 | MVP agent design | Three-agent architecture, skills specification, interaction model. Functional Consultant agent created. 6 decisions (DEC-029 through DEC-034). Agent harness is next build target. |
+| [007](sessions/2026-02-17-session-007-interaction-model-and-landing-screen.md) | 2026-02-17 | Interaction model + landing screen | Reframed: consultants are users, agents are virtual team. Tool-level locking, Supabase auth, hub-and-spoke routing, agent registry pattern, Supabase replaces DuckDB for context. AI-native landing screen designed. CLAUDE.md expanded. 6 decisions (DEC-035 through DEC-040). |
