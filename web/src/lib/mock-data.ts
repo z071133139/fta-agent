@@ -18,12 +18,15 @@ export interface Deliverable {
   name: string;
   status: DeliverableStatus;
   owner_agent?: "consulting_agent" | "gl_design_coach" | "functional_consultant";
-  in_scope?: boolean; // undefined treated as true
+  in_scope?: boolean;      // undefined treated as true
+  agent_summary?: string;  // one-line output summary or blocker reason from the agent
+  needs_input?: boolean;   // agent is waiting on consultant judgment/action
 }
 
 export interface Workstream {
   workstream_id: string;
   name: string;
+  owner_agent?: "consulting_agent" | "gl_design_coach" | "functional_consultant";
   deliverables: Deliverable[];
 }
 
@@ -77,43 +80,47 @@ const ACME_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-001",
       name: "Project Management & Governance",
+      owner_agent: "consulting_agent",
       deliverables: [
-        { deliverable_id: "d-001-01", name: "Project Charter", status: "complete", owner_agent: "consulting_agent" },
-        { deliverable_id: "d-001-02", name: "Steering Committee Deck (template)", status: "complete", owner_agent: "consulting_agent" },
-        { deliverable_id: "d-001-03", name: "RACI Matrix", status: "in_progress", owner_agent: "consulting_agent" },
-        { deliverable_id: "d-001-04", name: "Risk & Issue Log (setup)", status: "in_progress", owner_agent: "consulting_agent" },
+        { deliverable_id: "d-001-01", name: "Project Charter", status: "complete", owner_agent: "consulting_agent", agent_summary: "Approved by steering committee · CFO sign-off received Jan 20" },
+        { deliverable_id: "d-001-02", name: "Steering Committee Deck (template)", status: "complete", owner_agent: "consulting_agent", agent_summary: "Template approved · 14-slide format · Q1 cadence confirmed" },
+        { deliverable_id: "d-001-03", name: "RACI Matrix", status: "in_progress", owner_agent: "consulting_agent", agent_summary: "8 of 12 roles mapped · 3 gaps in claims finance ownership need resolution", needs_input: true },
+        { deliverable_id: "d-001-04", name: "Risk & Issue Log (setup)", status: "in_progress", owner_agent: "consulting_agent", agent_summary: "Setup complete · 4 risks logged · 1 high severity item open" },
         { deliverable_id: "d-001-05", name: "Communication Plan", status: "not_started", owner_agent: "consulting_agent" },
       ],
     },
     {
       workstream_id: "ws-002",
       name: "Business Case & Scope",
+      owner_agent: "functional_consultant",
       deliverables: [
-        { deliverable_id: "d-002-01", name: "Business Case Document", status: "complete", owner_agent: "functional_consultant" },
-        { deliverable_id: "d-002-02", name: "Scope Definition (in/out-of-scope inventory)", status: "complete", owner_agent: "functional_consultant" },
-        { deliverable_id: "d-002-03", name: "Stakeholder Map", status: "in_review", owner_agent: "consulting_agent" },
+        { deliverable_id: "d-002-01", name: "Business Case Document", status: "complete", owner_agent: "functional_consultant", agent_summary: "Approved · $4.2M investment · 18-month payback · Board signed off" },
+        { deliverable_id: "d-002-02", name: "Scope Definition (in/out-of-scope inventory)", status: "complete", owner_agent: "functional_consultant", agent_summary: "47 in-scope items confirmed · 12 explicitly excluded · Baseline locked" },
+        { deliverable_id: "d-002-03", name: "Stakeholder Map", status: "in_review", owner_agent: "consulting_agent", agent_summary: "14 stakeholders mapped · CFO and CTO alignment still pending", needs_input: true },
         { deliverable_id: "d-002-04", name: "Benefits Realization Framework", status: "not_started", owner_agent: "functional_consultant" },
       ],
     },
     {
       workstream_id: "ws-003",
       name: "ERP Software Selection",
+      owner_agent: "consulting_agent",
       deliverables: [
-        { deliverable_id: "d-003-01", name: "ERP Selection Criteria & Scoring Model", status: "complete", owner_agent: "consulting_agent" },
-        { deliverable_id: "d-003-02", name: "Vendor Demonstrations Script (P&C-specific scenarios)", status: "complete", owner_agent: "functional_consultant" },
-        { deliverable_id: "d-003-03", name: "RFP / RFI Template", status: "complete", owner_agent: "consulting_agent" },
-        { deliverable_id: "d-003-04", name: "Evaluation Summary & Recommendation", status: "complete", owner_agent: "consulting_agent" },
+        { deliverable_id: "d-003-01", name: "ERP Selection Criteria & Scoring Model", status: "complete", owner_agent: "consulting_agent", agent_summary: "23 weighted criteria across 5 dimensions · Insurance-specific scenarios included" },
+        { deliverable_id: "d-003-02", name: "Vendor Demonstrations Script (P&C-specific scenarios)", status: "complete", owner_agent: "functional_consultant", agent_summary: "18 P&C scenarios · Claims finance, reinsurance accounting, and statutory reporting covered" },
+        { deliverable_id: "d-003-03", name: "RFP / RFI Template", status: "complete", owner_agent: "consulting_agent", agent_summary: "Issued to 3 vendors · All responses received and scored" },
+        { deliverable_id: "d-003-04", name: "Evaluation Summary & Recommendation", status: "complete", owner_agent: "consulting_agent", agent_summary: "SAP S/4HANA selected · Highest score on insurance fit and reporting capability" },
         { deliverable_id: "d-003-05", name: "Reference Site Visit Report", status: "not_started", owner_agent: "consulting_agent" },
       ],
     },
     {
       workstream_id: "ws-004",
       name: "Business Process Design",
+      owner_agent: "functional_consultant",
       deliverables: [
-        { deliverable_id: "d-004-01", name: "Process Inventory (R2R, P2P, FP&A, Financial Close, Treasury, Fixed Assets, Reinsurance Accounting, Claims Finance, Regulatory/Statutory Reporting, Tax)", status: "in_progress", owner_agent: "functional_consultant" },
-        { deliverable_id: "d-004-02", name: "Current State Process Maps (BPMN / swim-lane)", status: "in_review", owner_agent: "functional_consultant" },
+        { deliverable_id: "d-004-01", name: "Process Inventory (R2R, P2P, FP&A, Financial Close, Treasury, Fixed Assets, Reinsurance Accounting, Claims Finance, Regulatory/Statutory Reporting, Tax)", status: "in_progress", owner_agent: "functional_consultant", agent_summary: "R2R, P2P, and Financial Close complete · Claims Finance and Reinsurance in progress" },
+        { deliverable_id: "d-004-02", name: "Current State Process Maps (BPMN / swim-lane)", status: "in_review", owner_agent: "functional_consultant", agent_summary: "8 of 10 processes documented · Ready for workshop validation with finance team", needs_input: true },
         { deliverable_id: "d-004-03", name: "Future State Process Maps", status: "not_started", owner_agent: "functional_consultant" },
-        { deliverable_id: "d-004-04", name: "Business Requirements by Process", status: "in_progress", owner_agent: "functional_consultant" },
+        { deliverable_id: "d-004-04", name: "Business Requirements by Process", status: "in_progress", owner_agent: "functional_consultant", agent_summary: "47 requirements captured · Structured, tagged, and linked to process steps" },
         { deliverable_id: "d-004-05", name: "User Stories Backlog", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-004-06", name: "Process Gap Analysis", status: "not_started", owner_agent: "functional_consultant" },
       ],
@@ -121,22 +128,24 @@ const ACME_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-005",
       name: "COA & GL Design",
+      owner_agent: "gl_design_coach",
       deliverables: [
-        { deliverable_id: "d-005-01", name: "Account Analysis Report (MJE detection, profiling)", status: "complete", owner_agent: "gl_design_coach" },
-        { deliverable_id: "d-005-02", name: "Chart of Accounts Design (code block, dimensions)", status: "in_progress", owner_agent: "gl_design_coach" },
-        { deliverable_id: "d-005-03", name: "Account Mapping: Legacy → New COA", status: "in_progress", owner_agent: "gl_design_coach" },
+        { deliverable_id: "d-005-01", name: "Account Analysis Report (MJE detection, profiling)", status: "complete", owner_agent: "gl_design_coach", agent_summary: "68 accounts profiled · 7 MJE patterns detected · JSMITH flagged as key person risk" },
+        { deliverable_id: "d-005-02", name: "Chart of Accounts Design (code block, dimensions)", status: "in_progress", owner_agent: "gl_design_coach", agent_summary: "Profit centre structure drafted · 2 design decisions pending your sign-off", needs_input: true },
+        { deliverable_id: "d-005-03", name: "Account Mapping: Legacy → New COA", status: "in_progress", owner_agent: "gl_design_coach", agent_summary: "34 of 68 accounts mapped · 12 legacy accounts flagged for cleanup" },
         { deliverable_id: "d-005-04", name: "ACDOCA Dimension Design (profit center, segment, functional area)", status: "not_started", owner_agent: "gl_design_coach" },
         { deliverable_id: "d-005-05", name: "Document Splitting Configuration Spec", status: "not_started", owner_agent: "gl_design_coach" },
         { deliverable_id: "d-005-06", name: "P&C-Specific Account Groups (NAIC alignment, loss reserves, reinsurance)", status: "not_started", owner_agent: "gl_design_coach" },
-        { deliverable_id: "d-005-07", name: "GL Open Items / Clearing Accounts Inventory", status: "blocked", owner_agent: "gl_design_coach" },
+        { deliverable_id: "d-005-07", name: "GL Open Items / Clearing Accounts Inventory", status: "blocked", owner_agent: "gl_design_coach", agent_summary: "Awaiting trial balance extract from client finance team", needs_input: true },
         { deliverable_id: "d-005-08", name: "Multi-GAAP Ledger Design (IFRS 17, US GAAP, Stat)", status: "not_started", owner_agent: "gl_design_coach" },
       ],
     },
     {
       workstream_id: "ws-006",
       name: "Reporting & Analytics",
+      owner_agent: "functional_consultant",
       deliverables: [
-        { deliverable_id: "d-006-01", name: "Reporting Inventory (by user group and frequency)", status: "in_progress", owner_agent: "functional_consultant" },
+        { deliverable_id: "d-006-01", name: "Reporting Inventory (by user group and frequency)", status: "in_progress", owner_agent: "functional_consultant", agent_summary: "23 reports identified · Prioritised by user group and close frequency" },
         { deliverable_id: "d-006-02", name: "Management Reporting Blueprint (P&L, balance sheet)", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-006-03", name: "Regulatory/Statutory Reporting Map (NAIC Annual Statement)", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-006-04", name: "Analytics & Dashboard Requirements", status: "not_started", owner_agent: "functional_consultant" },
@@ -146,6 +155,7 @@ const ACME_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-007",
       name: "Data & Integration",
+      owner_agent: "functional_consultant",
       deliverables: [
         { deliverable_id: "d-007-01", name: "Data Migration Strategy", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-007-02", name: "Data Quality Assessment", status: "not_started", owner_agent: "functional_consultant" },
@@ -165,6 +175,7 @@ const BEACON_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-b01",
       name: "Project Management & Governance",
+      owner_agent: "consulting_agent",
       deliverables: [
         { deliverable_id: "d-b01-01", name: "Project Charter", status: "in_progress", owner_agent: "consulting_agent" },
         { deliverable_id: "d-b01-02", name: "Steering Committee Deck (template)", status: "not_started", owner_agent: "consulting_agent" },
@@ -176,6 +187,7 @@ const BEACON_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-b02",
       name: "Business Case & Scope",
+      owner_agent: "functional_consultant",
       deliverables: [
         { deliverable_id: "d-b02-01", name: "Business Case Document", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-b02-02", name: "Scope Definition (in/out-of-scope inventory)", status: "not_started", owner_agent: "functional_consultant" },
@@ -186,6 +198,7 @@ const BEACON_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-b03",
       name: "ERP Software Selection",
+      owner_agent: "consulting_agent",
       deliverables: [
         { deliverable_id: "d-b03-01", name: "ERP Selection Criteria & Scoring Model", status: "not_started", owner_agent: "consulting_agent" },
         { deliverable_id: "d-b03-02", name: "Vendor Demonstrations Script (P&C-specific scenarios)", status: "not_started", owner_agent: "functional_consultant" },
@@ -197,6 +210,7 @@ const BEACON_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-b04",
       name: "Business Process Design",
+      owner_agent: "functional_consultant",
       deliverables: [
         { deliverable_id: "d-b04-01", name: "Process Inventory (R2R, P2P, FP&A, Financial Close, Treasury, Fixed Assets, Reinsurance Accounting, Claims Finance, Regulatory/Statutory Reporting, Tax)", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-b04-02", name: "Current State Process Maps (BPMN / swim-lane)", status: "not_started", owner_agent: "functional_consultant" },
@@ -209,6 +223,7 @@ const BEACON_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-b05",
       name: "COA & GL Design",
+      owner_agent: "gl_design_coach",
       deliverables: [
         { deliverable_id: "d-b05-01", name: "Account Analysis Report (MJE detection, profiling)", status: "not_started", owner_agent: "gl_design_coach" },
         { deliverable_id: "d-b05-02", name: "Chart of Accounts Design (code block, dimensions)", status: "not_started", owner_agent: "gl_design_coach" },
@@ -223,6 +238,7 @@ const BEACON_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-b06",
       name: "Reporting & Analytics",
+      owner_agent: "functional_consultant",
       deliverables: [
         { deliverable_id: "d-b06-01", name: "Reporting Inventory (by user group and frequency)", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-b06-02", name: "Management Reporting Blueprint (P&L, balance sheet)", status: "not_started", owner_agent: "functional_consultant" },
@@ -234,6 +250,7 @@ const BEACON_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-b07",
       name: "Data & Integration",
+      owner_agent: "functional_consultant",
       deliverables: [
         { deliverable_id: "d-b07-01", name: "Data Migration Strategy", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-b07-02", name: "Data Quality Assessment", status: "not_started", owner_agent: "functional_consultant" },
@@ -324,4 +341,179 @@ export const PHASE_LABELS: Record<EngagementPhase, string> = {
   build: "Build",
   test: "Test & Cutover",
   cutover: "Cutover",
+};
+
+// ── Workspace types ────────────────────────────────────────────────────────
+
+export type AgentRunState = "preflight" | "running" | "awaiting_input" | "complete";
+export type AgentKind = "data_grounded" | "knowledge_grounded";
+
+export interface InsightCard {
+  kind: "finding" | "risk" | "compliant" | "info";
+  text: string;
+}
+
+export interface ArtifactColumn {
+  key: string;
+  label: string;
+  width?: string;
+}
+
+export interface ArtifactRow {
+  row_id: string;
+  cells: Record<string, string>;
+  flags?: string[];
+  provenance?: string;
+  needs_attention?: boolean;
+}
+
+export interface InlineInterruptData {
+  question: string;
+  context: string;
+  options: { label: string; description: string }[];
+  insert_after_row_id: string;
+}
+
+export interface ActivityEntry {
+  step: number;
+  label: string;
+  detail?: string;
+  status: "complete" | "active" | "pending";
+  duration_ms?: number;
+}
+
+export interface DeliverableWorkspace {
+  deliverable_id: string;
+  agent_kind: AgentKind;
+  run_state: AgentRunState;
+  preflight_title: string;
+  preflight_bullets: string[];
+  preflight_data_source?: string;
+  columns: ArtifactColumn[];
+  rows: ArtifactRow[];
+  insight_cards?: InsightCard[];
+  interrupt?: InlineInterruptData;
+  activity: ActivityEntry[];
+}
+
+export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
+  "d-005-01": {
+    deliverable_id: "d-005-01",
+    agent_kind: "data_grounded",
+    run_state: "complete",
+    preflight_title: "Account Analysis Report",
+    preflight_bullets: [
+      "68 GL accounts loaded from trial balance extract",
+      "MJE pattern detection across 18-month posting history",
+      "NAIC account group compliance check",
+      "Key person risk analysis on journal entry volume",
+      "Document splitting eligibility assessment",
+    ],
+    preflight_data_source: "Acme_TB_FY2025.xlsx · 512K posting lines",
+    columns: [
+      { key: "account", label: "Account", width: "90px" },
+      { key: "name", label: "Name", width: "210px" },
+      { key: "volume", label: "Volume", width: "90px" },
+      { key: "behavior", label: "Behavior", width: "130px" },
+      { key: "flags", label: "Flags", width: "160px" },
+    ],
+    rows: [
+      { row_id: "r1", cells: { account: "1000", name: "Cash & Equivalents", volume: "12,450", behavior: "High frequency", flags: "" }, provenance: "Source: GL_EXTRACT_FY2025, rows 1–4,820" },
+      { row_id: "r2", cells: { account: "1100", name: "Accounts Receivable — Premium", volume: "8,302", behavior: "Seasonal", flags: "DOC_SPLIT" }, flags: ["DOC_SPLIT"], needs_attention: true, provenance: "Document splitting detected · Source: GL_EXTRACT_FY2025, rows 4,821–13,122" },
+      { row_id: "r3", cells: { account: "1200", name: "Reinsurance Recoverables", volume: "4,115", behavior: "Low frequency", flags: "" }, provenance: "Source: GL_EXTRACT_FY2025, rows 13,123–17,237" },
+      { row_id: "r4", cells: { account: "2000", name: "Loss & LAE Reserve", volume: "22,891", behavior: "Actuarial-driven", flags: "KEY_PERSON" }, flags: ["KEY_PERSON"], needs_attention: true, provenance: "94% of entries posted by JSMITH · Source: MJE_ANALYSIS_2025" },
+      { row_id: "r5", cells: { account: "2100", name: "Unearned Premium Reserve", volume: "6,730", behavior: "Monthly accrual", flags: "" }, provenance: "Source: GL_EXTRACT_FY2025, rows 17,238–23,967" },
+      { row_id: "r6", cells: { account: "2200", name: "Ceded Reinsurance Payable", volume: "3,210", behavior: "Periodic", flags: "DOC_SPLIT" }, flags: ["DOC_SPLIT"], needs_attention: true, provenance: "Ceded flows detected · document splitting recommended" },
+      { row_id: "r7", cells: { account: "4000", name: "Net Premiums Earned", volume: "31,540", behavior: "Monthly", flags: "" }, provenance: "Source: GL_EXTRACT_FY2025, rows 23,968–55,507" },
+      { row_id: "r8", cells: { account: "4100", name: "Ceded Premiums", volume: "9,882", behavior: "Treaty-linked", flags: "" }, provenance: "Source: GL_EXTRACT_FY2025, rows 55,508–65,389" },
+      { row_id: "r9", cells: { account: "6000", name: "Losses Incurred", volume: "18,774", behavior: "Claims-driven", flags: "KEY_PERSON" }, flags: ["KEY_PERSON"], needs_attention: true, provenance: "JSMITH posts 87% of entries · concentration risk flagged" },
+      { row_id: "r10", cells: { account: "7000", name: "Operating Expenses", volume: "5,621", behavior: "Regular", flags: "" }, provenance: "Source: GL_EXTRACT_FY2025, rows 65,390–71,010" },
+    ],
+    insight_cards: [
+      { kind: "info", text: "68 accounts profiled across 512K posting lines" },
+      { kind: "risk", text: "Key person risk: JSMITH posts 91% of actuarial entries" },
+      { kind: "finding", text: "4 accounts flagged for document splitting (DOC_SPLIT)" },
+      { kind: "compliant", text: "NAIC account group structure: fully compliant" },
+    ],
+    activity: [
+      { step: 1, label: "Loaded GL extract", detail: "512,041 posting lines · 68 accounts", status: "complete", duration_ms: 1240 },
+      { step: 2, label: "Profiled account volumes", detail: "Frequency, seasonality, and behavior patterns", status: "complete", duration_ms: 3450 },
+      { step: 3, label: "Ran MJE detection", detail: "7 patterns detected across 4 accounts", status: "complete", duration_ms: 8920 },
+      { step: 4, label: "Assessed document splitting", detail: "4 accounts flagged for doc-split config", status: "complete", duration_ms: 2100 },
+      { step: 5, label: "Checked NAIC alignment", detail: "All 68 accounts mapped to NAIC groups", status: "complete", duration_ms: 1870 },
+      { step: 6, label: "Generated report", detail: "Account Analysis Report ready for review", status: "complete", duration_ms: 980 },
+    ],
+  },
+
+  "d-005-03": {
+    deliverable_id: "d-005-03",
+    agent_kind: "data_grounded",
+    run_state: "awaiting_input",
+    preflight_title: "Account Mapping: Legacy → New COA",
+    preflight_bullets: [
+      "Map 68 legacy accounts to new S/4HANA COA structure",
+      "Apply NAIC account group taxonomy",
+      "Detect consolidation and split opportunities",
+      "Flag reinsurance flow accounts for posting key design",
+    ],
+    preflight_data_source: "Account Analysis Report (d-005-01) · COA Draft v1.2",
+    columns: [
+      { key: "legacy_account", label: "Legacy", width: "80px" },
+      { key: "legacy_name", label: "Legacy Name", width: "190px" },
+      { key: "new_account", label: "New COA", width: "100px" },
+      { key: "new_name", label: "New Name", width: "200px" },
+      { key: "status", label: "Status", width: "110px" },
+    ],
+    rows: [
+      { row_id: "m1", cells: { legacy_account: "1000", legacy_name: "Cash & Equivalents", new_account: "10000000", new_name: "Cash and Cash Equivalents", status: "Mapped" }, provenance: "Direct 1:1 mapping · confidence 0.99" },
+      { row_id: "m2", cells: { legacy_account: "1100", legacy_name: "AR — Premium", new_account: "12000100", new_name: "Premiums Receivable", status: "Mapped" }, needs_attention: true, provenance: "Document splitting required · see DOC_SPLIT flag in analysis" },
+      { row_id: "m3", cells: { legacy_account: "1200", legacy_name: "Reinsurance Recoverables", new_account: "12500000", new_name: "Reinsurance Assets", status: "Mapped" }, provenance: "IFRS 17 grouping applied · confidence 0.95" },
+      { row_id: "m4", cells: { legacy_account: "2000", legacy_name: "Loss & LAE Reserve", new_account: "21000000", new_name: "Insurance Contract Liabilities", status: "Mapped" }, provenance: "IFRS 17 PAA model applied · confidence 0.97" },
+      { row_id: "m5", cells: { legacy_account: "2100", legacy_name: "Unearned Premium Reserve", new_account: "21100000", new_name: "Liabilities for Remaining Coverage", status: "Mapped" }, provenance: "IFRS 17 LRC classification · confidence 0.96" },
+      { row_id: "m6", cells: { legacy_account: "2200", legacy_name: "Ceded Reinsurance Payable", new_account: "22000000", new_name: "Reinsurance Payables", status: "Mapped" }, provenance: "Ceded flows confirmed · confidence 0.94" },
+      { row_id: "m7", cells: { legacy_account: "4000", legacy_name: "Net Premiums Earned", new_account: "40000000", new_name: "Insurance Revenue", status: "Mapped" }, provenance: "IFRS 17 revenue recognition model · confidence 0.98" },
+      { row_id: "m8", cells: { legacy_account: "2340", legacy_name: "Reinsurance Settlement Acct", new_account: "—", new_name: "Pending decision", status: "Needs input" }, needs_attention: true, provenance: "Account carries both ceded and assumed flows — split decision required" },
+    ],
+    interrupt: {
+      question: "How should account 2340 be handled in the new COA?",
+      context: "Account 2340 currently carries both ceded and assumed reinsurance settlement flows. In S/4HANA, these should be separated for clear reporting. Two options: split into two accounts, or use a single account with posting key differentiation.",
+      options: [
+        { label: "Split into two accounts", description: "Create 22001000 (Ceded Settlement) and 22002000 (Assumed Settlement) — cleaner reporting, aligns with NAIC schedule requirements." },
+        { label: "Use posting key differentiation", description: "Single account 22000100 with debit/credit convention — simpler design, but reduces transparency in balance sheet line items." },
+      ],
+      insert_after_row_id: "m8",
+    },
+    activity: [
+      { step: 1, label: "Loaded source data", detail: "Account Analysis Report + COA Draft v1.2", status: "complete", duration_ms: 890 },
+      { step: 2, label: "Auto-mapped 34 accounts", detail: "Direct and semantic matching · avg confidence 0.96", status: "complete", duration_ms: 5640 },
+      { step: 3, label: "Flagging complex accounts", detail: "Reinsurance flows, clearing, multi-use accounts", status: "active" },
+    ],
+  },
+
+  "d-004-04": {
+    deliverable_id: "d-004-04",
+    agent_kind: "knowledge_grounded",
+    run_state: "preflight",
+    preflight_title: "Business Requirements by Process",
+    preflight_bullets: [
+      "47 standard requirements pre-populated from insurance finance library",
+      "Process areas: R2R, P2P, Financial Close, Reinsurance Accounting",
+      "Each requirement tagged to process step and RACI role",
+      "SAP S/4HANA fit-gap indicators pre-filled",
+      "Ready for workshop validation with client finance team",
+    ],
+    columns: [
+      { key: "req_id", label: "ID", width: "70px" },
+      { key: "process", label: "Process", width: "120px" },
+      { key: "requirement", label: "Requirement", width: "320px" },
+      { key: "priority", label: "Priority", width: "80px" },
+      { key: "status", label: "Status", width: "100px" },
+    ],
+    rows: [],
+    activity: [
+      { step: 1, label: "Load leading practice library", detail: "47 requirements · Insurance Finance · SAP S/4HANA", status: "pending" },
+      { step: 2, label: "Adapt to engagement context", detail: "Apply segment, ERP, and phase filters", status: "pending" },
+      { step: 3, label: "Generate requirements draft", detail: "Structured, tagged, and linked to process steps", status: "pending" },
+    ],
+  },
 };

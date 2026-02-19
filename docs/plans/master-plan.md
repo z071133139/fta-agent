@@ -300,7 +300,15 @@ Phase 1: Personal Use MVP
 │
 ├── Iteration 0: Test Data + Eval Framework  ✅ Complete
 ├── Iteration 1: Domain Knowledge + Frontend ✅ Complete (backend + frontend)
-├── Iteration 1.5: Agent Harness             ← NEXT (agent design complete, build next)
+├── Iteration 1.5: Agent Harness             ← IN PROGRESS
+│   ├── 1.5A: Agent Infrastructure           ← NEXT (backend critical path)
+│   ├── 1.5B: Functional Consultant          (after 1.5A)
+│   ├── 1.5C: Consulting Agent Upgrade       (after 1.5B)
+│   ├── 1.5D: GL Design Coach Tool Wiring    (after 1.5C)
+│   │
+│   ├── Frontend — Landing + Workplan        ✅ Sessions 007–008
+│   └── Frontend — Agent Workspace           ✅ Session 009
+│
 ├── Iteration 2: Persistence Layer
 ├── Iteration 3: Data Pipeline
 ├── Iteration 4: RAG Pipeline
@@ -313,6 +321,8 @@ Phase 2: Super Testers
 Phase 3: Broad Rollout
 └── (not started)
 ```
+
+**Note:** The frontend is ahead of the backend. The full workspace UI (workspace shell, preflight screens, annotated tables, inline interrupts, activity panel, workplan spine) is built and running on mock data. Zero API calls exist yet. The next critical priority is Iteration 1.5A (backend agent infrastructure) to give the frontend something real to connect to.
 
 ---
 
