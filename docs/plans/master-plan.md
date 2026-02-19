@@ -56,7 +56,7 @@ All agents read from and write to the **Shared Engagement Context** ("Engagement
 
 ## Phase 1: Personal Use MVP
 
-**Goal:** Product owner can use FTA on a real P&C finance transformation engagement. One user, one engagement, CLI interface.
+**Goal:** Product owner can use FTA on a real P&C finance transformation engagement. One user, one engagement, CLI + web interface.
 
 **What's in Phase 1:**
 - Three-agent MVP: Consulting Agent + Functional Consultant + GL Design Coach (DEC-029)
@@ -67,6 +67,7 @@ All agents read from and write to the **Shared Engagement Context** ("Engagement
 - LLM-based intent routing (DEC-031)
 - Agent handoff protocol with structured outcome capture (DEC-034)
 - CLI interface (engagement-aware REPL)
+- Web UI (Next.js 15 — landing screen, workplan panel, deliverable workspace — Sessions 007–009)
 - Synthetic + real P&C data for testing
 - Evaluation framework
 - Cost monitoring
@@ -77,7 +78,7 @@ All agents read from and write to the **Shared Engagement Context** ("Engagement
 - Life/Annuity, Reinsurance sub-segments
 - Other Layer 2 specialists (Close Process Architect, Reporting Agent, etc.)
 - Layer 3 configuration agents
-- Web UI / Next.js (skeleton built but not wired to agents)
+- Web UI wired to real agent API (frontend built; backend wiring is Iteration 1.5A+)
 - Multi-user / concurrency
 - Enterprise LLM endpoints
 - Supabase (deferred to Phase 2; DuckDB used in Phase 1)

@@ -7,7 +7,7 @@ These principles guide every design and implementation decision in FTA. They are
 FTA is not a traditional delivery platform with AI features added. The agent IS the interface.
 
 **What this means:**
-- **Conversation-driven, not navigation-driven.** The consultant describes context; the agent drives discovery, asks the right questions, and surfaces what matters.
+- **Agent-driven reasoning, not navigation-driven.** The agent drives discovery, asks the right questions, and surfaces what matters — the product is not a chat interface, but the agent's reasoning is conversational. Consultants navigate to structured workspaces (deliverables), not to chat threads.
 - **Generative outputs, not templates.** Deliverables are synthesized dynamically based on the specific engagement context, not by filling in blanks on a pre-built template.
 - **Adaptive reasoning, not fixed workflows.** The agent determines what to do next based on what it knows. A mid-size P&C carrier with a legacy subledger gets a different path than a large life insurer mid-way through IFRS 17.
 - **Continuous context, not session-based.** The agent accumulates knowledge about the engagement over time. Week one context informs week three outputs.

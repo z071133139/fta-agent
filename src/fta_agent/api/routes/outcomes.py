@@ -144,18 +144,21 @@ async def patch_finding(finding_id: str, patch: FindingPatch) -> dict[str, str]:
     if not _table_exists(engine, "analysis_findings"):
         raise HTTPException(status_code=404, detail="No findings data loaded")
 
-    updates: list[str] = []
+    cols: list[str] = []
+    params: list[str] = []
     if patch.status is not None:
-        updates.append(f"status = '{patch.status}'")
+        cols.append("status = ?")
+        params.append(patch.status)
     if patch.resolution is not None:
-        updates.append(f"resolution = '{patch.resolution}'")
-    if not updates:
+        cols.append("resolution = ?")
+        params.append(patch.resolution)
+    if not cols:
         raise HTTPException(status_code=400, detail="No fields to update")
 
-    set_clause = ", ".join(updates)
+    params.append(finding_id)
     engine.execute(
-        f"UPDATE analysis_findings SET {set_clause} "
-        f"WHERE finding_id = '{finding_id}'"
+        f"UPDATE analysis_findings SET {', '.join(cols)} WHERE finding_id = ?",
+        params,
     )
     return {"status": "updated", "finding_id": finding_id}
 
@@ -169,18 +172,21 @@ async def patch_decision(
     if not _table_exists(engine, "dimensional_decisions"):
         raise HTTPException(status_code=404, detail="No decisions data loaded")
 
-    updates: list[str] = []
+    cols: list[str] = []
+    params: list[str] = []
     if patch.status is not None:
-        updates.append(f"status = '{patch.status}'")
+        cols.append("status = ?")
+        params.append(patch.status)
     if patch.decided_by is not None:
-        updates.append(f"decided_by = '{patch.decided_by}'")
-    if not updates:
+        cols.append("decided_by = ?")
+        params.append(patch.decided_by)
+    if not cols:
         raise HTTPException(status_code=400, detail="No fields to update")
 
-    set_clause = ", ".join(updates)
+    params.append(decision_id)
     engine.execute(
-        f"UPDATE dimensional_decisions SET {set_clause} "
-        f"WHERE decision_id = '{decision_id}'"
+        f"UPDATE dimensional_decisions SET {', '.join(cols)} WHERE decision_id = ?",
+        params,
     )
     return {"status": "updated", "decision_id": decision_id}
 
@@ -192,17 +198,20 @@ async def patch_mapping(mapping_id: str, patch: MappingPatch) -> dict[str, str]:
     if not _table_exists(engine, "account_mappings"):
         raise HTTPException(status_code=404, detail="No mapping data loaded")
 
-    updates: list[str] = []
+    cols: list[str] = []
+    params: list[str] = []
     if patch.status is not None:
-        updates.append(f"status = '{patch.status}'")
+        cols.append("status = ?")
+        params.append(patch.status)
     if patch.validated_by is not None:
-        updates.append(f"validated_by = '{patch.validated_by}'")
-    if not updates:
+        cols.append("validated_by = ?")
+        params.append(patch.validated_by)
+    if not cols:
         raise HTTPException(status_code=400, detail="No fields to update")
 
-    set_clause = ", ".join(updates)
+    params.append(mapping_id)
     engine.execute(
-        f"UPDATE account_mappings SET {set_clause} "
-        f"WHERE mapping_id = '{mapping_id}'"
+        f"UPDATE account_mappings SET {', '.join(cols)} WHERE mapping_id = ?",
+        params,
     )
     return {"status": "updated", "mapping_id": mapping_id}

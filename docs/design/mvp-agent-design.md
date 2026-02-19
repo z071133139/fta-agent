@@ -34,7 +34,7 @@ Consulting Agent (orchestrator + engagement lead + PMO)
 
 Three agents in MVP: **Consulting Agent**, **Functional Consultant**, **GL Design Coach**.
 
-The human user is the client (insurance company finance team). The agents are the consulting team. The agents do the work, produce deliverables, and ask the human for decisions when needed.
+The human users are **consultants** (finance transformation practitioners). The agents are the consulting team's virtual colleagues. The agents do the analytical and synthesis work, produce deliverables, and ask the consultant for decisions when needed. The insurance company finance team are the end clients — they are not FTA users in Phase 1.
 
 ---
 

@@ -141,7 +141,7 @@ fta-agent/
 **Backend:**
 ```bash
 uv sync
-uv run uvicorn fta_agent.main:app --reload
+uv run uvicorn fta_agent.api.app:app --reload
 ```
 
 **Frontend:**
