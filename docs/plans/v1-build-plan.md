@@ -1,8 +1,8 @@
 # GL Design Coach V1 -- Build Plan
 
-> Status: APPROVED (Session 005, updated Sessions 006, 008, 009, 010)
+> Status: APPROVED (Session 005, updated Sessions 006, 008, 009, 010, 011)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-02-19 (Session 010)
+> Last updated: 2026-02-19 (Session 011)
 
 ## Plan Philosophy
 
@@ -163,7 +163,8 @@
 
 ### 1.5B: Functional Consultant Agent
 
-> Note (Session 010): The Business Process Design workstream is fully designed. See [`docs/design/business-process-design-workstream.md`](../design/business-process-design-workstream.md) for the complete design, including the overlay model, cross-agent connection to GL Design Coach, and dynamic workplan expansion. Build this workstream after 1.5A is complete.
+> Note (Session 010): The Business Process Design workstream is fully designed.
+> Note (Session 011): Process visualization is designed (React Flow). See [`docs/design/process-visualization.md`](../design/process-visualization.md). Build the visualization components before wiring to the real agent — it de-risks the frontend before the backend exists. See [`docs/design/business-process-design-workstream.md`](../design/business-process-design-workstream.md) for the complete design, including the overlay model, cross-agent connection to GL Design Coach, and dynamic workplan expansion. Build this workstream after 1.5A is complete.
 
 **Build:**
 - New LangGraph graph for the Functional Consultant

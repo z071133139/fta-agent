@@ -1,8 +1,27 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-19 (Session 010)
+> Last updated: 2026-02-19 (Session 011)
 > Current phase: Phase 1 — Personal Use MVP
 > Current iteration: 1.5 — Agent Harness
+
+---
+
+## Next Frontend Build — Process Visualization
+
+Design complete (Session 011). Full spec at [`docs/design/process-visualization.md`](docs/design/process-visualization.md).
+
+### What to build:
+
+1. **Install** `@xyflow/react` + `@dagrejs/dagre` via pnpm
+2. **Mock data** — add 9 TypeScript types, extend `DeliverableWorkspace.graph?`, add 2 workspace entries (d-004-01 process inventory, d-004-03 R2R flow map with GL finding overlays)
+3. **`ProcessInventoryGraph.tsx`** — React Flow dependency graph, custom card nodes with scope-status color coding, process-area grouping, minimap, dagre TB layout, click-to-detail drawer
+4. **`ProcessFlowMap.tsx`** — React Flow swimlane diagram, 4 custom node types (task, gateway, start/end, swimlane group), animated edges, overlay panel with GL finding source chips
+5. **Workspace page dispatch** — `graph` field presence → graph component; absent → existing AnnotatedTable
+6. **React Flow dark theme CSS** in globals.css
+7. **`src/fta_agent/data/process_flow.py`** — Python Pydantic models
+
+### Pending input before next session:
+- Run the research prompt at `docs/research/insurance-process-inventory-research-prompt.md` through Claude Opus 4.6 or GPT o3/o4 — bring back the output to feed into the Process Inventory knowledge library
 
 ---
 
