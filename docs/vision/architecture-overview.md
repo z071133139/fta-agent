@@ -1,110 +1,210 @@
 # Architecture Overview
 
-## Layered Architecture
+> Last updated: Session 009
 
-FTA is built on a three-layer architecture. Each layer serves a distinct purpose and can evolve independently.
+## System Architecture
+
+FTA is a full-stack AI system: a Next.js frontend, a FastAPI backend, LangGraph agent orchestration, and Supabase for persistence. The backend streams agent output to the frontend over SSE.
+
+```
+┌───────────────────────────────────────────────────────────────────┐
+│  FRONTEND: Next.js 15 (App Router)                                │
+│  Landing · Workplan panel · Deliverable workspace (3-panel)       │
+├───────────────────────────────────────────────────────────────────┤
+│  API: Python + FastAPI · SSE streaming for agent output           │
+├───────────────────────────────────────────────────────────────────┤
+│  AGENT ORCHESTRATION: LangGraph                                   │
+│  ├── Consulting Agent (hub — all routing flows through here)      │
+│  ├── GL Design Coach (P&C domain specialist)                      │
+│  └── Functional Consultant (generalist)                           │
+├───────────────────────────────────────────────────────────────────┤
+│  LLM: LiteLLM · Claude Opus/Sonnet (reasoning) · Haiku (routing) │
+├───────────────────────────────────────────────────────────────────┤
+│  DATA ENGINE: DuckDB + Polars                                     │
+│  GL data profiling · MJE analysis · account pattern detection     │
+├───────────────────────────────────────────────────────────────────┤
+│  DATABASE: Supabase (Postgres + pgvector)                         │
+│  Engagement context · Auth · RLS per engagement · Real-time       │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Agent Architecture — Three Layers
+
+### Hub-and-Spoke Routing (DEC-038)
+
+The Consulting Agent is the **only router**. Specialist agents are destinations, not routers. All cross-agent coordination flows through the hub.
 
 ```
 Consultant
-    |  (explicit steering -- consultant chooses working context)
+    |
     v
 +------------------------------------------------------------------+
-|                    CONSULTING AGENT (Orchestrator)                |
-|  Routes to the right tool or specialist based on consultant's    |
-|  current task. Manages shared engagement context.                |
+|                CONSULTING AGENT (Hub + Orchestrator)             |
+|  Routes to the right agent based on LLM intent classification.  |
+|  Manages shared engagement context. Owns PMO/planning tools.    |
 +------------------------------------------------------------------+
-    |                    |                         |
-    v                    v                         v
-+-----------------+  +------------------------+  +-------------------+
-| LAYER 1         |  | LAYER 2                |  | LAYER 3           |
-| General Tools   |  | Domain Specialist      |  | Platform Config   |
-|                 |  | Agents                 |  | Agents            |
-| - Requirements  |  | - GL Design Coach(MVP) |  | - SAP Config      |
-| - Process Docs  |  | - Close Process Arch.  |  | - Oracle Config   |
-| - Deck Builder  |  | - Regulatory Advisor   |  | - Workday Config  |
-| - PMO Planning  |  | - Subledger Specialist |  |                   |
-|                 |  | - Migration Strategist |  | (FUTURE)          |
-|                 |  | - TOM Designer         |  |                   |
-|                 |  | - Recon Designer       |  |                   |
-+-----------------+  +------------------------+  +-------------------+
-         |                    |                         |
-         +--------------------+-------------------------+
-                              |
-                    +---------v----------+
-                    | SHARED ENGAGEMENT  |
-                    | CONTEXT            |
-                    | ("Engagement Brain")|
-                    +--------------------+
+    |                              |
+    v                              v
++------------------+    +---------------------------+
+| FUNCTIONAL       |    | GL DESIGN COACH           |
+| CONSULTANT       |    |                           |
+|                  |    | Data-grounded. P&C        |
+| Knowledge-       |    | specialist. Ingests real  |
+| grounded.        |    | GL data. Has opinions.    |
+| Requirements,    |    | Designs COA structure,    |
+| process docs,    |    | ACDOCA dimensions, MJE    |
+| decks.           |    | analysis.                 |
++------------------+    +---------------------------+
+         |                         |
+         +-------------------------+
+                       |
+             +---------v----------+
+             |  SHARED ENGAGEMENT |
+             |  CONTEXT           |
+             |  ("Engagement Brain")|
+             +--------------------+
 ```
 
-## Layer 1: General Tools (Consulting Agent)
+**Agent registry (DEC-039):** Adding a new specialist = one declarative entry in the registry. The router discovers agents from the registry — no modification to the Consulting Agent core.
 
-Horizontal capabilities that every consultant needs regardless of domain. These are **task executors** -- they perform specific, well-defined operations.
+**Multi-user direct access (DEC-030):** Each agent is independently accessible by role. The PM works with the Consulting Agent directly. The accounting expert works with the GL Design Coach directly. They don't have to go through each other.
 
-| Tool | Purpose | Input | Output |
-|------|---------|-------|--------|
-| Requirements Engine | Convert unstructured input to structured requirements | Meeting notes, transcripts, raw text | Categorized, prioritized, traceable requirements |
-| Process Documenter | NLP-based process documentation | Verbal descriptions, notes, existing docs | Standardized process flows and documentation |
-| Deck Builder | Generate presentation deliverables | Agent context, structured data, findings | PowerPoint decks |
-| PMO / Planning Tool | Engagement planning and tracking | Scope, milestones, team structure | Backlog, plans, status views (to be scoped separately) |
+---
 
-**Extensibility:** New tools can be added over time without modifying the agent core. Each tool conforms to a standard interface (input schema, output schema, capabilities), and the consulting agent knows how to invoke any compliant tool.
+## Three-Layer Capability Model
 
-## Layer 2: Domain Specialist Agents
+### Layer 1: General Tools
+Horizontal capabilities that every consultant needs regardless of domain. Task executors with standard interfaces.
 
-These are fundamentally different from Layer 1 tools. They are **agents with expertise** -- they reason, advise, guide, and push back. Each one encodes the knowledge of a senior domain expert.
+| Tool | Purpose |
+|------|---------|
+| Requirements Engine | Unstructured input → structured, traceable requirements |
+| Process Documenter | Verbal descriptions → structured process flows |
+| Deck Builder | Engagement context → PowerPoint deliverables |
+| PMO / Planning Tool | Workplan, backlog, status synthesis |
 
-**Characteristics of a domain specialist agent:**
-- **Has deep knowledge** -- domain-specific, platform-aware, insurance-contextual
-- **Has its own tools** -- specialized capabilities (e.g., COA builder, mapping generator)
-- **Has memory** -- remembers engagement context, prior decisions, client constraints
-- **Has opinions** -- pushes back when it sees suboptimal decisions
-- **Guides a process** -- drives a structured methodology, not just answering questions
-- **Has data skills** -- can ingest, transform, and validate real client data
+### Layer 2: Domain Specialist Agents
+These are agents with expertise — they reason, advise, guide, push back, and run on real data. Each encodes the knowledge of a senior domain expert.
 
-**MVP specialist:** GL Design Coach (see [GL Design Coach spec](../agents/gl-design-coach.md))
+**MVP:** GL Design Coach (P&C, SAP S/4HANA)
 
-**Future specialists:**
-- Close Process Architect
-- Regulatory Reporting Advisor (IFRS 17, LDTI, Solvency II)
-- Subledger Integration Specialist
-- Data Migration Strategist
-- Target Operating Model Designer
-- Reconciliation Designer
+**Future:** Close Process Architect · Regulatory Reporting Advisor · Subledger Integration Specialist · Data Migration Strategist · TOM Designer · Reconciliation Designer
 
-Each future specialist follows the same architectural pattern and plugs into the shared engagement context.
+Each specialist follows the same architectural pattern: deep knowledge + own tools + memory + opinions + process guidance + data skills.
 
-## Layer 3: Platform Configuration Agents (Future)
+### Layer 3: Platform Configuration Agents (Future)
+Take design artifacts from Layer 2 and translate them into platform-specific configuration. MVP: configuration specifications a human executes. Future: direct API-driven configuration in sandbox.
 
-These agents close the loop from design to execution. They take the structured design artifacts produced by Layer 2 agents and translate them into platform-specific configuration.
+See [Configuration Agent](../features/configuration-agent.md).
 
-**MVP approach:** Generate configuration-ready specifications (IMG paths, transaction codes, field values) that a functional consultant can execute. The agent does the translation work; a human executes and validates.
+---
 
-**Future approach:** Direct API-driven configuration in sandbox environments with automated validation.
+## Two Agent Value Models
 
-See [Configuration Agent](../features/configuration-agent.md) for detailed scoping.
+The workspace UI reflects two fundamentally different ways agents produce output:
+
+| Model | Agent | How it works |
+|-------|-------|-------------|
+| **Data-grounded** | GL Design Coach | Every finding derives from client data. Each artifact row has a source reference (posting file, row range, MJE analysis). Insights are traceable. |
+| **Knowledge-grounded** | Functional Consultant | Output starts from a leading practice library (curated requirements, process templates), adapted to the engagement's segment and ERP target. |
+
+This distinction drives the preflight screen, insight card display, and the "library source" vs "data source" badge in the workspace.
+
+---
+
+## Frontend Architecture
+
+### Navigation Model
+
+```
+/ (landing)
+├── Engagement cards + workplan panel
+│
+└── /[engagementId]/                         ← engagement layout (WorkplanSpine + TopBar)
+    └── /deliverables/[deliverableId]/        ← deliverable workspace
+```
+
+**Deliverable-centric routing:** Routes are scoped to the deliverable being built, not to the agent that builds it. The agent is metadata on the deliverable. This means the URL and navigation model are stable even as agents evolve.
+
+### Workspace Shell (Three Panels)
+
+```
+┌──────────────────────┬─────────────────────────────────┬─────────────┐
+│  WORKPLAN SPINE      │  ARTIFACT AREA                  │  ACTIVITY   │
+│  240px collapsible   │  flex-1                         │  56px→240px │
+│  to 48px icon rail   │                                 │  collapsed  │
+│                      │  InsightCards (data only)       │  by default │
+│  All workstreams     │  AnnotatedTable                 │             │
+│  Active deliverable  │  InlineInterrupt (if waiting)   │  Step log   │
+│  highlighted         │  ─────────────────────────      │  with       │
+│  Navigates on click  │  AgentChatInput                 │  durations  │
+└──────────────────────┴─────────────────────────────────┴─────────────┘
+```
+
+### Component Inventory (`web/src/components/workspace/`)
+
+| Component | Role |
+|-----------|------|
+| `WorkspaceTopBar` | Breadcrumb (← Client / Workstream / Deliverable) + agent status dot |
+| `WorkplanSpine` | Collapsible left rail; auto-expands active workstream; navigates on click |
+| `PreflightScreen` | Pre-run screen — two variants (data-grounded vs. knowledge-grounded) |
+| `InsightCards` | Finding / risk / compliant / info cards above table (data agents only) |
+| `AnnotatedTable` | Staggered row reveal; flag badges; provenance detail sub-row on hover |
+| `InlineInterrupt` | Amber decision card embedded between table rows at the agent's stop point |
+| `AgentChatInput` | Persistent bottom input; context-aware placeholder; local chat history |
+| `ActivityPanel` | Right rail; consultant-readable step log with durations; collapsed by default |
+
+### Agent State Machine
+
+Every workspace screen reflects exactly one of these states:
+
+| State | Visual Treatment |
+|-------|-----------------|
+| `preflight` | PreflightScreen with CTA button |
+| `running` | Pulsing blue dot, "working…" label |
+| `awaiting_input` | InlineInterrupt dominates — impossible to miss |
+| `complete` | Full artifact visible; chat input switches to ask mode |
+
+### SSE Event Envelope (backend → frontend)
+
+All agent output streams over SSE. Every event:
+```typescript
+type SSEEvent = {
+  type: 'token' | 'tool_call' | 'trace_step' | 'interrupt' | 'complete' | 'error'
+  session_id: string
+  timestamp: string
+  payload: Record<string, unknown>
+}
+```
+
+`ts-pattern` exhaustive match on `event.type` — missing cases are compile errors.
+
+### Segment / ERP Agnosticism
+
+No segment strings (P&C, Life, Reinsurance) or ERP names (SAP, Oracle) are hardcoded in any UI component. All content — preflight bullets, data source labels, library source badges, agent names, deliverable names — comes from engagement and workspace data. The same workspace shell serves any segment on any ERP.
+
+---
 
 ## Shared Engagement Context ("Engagement Brain")
 
-The backbone of the entire architecture. A semantic knowledge layer that all agents and tools read from and write to. This is what makes FTA a system rather than a collection of disconnected tools.
+The backbone of the architecture. All agents read from and write to the same store. Switching agents never breaks context.
 
-**Key property:** When a consultant switches from one agent to another, the context does not break. The Requirements Engine knows what the GL Design Coach decided. The Deck Builder knows what the Process Documenter captured.
+**Persistence:**
+- **Supabase Postgres** — engagement metadata, decisions, findings, requirements, workplan (DEC-040)
+- **DuckDB** — GL analytics only (posting data, account profiles, MJE analysis)
+- **pgvector** — semantic search over engagement context (no separate vector DB)
 
-See [Engagement Context](../features/engagement-context.md) for detailed design.
+**Key property:** A consultant can switch from the GL Design Coach mid-COA-design to the Functional Consultant for requirements, and neither agent loses the thread.
 
-## Steering Model
+See [Engagement Context](../features/engagement-context.md).
 
-The **consultant is always in the driver's seat**. They explicitly choose which agent or tool to work with based on their current task:
-
-- Working on requirements → Consulting Agent (Requirements Engine)
-- Designing the chart of accounts → GL Design Coach
-- Creating a client readout → Consulting Agent (Deck Builder)
-
-The agent does not autonomously switch contexts. The consultant switches; the context stays connected underneath.
+---
 
 ## ERP Platform Strategy
 
-The architecture is ERP-agnostic by design, with SAP as the first-class implementation for MVP.
+Platform-neutral interface with SAP S/4HANA as the first-class MVP implementation.
 
 ```
 Domain Specialist Agent
@@ -113,10 +213,10 @@ Domain Specialist Agent
 Platform-Neutral Interface
     |
     +-- SAP Adapter (MVP)
-    +-- Oracle Adapter (future)
-    +-- Workday Adapter (future)
+    +-- Oracle Cloud ERP Adapter (future)
+    +-- Workday Financials Adapter (future)
 ```
 
-Every place the agent touches ERP-specific logic goes through a platform adapter. Adding a new ERP means implementing a new adapter, not re-architecting the agent.
+Every place an agent touches ERP-specific logic goes through a platform adapter. Adding a new ERP means implementing a new adapter, not re-architecting the agent.
 
-See [ERP Platform Strategy](../features/erp-platform-strategy.md) for details.
+See [ERP Platform Strategy](../features/erp-platform-strategy.md).
