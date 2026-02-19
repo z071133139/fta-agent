@@ -1,8 +1,8 @@
 # GL Design Coach V1 -- Build Plan
 
-> Status: APPROVED (Session 005, updated Sessions 006, 008, 009)
+> Status: APPROVED (Session 005, updated Sessions 006, 008, 009, 010)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-02-18 (Session 009)
+> Last updated: 2026-02-19 (Session 010)
 
 ## Plan Philosophy
 
@@ -163,12 +163,17 @@
 
 ### 1.5B: Functional Consultant Agent
 
+> Note (Session 010): The Business Process Design workstream is fully designed. See [`docs/design/business-process-design-workstream.md`](../design/business-process-design-workstream.md) for the complete design, including the overlay model, cross-agent connection to GL Design Coach, and dynamic workplan expansion. Build this workstream after 1.5A is complete.
+
 **Build:**
 - New LangGraph graph for the Functional Consultant
 - System prompt: generalist consulting persona, requirements and process language
 - Requirements extraction tool: unstructured text --> structured Requirement records
 - Process flow generation tool: verbal descriptions --> structured ProcessFlow records
 - Engagement context read/write integration
+- Process Inventory workspace: interactive scoping conversation, per-process confirmation, workplan expansion trigger
+- Future State workspace: leading-practice baseline generation + overlay model + standard question set
+- GL finding query (cross-agent connection): on Future State workspace open, query engagement context for GL findings tagged to this process area; surface as overlay suggestions
 
 ### 1.5C: Consulting Agent Upgrade
 

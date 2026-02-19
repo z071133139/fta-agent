@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-18 (Session 009)
+> Last updated: 2026-02-19 (Session 010)
 > Current phase: Phase 1 — Personal Use MVP
 > Current iteration: 1.5 — Agent Harness
 
@@ -92,6 +92,38 @@ npx openapi-typescript http://localhost:8000/openapi.json -o web/types/api.gener
 | DuckDB persistence for capture tools | Iteration 2 | Capture tools write to in-memory state in 1.5; persistence wired in Iteration 2 |
 | Supabase auth integration | Phase 2 | Using mock auth in Phase 1 |
 | `(workspace)` route group | Cleanup sprint | Old route group `/analysis`, `/design`, etc. can be retired once workspace is fully wired |
+
+---
+
+## Designed but Not Yet Built — Business Process Design Workstream
+
+The Business Process Design workstream is fully designed (Session 010). Build starts after Backend 1.5A is complete and the frontend is connected to real API calls.
+
+### What was designed
+
+Full design at [`docs/design/business-process-design-workstream.md`](docs/design/business-process-design-workstream.md).
+
+Key features:
+- **Process Inventory as scope gate** — interactive workspace, per-process parallelism
+- **Overlay model for Future State** — no Current State deliverable; leading-practice baseline + client overlays
+- **Standard question set** — structured elicitation built into the agent's workflow
+- **Cross-agent connection** — GL Design Coach findings → Future State overlay suggestions (shared engagement context)
+- **Dynamic workplan expansion** — child rows appear as processes are confirmed; parent rows persist
+- **ERP-dependent Gap Analysis** — reads `engagement.erp_target`, SAP S/4HANA first
+- **User Stories Backlog** — optional, scope toggle at engagement setup
+
+### Build sequence (when ready)
+
+1. Process Inventory workspace — interactive scoping, workplan expansion trigger
+2. Future State workspace — overlay model, standard question set, baseline generation
+3. Cross-agent connection wiring — GL finding `process_area` tagging + Functional Consultant query
+4. Business Requirements workspace — library pre-population, overlay-driven requirements
+5. Gap Analysis workspace — ERP-dependent preflight + artifact
+6. User Stories workspace — optional, gated by engagement scope toggle
+
+### Decisions
+
+DEC-035 through DEC-041 in [`docs/decisions/decision-log.md`](docs/decisions/decision-log.md).
 
 ---
 

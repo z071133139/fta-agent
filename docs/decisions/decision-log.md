@@ -412,3 +412,108 @@ This log captures key product and architecture decisions made during ideation an
 **Rationale:** Tool calls are explicit, auditable, and fit naturally into the LangGraph tool-use loop. The agent decides when to capture (not a separate post-processing step), so it can ask the user for confirmation before writing. This gives the user control: "I'm about to record this as a decision -- does this look right?"
 
 **Alternatives considered:** Post-turn extraction (separate LLM call after each turn to extract outcomes -- adds latency and cost, user doesn't see what's being captured); hybrid (agent proposes, post-processor validates -- complex, two LLM calls per turn).
+
+---
+
+## DEC-035: Process Inventory as Scope Gate for Business Process Design
+
+**Date:** 2026-02-19
+**Status:** Decided
+
+**Decision:** The Process Inventory deliverable is the mandatory scope gate for the Business Process Design workstream. No downstream deliverable (Future State Process, Business Requirements, Gap Analysis) can be started for a given process until that process is confirmed in the Process Inventory. The inventory workspace allows consultants to select which processes are in scope (e.g., R2R, P2P, Financial Close, Reinsurance Accounting) and define sub-flows per process.
+
+**Rationale:** Process scope determines the entire shape of downstream work. Starting requirements or future-state design before processes are confirmed creates rework. The inventory is the scoping conversation, captured structurally. This also enables per-process parallelism: once a process is confirmed in the inventory, its downstream deliverables become available concurrently.
+
+**Implications:** The workplan expands dynamically as processes are confirmed in the inventory — child rows appear per confirmed process. Parent deliverable rows remain in place throughout. See DEC-037 for workplan expansion model.
+
+**Alternatives considered:** Start all processes by default, allow de-scoping later (creates noise, consultants start work on out-of-scope areas); flat deliverable list per process (doesn't reflect the dependency — inventory gate is cleaner).
+
+---
+
+## DEC-036: No Current State Deliverable — Overlay Model for Future State
+
+**Date:** 2026-02-19
+**Status:** Decided
+
+**Decision:** FTA will not produce a standalone Current State process document. Instead, the Future State process map uses an overlay model: the agent generates a leading-practice future-state baseline, and client-specific current-state complications are captured as overlays — modifications, constraints, or exceptions layered onto the baseline process.
+
+**Rationale:** Current state documentation is primarily useful as an input to future state design, not as an output in its own right. Insurance finance teams often have messy, inconsistently documented current processes; producing a polished current-state document adds significant time for limited incremental value. The overlay model captures what actually matters — the delta between leading practice and the client's reality — without requiring a full current-state documentation exercise.
+
+**Implications:** The Future State workspace shows: (1) the leading-practice baseline for the process, pre-populated by the agent; (2) client overlay annotations showing where the client differs. Overlays are elicited through a standard question set (see DEC-038). GL Design Coach findings are a source of overlay suggestions (see DEC-039).
+
+**Alternatives considered:** Document current state first, then design future state as a gap (traditional approach — time-intensive, often produces large documents that nobody reads after design is complete); skip current state entirely (loses the client-specific context that overlays capture).
+
+---
+
+## DEC-037: Dynamic Workplan Expansion per Process
+
+**Date:** 2026-02-19
+**Status:** Decided
+
+**Decision:** As processes are confirmed in the Process Inventory, the workplan expands dynamically: each confirmed process generates child deliverable rows beneath the parent deliverable rows in the Business Process Design workstream. Parent rows stay visible throughout — they show aggregate progress across processes. The workplan never collapses back to pre-expansion state.
+
+**Rationale:** The number of in-scope processes is not known at engagement start — it is determined during the inventory. A flat workplan that pre-populates all processes creates visual noise and can't reflect scope accurately. Dynamic expansion makes scope explicit: only confirmed processes appear as child rows, progress tracking is accurate from day one.
+
+**Implications:** The WorkplanPanel and WorkplanSpine must support expandable parent rows with dynamic child rows. Child rows inherit the parent deliverable's agent assignment and workspace template. Progress counters on the parent row aggregate across children.
+
+**Alternatives considered:** Pre-populate all standard processes and allow de-scoping (inverted model — visual noise, requires active management to keep accurate); fixed list defined at engagement setup (doesn't fit the agent-led inventory discovery flow).
+
+---
+
+## DEC-038: Standard Question Set for Overlay Elicitation
+
+**Date:** 2026-02-19
+**Status:** Decided
+
+**Decision:** The Functional Consultant uses a standard question set when eliciting client overlays on Future State process maps. The question set is designed to help junior consultants surface client-specific complications without missing key areas. Standard question categories: (1) technology constraints — what current systems are involved and what stays?; (2) people and ownership — who currently owns this process, who should own it in the future state?; (3) data and reporting — what outputs does the client specifically need from this process?; (4) exceptions and edge cases — what scenarios does the standard process not handle for this client?; (5) regulatory/compliance — any specific statutory, regulatory, or audit requirements for this process?.
+
+**Rationale:** Junior consultants often miss key current-state complications in initial conversations with clients. A standard question set acts as a structured elicitation guide embedded in the agent's workflow. The agent frames the questions conversationally but ensures coverage. This compounds institutional knowledge across engagements.
+
+**Implications:** Question sets are encoded in the Functional Consultant's prompts per process area. Answers are captured as overlays linked to specific process steps in the Future State map. Questions can be skipped if the consultant indicates they're not relevant.
+
+**Alternatives considered:** Unstructured elicitation (agent asks open questions — captures what the consultant thinks to mention, misses systematic coverage); separate interview tool (adds workflow friction, breaks the workspace-centric model).
+
+---
+
+## DEC-039: Cross-Agent Connection — GL Design Coach Findings → Future State Overlays
+
+**Date:** 2026-02-19
+**Status:** Decided
+
+**Decision:** The GL Design Coach surfaces relevant findings as overlay suggestions in the Functional Consultant's Future State workspace. When GL data analysis has identified patterns relevant to a process (e.g., key person risk in journal entry posting, account complexity in reinsurance settlement), those findings appear as pre-populated overlay suggestions on the corresponding process steps — ready for the consultant to accept, modify, or dismiss.
+
+**Rationale:** The GL Design Coach and the Functional Consultant are analyzing the same client from different angles. GL data findings are highly relevant inputs to process design — a key person concentration in journal entries is a people/ownership overlay on the Close process; account splitting complexity is a system constraint overlay on the Reinsurance process. Without the cross-agent connection, this intelligence is siloed. With it, the data analysis automatically enriches the process design.
+
+**Implications:** Requires that GL Design Coach findings are stored in the shared engagement context with a `process_area` tag. The Functional Consultant queries the engagement context for findings relevant to the current process before generating the Future State baseline. The connection is advisory — suggestions only, consultant decides whether to incorporate.
+
+**Alternatives considered:** Manual handoff (consultant copies findings from one workspace to another — manual and error-prone); no connection (silos — misses the core value of shared engagement context); automatic incorporation without consultant review (removes human judgment from the loop).
+
+---
+
+## DEC-040: Process Gap Analysis is ERP-Dependent
+
+**Date:** 2026-02-19
+**Status:** Decided
+
+**Decision:** The Process Gap Analysis deliverable is dependent on the engagement's ERP target (`engagement.erp_target`). The gap analysis compares the client's confirmed Future State process design against the standard ERP process model for the target platform (SAP S/4HANA in MVP). The gaps, fit ratings, and configuration recommendations are specific to the target ERP. A change of ERP target would require re-running the gap analysis.
+
+**Rationale:** A gap analysis without an ERP reference is just a process comparison to leading practice — useful but not actionable. The value of the gap analysis is knowing which parts of the future state design are native to the platform, which require configuration, and which require development or workarounds. That analysis is ERP-specific. The ERP reference is already in the engagement context; using it makes the analysis directly actionable.
+
+**Implications:** The Gap Analysis workspace shows the ERP target prominently. The agent reads `engagement.erp_target` to select the correct ERP process model for comparison. If the ERP target is unknown, the Gap Analysis workspace shows a preflight warning. SAP S/4HANA is the first-class implementation; Oracle and Workday gaps will use platform adapters when those are added.
+
+**Alternatives considered:** ERP-agnostic gap analysis (process-to-leading-practice only — less actionable, doesn't tell the consultant what to configure); separate ERP configuration deliverable instead of gap analysis (deferred to Layer 3 configuration agents — the gap analysis is the handoff document to that layer).
+
+---
+
+## DEC-041: User Stories Backlog is Optional
+
+**Date:** 2026-02-19
+**Status:** Decided
+
+**Decision:** The User Stories backlog deliverable in the Business Process Design workstream is optional and client-dependent. It is included in the workplan as an opt-in deliverable that can be scoped in or out at engagement setup or during the Process Inventory phase. Not all finance transformation engagements require a formal user story backlog — some clients prefer requirements-based specifications; others are running formal agile delivery and need user stories for their sprint backlog.
+
+**Rationale:** User stories are a delivery artifact, not a design artifact. They are valuable when the client's implementation team uses them for sprint planning, but they add overhead without clear benefit for clients who don't use agile delivery methods. Making them optional rather than required keeps the workplan clean and avoids generating artifacts nobody reads.
+
+**Implications:** The workplan template includes User Stories as `status: not_started, optional: true`. The Process Inventory or engagement setup phase includes a scope toggle for this deliverable. If scoped out, the deliverable is hidden from the WorkplanPanel and WorkplanSpine rather than shown as not-started.
+
+**Alternatives considered:** Always include user stories (generates unnecessary artifacts for non-agile clients); exclude entirely from V1 (some clients will explicitly need them — better to have the toggle); make it a sub-deliverable of Business Requirements (different artifact type, different audience, better as a sibling deliverable).
