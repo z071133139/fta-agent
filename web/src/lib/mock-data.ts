@@ -343,8 +343,6 @@ export const PHASE_LABELS: Record<EngagementPhase, string> = {
   cutover: "Cutover",
 };
 
-// ── Workspace types ────────────────────────────────────────────────────────
-
 export type AgentRunState = "preflight" | "running" | "awaiting_input" | "complete";
 export type AgentKind = "data_grounded" | "knowledge_grounded";
 
@@ -382,6 +380,77 @@ export interface ActivityEntry {
   duration_ms?: number;
 }
 
+// ── Process graph types ─────────────────────────────────────────────────────
+
+export type ProcessNodeType =
+  | "task" | "gateway_exclusive" | "gateway_parallel" | "start" | "end" | "subprocess";
+
+export type ProcessScopeStatus =
+  | "in_scope" | "out_of_scope" | "in_progress" | "complete" | "deferred";
+
+export type ProcessOverlayKind = "constraint" | "requirement" | "exception" | "risk";
+
+export interface ProcessOverlay {
+  id: string;
+  node_id: string;
+  kind: ProcessOverlayKind;
+  text: string;
+  source: "agent_elicited" | "gl_finding" | "consultant";
+}
+
+export interface ProcessFlowNode {
+  id: string;
+  type: ProcessNodeType;
+  label: string;
+  role?: string;
+  system?: string;
+  status?: "leading_practice" | "client_overlay" | "gap";
+}
+
+export interface ProcessFlowEdge {
+  id: string;
+  source: string;
+  target: string;
+  condition?: string;
+  label?: string;
+}
+
+export interface ProcessFlowData {
+  kind: "process_flow";
+  name: string;
+  swimlanes?: string[];
+  nodes: ProcessFlowNode[];
+  edges: ProcessFlowEdge[];
+  overlays: ProcessOverlay[];
+}
+
+export interface ProcessInventoryNode {
+  id: string;
+  name: string;
+  scope_status: ProcessScopeStatus;
+  owner_agent?: string;
+  sub_flow_count: number;
+  process_area?: string;
+  description?: string;
+}
+
+export interface ProcessInventoryEdge {
+  id: string;
+  source: string;
+  target: string;
+  label?: string;
+}
+
+export interface ProcessInventoryData {
+  kind: "process_inventory";
+  nodes: ProcessInventoryNode[];
+  edges: ProcessInventoryEdge[];
+}
+
+export type ProcessGraphData = ProcessFlowData | ProcessInventoryData;
+
+// ── Workspace types ────────────────────────────────────────────────────────
+
 export interface DeliverableWorkspace {
   deliverable_id: string;
   agent_kind: AgentKind;
@@ -394,6 +463,7 @@ export interface DeliverableWorkspace {
   insight_cards?: InsightCard[];
   interrupt?: InlineInterruptData;
   activity: ActivityEntry[];
+  graph?: ProcessGraphData;
 }
 
 export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
@@ -488,6 +558,94 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
       { step: 2, label: "Auto-mapped 34 accounts", detail: "Direct and semantic matching · avg confidence 0.96", status: "complete", duration_ms: 5640 },
       { step: 3, label: "Flagging complex accounts", detail: "Reinsurance flows, clearing, multi-use accounts", status: "active" },
     ],
+  },
+
+  "d-004-01": {
+    deliverable_id: "d-004-01",
+    agent_kind: "knowledge_grounded",
+    run_state: "running",
+    preflight_title: "Process Inventory",
+    preflight_bullets: [
+      "P&C insurance process library loaded — 13 process areas identified",
+      "10 processes matched to P&C segment footprint for SAP S/4HANA transformation",
+      "Scope status assigned from engagement scope definition",
+      "Sub-flow counts from leading practice library",
+      "Dependency mapping based on P&C finance process architecture",
+    ],
+    columns: [],
+    rows: [],
+    graph: {
+      kind: "process_inventory",
+      nodes: [
+        // Core Finance
+        { id: "premium-accounting", name: "Premium Accounting & Revenue Recognition", scope_status: "complete", sub_flow_count: 5, process_area: "Core Finance", description: "GWP capture, pro-rata UPR earning, mid-term endorsements and cancellations" },
+        { id: "loss-reserving", name: "Loss & Expense Reserving", scope_status: "complete", sub_flow_count: 4, process_area: "Core Finance", description: "Case reserve establishment, IBNR calculation, ALAE/ULAE reserving, reserve true-ups" },
+        { id: "claims-payment", name: "Claims Payment & Settlement Accounting", scope_status: "complete", sub_flow_count: 3, process_area: "Core Finance", description: "Indemnity disbursements, ALAE expense payments, salvage & subrogation recovery accounting" },
+        { id: "financial-close", name: "Financial Close & Consolidation", scope_status: "in_progress", sub_flow_count: 4, process_area: "Core Finance", description: "Subledger lock & extract, actuarial true-up processing, allocations, intercompany elimination" },
+        { id: "collections-disbursements", name: "Collections & Disbursements", scope_status: "in_scope", sub_flow_count: 4, process_area: "Core Finance", description: "Direct billing, agency/broker statement reconciliation, dunning, unallocated cash clearing" },
+        { id: "investment-accounting", name: "Investment Accounting Integration", scope_status: "deferred", sub_flow_count: 2, process_area: "Core Finance", description: "Investment subledger ingestion (Clearwater), ALM data preparation" },
+        // Insurance-Specific
+        { id: "ceded-reinsurance", name: "Ceded Reinsurance Accounting", scope_status: "in_progress", sub_flow_count: 5, process_area: "Insurance-Specific", description: "Ceded premium calculation, recoverable on paid and unpaid losses, ceding commissions, Schedule F provisioning" },
+        { id: "intercompany-coinsurance", name: "Intercompany & Coinsurance Accounting", scope_status: "in_scope", sub_flow_count: 3, process_area: "Insurance-Specific", description: "Intercompany reinsurance pooling, coinsurance settlements, intercompany eliminations" },
+        { id: "statutory-reporting", name: "Statutory & Regulatory Reporting", scope_status: "in_scope", sub_flow_count: 3, process_area: "Insurance-Specific", description: "Multi-ledger STAT/GAAP parallel accounting, RBC calculation, NAIC Annual Statement preparation" },
+        { id: "schedule-pf", name: "Schedule P & F Production", scope_status: "in_scope", sub_flow_count: 2, process_area: "Insurance-Specific", description: "10-year accident-year loss triangles (Schedule P), reinsurance recoverable aging for statutory penalty (Schedule F)" },
+      ],
+      edges: [
+        { id: "e-close-premium", source: "financial-close", target: "premium-accounting", label: "premium data lock" },
+        { id: "e-close-reserve", source: "financial-close", target: "loss-reserving", label: "IBNR true-up" },
+        { id: "e-close-ceded", source: "financial-close", target: "ceded-reinsurance", label: "recoverable calc" },
+        { id: "e-stat-close", source: "statutory-reporting", target: "financial-close", label: "closed trial balance" },
+      ],
+    } satisfies ProcessInventoryData,
+    activity: [
+      { step: 1, label: "Loaded P&C process library", detail: "13 process areas identified", status: "complete", duration_ms: 890 },
+      { step: 2, label: "Matched processes to footprint", detail: "10 processes matched to P&C segment for SAP S/4HANA transformation", status: "complete", duration_ms: 1240 },
+      { step: 3, label: "Awaiting scope confirmation", detail: "Investment Accounting Integration deferred to Phase 2", status: "active" },
+    ],
+  },
+
+  "d-004-03": {
+    deliverable_id: "d-004-03",
+    agent_kind: "knowledge_grounded",
+    run_state: "preflight",
+    preflight_title: "Future State R2R Process Map",
+    preflight_bullets: [
+      "Process area: Record-to-Report (R2R)",
+      "8 nodes across 3 swimlanes: GL Accountant, Finance Controller, SAP S/4HANA",
+      "2 overlay suggestions pre-loaded from GL Design Coach account analysis",
+      "Approval gateway identified — key person risk on Finance Controller lane",
+      "Document splitting constraint flagged for ACDOCA posting configuration",
+    ],
+    columns: [],
+    rows: [],
+    graph: {
+      kind: "process_flow",
+      name: "R2R Future State — Journal Entry to ACDOCA",
+      swimlanes: ["GL Accountant", "Finance Controller", "SAP S/4HANA"],
+      nodes: [
+        { id: "start", type: "start", label: "Start", role: "GL Accountant" },
+        { id: "initiate-je", type: "task", label: "Initiate Journal Entry", role: "GL Accountant", system: "SAP S/4HANA", status: "leading_practice" },
+        { id: "review-completeness", type: "task", label: "Review for Completeness", role: "GL Accountant", status: "leading_practice" },
+        { id: "gateway-approval", type: "gateway_exclusive", label: "Approval required?", role: "GL Accountant" },
+        { id: "fc-review", type: "task", label: "Finance Controller Review", role: "Finance Controller", status: "client_overlay" },
+        { id: "post-acdoca", type: "task", label: "Post to ACDOCA", role: "SAP S/4HANA", system: "SAP S/4HANA", status: "leading_practice" },
+        { id: "end", type: "end", label: "End", role: "SAP S/4HANA" },
+      ],
+      edges: [
+        { id: "e-start-je", source: "start", target: "initiate-je" },
+        { id: "e-je-review", source: "initiate-je", target: "review-completeness" },
+        { id: "e-review-gw", source: "review-completeness", target: "gateway-approval" },
+        { id: "e-gw-fc", source: "gateway-approval", target: "fc-review", condition: "Yes", label: "Yes" },
+        { id: "e-gw-post", source: "gateway-approval", target: "post-acdoca", condition: "No", label: "No" },
+        { id: "e-fc-post", source: "fc-review", target: "post-acdoca" },
+        { id: "e-post-end", source: "post-acdoca", target: "end" },
+      ],
+      overlays: [
+        { id: "ov-1", node_id: "fc-review", kind: "risk", text: "JSMITH currently approves 91% of actuarial JEs — key person concentration risk identified in account analysis", source: "gl_finding" },
+        { id: "ov-2", node_id: "post-acdoca", kind: "constraint", text: "Document splitting required for 4 accounts — posting workflow must handle splitting configuration", source: "gl_finding" },
+      ],
+    } satisfies ProcessFlowData,
+    activity: [],
   },
 
   "d-004-04": {
