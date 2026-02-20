@@ -313,12 +313,20 @@ export default function LandingPage() {
         {/* Top bar */}
         <div className="flex items-center justify-between mb-8">
           <span className="font-serif text-xl text-foreground tracking-tight">FTA</span>
-          <button
-            onClick={logout}
-            className="text-xs text-muted hover:text-foreground transition-colors"
-          >
-            Sign out
-          </button>
+          <div className="flex items-center gap-5">
+            <a
+              href="/framework"
+              className="text-xs font-mono text-muted/50 hover:text-muted transition-colors"
+            >
+              framework ↗
+            </a>
+            <button
+              onClick={logout}
+              className="text-xs text-muted hover:text-foreground transition-colors"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
 
         {/* Greeting */}
