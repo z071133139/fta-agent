@@ -1,27 +1,40 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-19 (Session 011)
+> Last updated: 2026-02-20 (Session 013)
 > Current phase: Phase 1 — Personal Use MVP
 > Current iteration: 1.5 — Agent Harness
 
 ---
 
-## Next Frontend Build — Process Visualization
+## ✅ Completed Session 013 — Custom Flow Renderer + AI Framework
 
-Design complete (Session 011). Full spec at [`docs/design/process-visualization.md`](docs/design/process-visualization.md).
+### Custom Process Flow Renderer (replaced React Flow)
+- React Flow removed from ProcessFlowMap — swimlane node click blocking was intractable
+- Custom SVG/HTML hybrid renderer built (4 files in `process-flow/`):
+  - `useFlowLayout.ts` — Dagre LR layout, cubic bezier edge paths, swimlane-pinned Y
+  - `useFlowViewport.ts` — pan/zoom with wheel events, space+drag, fit view (rAF)
+  - `FlowEdgeLayer.tsx` — SVG edges, arrowhead markers, `edge-animated` CSS dashes
+  - `FlowNodeLayer.tsx` — HTML nodes, click debounce for select vs double-click edit
+- Inline editing working: double-click task node → textarea → Enter/Escape/blur commit
+- Overlay panel positioned in viewport coords (outside canvas transform)
+- Keyboard shortcuts: F=fit, +/-=zoom, Escape=deselect
 
-### What to build:
+### AI & Agentic Engineering Framework
+- 5 new optional fields on `ProcessInventoryNode`: `agent_wave`, `agent_level`, `agent_opportunity`, `agent_pattern`, `agent_key_insight`
+- 2 new exported types: `AgentLevel` ("L0"–"L4"), `AgentPattern` (6 values)
+- All 20 PA nodes populated with wave/level/pattern/opportunity/insight data
+- `/framework` page built — hero, Why section, L0–L4 maturity model, 6 dimensions, 6 patterns, 4-wave roadmap timeline, value metrics table
+- ProcessInventoryGraph updated: W1/L3 badges on each row, agent intel panel in detail drawer, framework link in summary bar
 
-1. **Install** `@xyflow/react` + `@dagrejs/dagre` via pnpm
-2. **Mock data** — add 9 TypeScript types, extend `DeliverableWorkspace.graph?`, add 2 workspace entries (d-004-01 process inventory, d-004-03 R2R flow map with GL finding overlays)
-3. **`ProcessInventoryGraph.tsx`** — React Flow dependency graph, custom card nodes with scope-status color coding, process-area grouping, minimap, dagre TB layout, click-to-detail drawer
-4. **`ProcessFlowMap.tsx`** — React Flow swimlane diagram, 4 custom node types (task, gateway, start/end, swimlane group), animated edges, overlay panel with GL finding source chips
-5. **Workspace page dispatch** — `graph` field presence → graph component; absent → existing AnnotatedTable
-6. **React Flow dark theme CSS** in globals.css
-7. **`src/fta_agent/data/process_flow.py`** — Python Pydantic models
+## ✅ Completed Session 012 — Process Visualization (React Flow, initial build)
 
-### Pending input before next session:
-- Run the research prompt at `docs/research/insurance-process-inventory-research-prompt.md` through Claude Opus 4.6 or GPT o3/o4 — bring back the output to feed into the Process Inventory knowledge library
+- `@xyflow/react` + `@dagrejs/dagre` installed
+- ProcessInventoryGraph: two-column layout, scope-status colors, detail drawer, MiniMap
+- ProcessFlowMap: swimlane groups, task/gateway/start-end nodes, NodeToolbar overlays, animated edges
+- Workspace dispatch: `graph` field → graph component; absent → AnnotatedTable
+- React Flow dark theme CSS overrides
+- Python Pydantic models: ProcessFlow + ProcessInventory with discriminated union
+- Mock workspaces: d-004-01 (auto-transitions running→complete), d-004-03 (preflight→flow map)
 
 ---
 

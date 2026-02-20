@@ -118,8 +118,7 @@ const ACME_WORKPLAN: Workplan = {
       owner_agent: "functional_consultant",
       deliverables: [
         { deliverable_id: "d-004-01", name: "Process Inventory (R2R, P2P, FP&A, Financial Close, Treasury, Fixed Assets, Reinsurance Accounting, Claims Finance, Regulatory/Statutory Reporting, Tax)", status: "in_progress", owner_agent: "functional_consultant", agent_summary: "R2R, P2P, and Financial Close complete · Claims Finance and Reinsurance in progress" },
-        { deliverable_id: "d-004-02", name: "Current State Process Maps (BPMN / swim-lane)", status: "in_review", owner_agent: "functional_consultant", agent_summary: "8 of 10 processes documented · Ready for workshop validation with finance team", needs_input: true },
-        { deliverable_id: "d-004-03", name: "Future State Process Maps", status: "not_started", owner_agent: "functional_consultant" },
+        { deliverable_id: "d-004-03", name: "Future State Process Maps", status: "not_started", owner_agent: "functional_consultant", agent_summary: "SP-02.1 Journal Entry Processing · 1 of 70 maps" },
         { deliverable_id: "d-004-04", name: "Business Requirements by Process", status: "in_progress", owner_agent: "functional_consultant", agent_summary: "47 requirements captured · Structured, tagged, and linked to process steps" },
         { deliverable_id: "d-004-05", name: "User Stories Backlog", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-004-06", name: "Process Gap Analysis", status: "not_started", owner_agent: "functional_consultant" },
@@ -213,8 +212,7 @@ const BEACON_WORKPLAN: Workplan = {
       owner_agent: "functional_consultant",
       deliverables: [
         { deliverable_id: "d-b04-01", name: "Process Inventory (R2R, P2P, FP&A, Financial Close, Treasury, Fixed Assets, Reinsurance Accounting, Claims Finance, Regulatory/Statutory Reporting, Tax)", status: "not_started", owner_agent: "functional_consultant" },
-        { deliverable_id: "d-b04-02", name: "Current State Process Maps (BPMN / swim-lane)", status: "not_started", owner_agent: "functional_consultant" },
-        { deliverable_id: "d-b04-03", name: "Future State Process Maps", status: "not_started", owner_agent: "functional_consultant" },
+        { deliverable_id: "d-b04-02", name: "Future State Process Maps", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-b04-04", name: "Business Requirements by Process", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-b04-05", name: "User Stories Backlog", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-b04-06", name: "Process Gap Analysis", status: "not_started", owner_agent: "functional_consultant" },
@@ -385,6 +383,10 @@ export interface ActivityEntry {
 export type ProcessNodeType =
   | "task" | "gateway_exclusive" | "gateway_parallel" | "start" | "end" | "subprocess";
 
+export type ProcessScope = "in_scope" | "deferred" | "out_of_scope";
+export type ProcessWorkStatus = "not_started" | "in_progress" | "complete";
+
+/** @deprecated use ProcessScope + ProcessWorkStatus */
 export type ProcessScopeStatus =
   | "in_scope" | "out_of_scope" | "in_progress" | "complete" | "deferred";
 
@@ -424,14 +426,46 @@ export interface ProcessFlowData {
   overlays: ProcessOverlay[];
 }
 
+export interface ProcessInventoryErpNotes {
+  sap?: string;
+  oracle?: string;
+  workday?: string;
+}
+
+export interface ProcessSubFlow {
+  id: string;   // e.g. "SP-01.1"
+  name: string;
+  deliverable_id?: string;  // if a future state process map exists for this SP
+}
+
+export type AgentLevel = "L0" | "L1" | "L2" | "L3" | "L4";
+export type AgentPattern =
+  | "reconciliation"
+  | "posting"
+  | "allocation"
+  | "document_intelligence"
+  | "close_orchestration"
+  | "compliance_reporting";
+
 export interface ProcessInventoryNode {
   id: string;
+  pa_id?: string;
   name: string;
-  scope_status: ProcessScopeStatus;
+  scope: ProcessScope;
+  work_status: ProcessWorkStatus;
   owner_agent?: string;
   sub_flow_count: number;
   process_area?: string;
   description?: string;
+  erp_notes?: ProcessInventoryErpNotes;
+  scoping_questions?: string[];
+  sub_flows?: ProcessSubFlow[];
+  // AI & Agentic Engineering Framework fields
+  agent_wave?: 1 | 2 | 3 | 4;
+  agent_level?: AgentLevel;
+  agent_opportunity?: string;
+  agent_pattern?: AgentPattern;
+  agent_key_insight?: string;
 }
 
 export interface ProcessInventoryEdge {
@@ -566,41 +600,475 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
     run_state: "running",
     preflight_title: "Process Inventory",
     preflight_bullets: [
-      "P&C insurance process library loaded — 13 process areas identified",
-      "10 processes matched to P&C segment footprint for SAP S/4HANA transformation",
-      "Scope status assigned from engagement scope definition",
-      "Sub-flow counts from leading practice library",
-      "Dependency mapping based on P&C finance process architecture",
+      "Full P&C insurance process library loaded — 20 process areas across all finance domains",
+      "17 processes matched to in-scope P&C footprint for SAP S/4HANA transformation",
+      "2 processes deferred pending scope confirmation (Fixed Assets, Assumed Reinsurance)",
+      "1 process out of scope — P&C carrier, no life or annuity products",
+      "Sub-flow counts and descriptions from P&C leading practice library",
     ],
     columns: [],
     rows: [],
     graph: {
       kind: "process_inventory",
       nodes: [
-        // Core Finance
-        { id: "premium-accounting", name: "Premium Accounting & Revenue Recognition", scope_status: "complete", sub_flow_count: 5, process_area: "Core Finance", description: "GWP capture, pro-rata UPR earning, mid-term endorsements and cancellations" },
-        { id: "loss-reserving", name: "Loss & Expense Reserving", scope_status: "complete", sub_flow_count: 4, process_area: "Core Finance", description: "Case reserve establishment, IBNR calculation, ALAE/ULAE reserving, reserve true-ups" },
-        { id: "claims-payment", name: "Claims Payment & Settlement Accounting", scope_status: "complete", sub_flow_count: 3, process_area: "Core Finance", description: "Indemnity disbursements, ALAE expense payments, salvage & subrogation recovery accounting" },
-        { id: "financial-close", name: "Financial Close & Consolidation", scope_status: "in_progress", sub_flow_count: 4, process_area: "Core Finance", description: "Subledger lock & extract, actuarial true-up processing, allocations, intercompany elimination" },
-        { id: "collections-disbursements", name: "Collections & Disbursements", scope_status: "in_scope", sub_flow_count: 4, process_area: "Core Finance", description: "Direct billing, agency/broker statement reconciliation, dunning, unallocated cash clearing" },
-        { id: "investment-accounting", name: "Investment Accounting Integration", scope_status: "deferred", sub_flow_count: 2, process_area: "Core Finance", description: "Investment subledger ingestion (Clearwater), ALM data preparation" },
-        // Insurance-Specific
-        { id: "ceded-reinsurance", name: "Ceded Reinsurance Accounting", scope_status: "in_progress", sub_flow_count: 5, process_area: "Insurance-Specific", description: "Ceded premium calculation, recoverable on paid and unpaid losses, ceding commissions, Schedule F provisioning" },
-        { id: "intercompany-coinsurance", name: "Intercompany & Coinsurance Accounting", scope_status: "in_scope", sub_flow_count: 3, process_area: "Insurance-Specific", description: "Intercompany reinsurance pooling, coinsurance settlements, intercompany eliminations" },
-        { id: "statutory-reporting", name: "Statutory & Regulatory Reporting", scope_status: "in_scope", sub_flow_count: 3, process_area: "Insurance-Specific", description: "Multi-ledger STAT/GAAP parallel accounting, RBC calculation, NAIC Annual Statement preparation" },
-        { id: "schedule-pf", name: "Schedule P & F Production", scope_status: "in_scope", sub_flow_count: 2, process_area: "Insurance-Specific", description: "10-year accident-year loss triangles (Schedule P), reinsurance recoverable aging for statutory penalty (Schedule F)" },
+        // Foundation
+        {
+          id: "pa-01", pa_id: "PA-01", name: "Chart of Accounts & Org Structure",
+          scope: "in_scope", work_status: "complete", sub_flow_count: 4, process_area: "Foundation",
+          description: "CoA design supporting STAT/GAAP parallel ledgers, company code hierarchy, profit center and segment structure, LOB dimensions, and statutory entity mapping for NAIC reporting.",
+          erp_notes: {
+            sap: "Multi-ledger via leading/extension ledgers in ACDOCA. Profit center and segment are core dimensions. Best Practice scope item J58 provides a starter P&C CoA requiring significant extension. FPSL available for high-volume posting scenarios.",
+            oracle: "Primary/secondary ledger with SLA rules engine. Flexible CoA flexfield design. No insurance content pack — CoA must be built from scratch.",
+            workday: "Single-ledger/worktag architecture. Multi-basis accounting requires workarounds. Not typically chosen for complex insurance multi-GAAP requirements.",
+          },
+          scoping_questions: [
+            "How many statutory LOBs are you actively writing, and how do they map to your management LOBs?",
+            "Do you have any intercompany pooling arrangements, and if so, what are the participation percentages and does membership change periodically?",
+            "What is your approach to accident year / policy year tracking — in the GL or in sub-ledgers?",
+            "Which accounting basis do you want as the leading ledger — STAT or GAAP?",
+            "Are there any anticipated entity restructurings or pool changes in the next 3–5 years?",
+            "Do you have any state-specific reporting requirements beyond the NAIC standard (e.g., NY Regulation 30, Texas Lloyd's)?",
+          ],
+          sub_flows: [
+            { id: "SP-01.1", name: "CoA Design & Multi-Basis Structure" },
+            { id: "SP-01.2", name: "Entity & Company Code Structure" },
+            { id: "SP-01.3", name: "Profit Center / Segment / LOB Hierarchy" },
+            { id: "SP-01.4", name: "Accounting Basis Configuration (Parallel Ledgers)" },
+          ],
+          agent_wave: 2,
+          agent_level: "L1",
+          agent_pattern: "document_intelligence",
+          agent_opportunity: "AI-assisted CoA gap analysis comparing client chart against NAIC best practice taxonomy with remediation suggestions",
+          agent_key_insight: "CoA is the architectural foundation — agent value is diagnostic analysis before design, not post-deployment automation",
+        },
+        {
+          id: "pa-02", pa_id: "PA-02", name: "General Ledger & Multi-Basis Accounting",
+          scope: "in_scope", work_status: "complete", sub_flow_count: 5, process_area: "Foundation",
+          description: "Core GL with parallel ledgers for US STAT and US GAAP. Insurance-specific posting logic for premium, loss, and reserve entries with segment and LOB attribution across accounting bases.",
+          erp_notes: {
+            sap: "Universal Journal (ACDOCA) is the foundation. Extension ledgers handle STAT, GAAP, and IFRS 17 adjustment-only postings. Real-time consolidation via Group Reporting. Key decision: FPSL vs. direct GL posting — this is an irreversible architectural fork. Document splitting by profit center/segment is native.",
+            oracle: "Primary/secondary ledger with SLA rules engine. No insurance-specific posting templates — must be configured via SLA rules. Strong journal approval workflows. Reporting currency ledgers for FX.",
+            workday: "Single-ledger architecture — not recommended as primary GL for complex insurance multi-basis. Often used as holding company GL with insurance sub-ledgers feeding in.",
+          },
+          sub_flows: [
+            { id: "SP-02.1", name: "Journal Entry Processing", deliverable_id: "d-004-03" },
+            { id: "SP-02.2", name: "Multi-Basis Posting & Adjustment Logic" },
+            { id: "SP-02.3", name: "Period-End Accrual & Allocation Processing" },
+            { id: "SP-02.4", name: "Currency & Foreign Exchange Processing" },
+            { id: "SP-02.5", name: "GL Reconciliation & Control" },
+          ],
+          agent_wave: 2,
+          agent_level: "L2",
+          agent_pattern: "posting",
+          agent_opportunity: "Automated multi-basis journal classification and dual-posting routing with exception escalation to controller",
+          agent_key_insight: "ACDOCA's universal journal provides the data fidelity needed for supervised autonomous posting across STAT and GAAP bases",
+        },
+        // Insurance Operations
+        {
+          id: "pa-03", pa_id: "PA-03", name: "Premium Accounting & Revenue Recognition",
+          scope: "in_scope", work_status: "complete", sub_flow_count: 5, process_area: "Insurance Operations",
+          description: "GWP recording, earned/unearned premium calculation, UPR liability, retrospective rating adjustments, audit premium true-ups, and installment billing recognition.",
+          erp_notes: {
+            sap: "FS-CD is the SAP insurance sub-ledger for premium accounting — premium does NOT flow through standard FI-AR if FS-CD is in scope. High-cost, high-reward architectural decision that changes the engagement significantly. Best Practice J58 includes premium posting templates.",
+            oracle: "No native premium module. Premium posts to GL via interface from PAS. AR module can be adapted for receivables but lacks earned premium calculation logic.",
+            workday: "No premium accounting capability. Premium postings interface from PAS only.",
+          },
+          scoping_questions: [
+            "Where does earned premium get calculated today — PAS, actuarial, data warehouse, or spreadsheets?",
+            "What percentage is agency-bill vs. direct-bill, and are you planning to change that mix?",
+            "Do you write any multi-year policies, and what is the earning methodology?",
+            "How material are retrospective rating adjustments and audit premium?",
+            "How many PAS systems feed premium data, and are they being consolidated?",
+          ],
+          sub_flows: [
+            { id: "SP-03.1", name: "Gross Written Premium Recording" },
+            { id: "SP-03.2", name: "Earned Premium Calculation & UPR" },
+            { id: "SP-03.3", name: "Retrospective Rating & Audit Premium" },
+            { id: "SP-03.4", name: "Installment Billing & Premium Receivable" },
+            { id: "SP-03.5", name: "Premium Deficiency Reserve" },
+          ],
+          agent_wave: 1,
+          agent_level: "L2",
+          agent_pattern: "posting",
+          agent_opportunity: "PAS interface parsing, earned premium schedule automation, and auto-reconcile to policy system with exception flagging",
+          agent_key_insight: "GWP volumes are high and rule-bound — near-term Wave 1 automation target with the fastest payback in the finance function",
+        },
+        {
+          id: "pa-04", pa_id: "PA-04", name: "Loss & Claims Accounting",
+          scope: "in_scope", work_status: "in_progress", sub_flow_count: 5, process_area: "Insurance Operations",
+          description: "Paid losses, case reserves, IBNR/bulk reserves, LAE/ULAE, subrogation and salvage recoveries, and the actuarial-to-GL interface driving reserve postings by accident year and LOB.",
+          scoping_questions: [
+            "How frequently does actuarial deliver IBNR/bulk reserve updates — quarterly, monthly?",
+            "At what granularity are actuarial reserve estimates posted — total company, by LOB, by LOB/accident year?",
+            "Do your STAT and GAAP loss reserves differ for any LOBs, or are they currently identical?",
+            "How is ULAE estimated and allocated to LOBs?",
+            "Do you have asbestos, environmental, or latent liability reserves?",
+            "What is your current actuarial-to-accounting reconciliation process, and what breaks most often?",
+          ],
+          sub_flows: [
+            { id: "SP-04.1", name: "Paid Loss Recording" },
+            { id: "SP-04.2", name: "Case Reserve Accounting" },
+            { id: "SP-04.3", name: "IBNR & Bulk Reserve Posting" },
+            { id: "SP-04.4", name: "LAE & ULAE Accounting" },
+            { id: "SP-04.5", name: "Subrogation & Salvage Recoveries" },
+          ],
+          agent_wave: 2,
+          agent_level: "L2",
+          agent_pattern: "reconciliation",
+          agent_opportunity: "Automated actuarial-to-GL variance reconciliation with IBNR reserve posting from structured actuarial output",
+          agent_key_insight: "The actuarial handoff is the highest-friction interface in insurance finance — L2 reconciliation agent cuts close cycle by 1–2 days",
+        },
+        {
+          id: "pa-05", pa_id: "PA-05", name: "Ceded Reinsurance Accounting",
+          scope: "in_scope", work_status: "in_progress", sub_flow_count: 5, process_area: "Insurance Operations",
+          description: "Ceded premium, ceded loss and reserve recovery, ceding commissions, sliding-scale profit commissions, Schedule F compliance, and reinsurer collateral tracking.",
+          erp_notes: {
+            sap: "FS-RI handles treaty setup, ceded premium/loss calculation, and reinsurer settlement. Without FS-RI, reinsurance stays in a dedicated external system (SOLIS, GENIUS, or similar) with net entries posted to GL.",
+            oracle: "No native reinsurance module. Dedicated reinsurance system plus interface is the standard approach.",
+            workday: "No reinsurance capability. Interface only.",
+          },
+          scoping_questions: [
+            "How many treaties and facultative certificates are in force, and how many reinsurers do you work with?",
+            "Do you use a dedicated reinsurance system, and is it being replaced?",
+            "How complex are your sliding-scale and profit commission formulas, and how frequently are they recalculated?",
+            "What is your current process for calculating ceded IBNR — separate actuarial estimate or factors applied to gross?",
+            "Do you have finite or non-traditional reinsurance contracts requiring risk transfer testing (FAS 113 / SSAP 62R)?",
+            "What is your unauthorized reinsurance exposure, and how do you currently manage collateral?",
+          ],
+          sub_flows: [
+            { id: "SP-05.1", name: "Treaty & Facultative Setup" },
+            { id: "SP-05.2", name: "Ceded Premium Accounting" },
+            { id: "SP-05.3", name: "Ceded Loss & Reserve Recovery" },
+            { id: "SP-05.4", name: "Ceding Commission Accounting" },
+            { id: "SP-05.5", name: "Schedule F & Reinsurer Credit" },
+          ],
+          agent_wave: 2,
+          agent_level: "L2",
+          agent_pattern: "document_intelligence",
+          agent_opportunity: "Treaty document parsing, bordereau ingestion, cession calculation, and Schedule F data assembly with reinsurer collateral tracking",
+          agent_key_insight: "Reinsurance calculation rules are complex but deterministic once codified — document intelligence is the unlock that makes L2 viable",
+        },
+        // Financial Operations
+        {
+          id: "pa-09", pa_id: "PA-09", name: "Accounts Payable & Commission Payments",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 4, process_area: "Financial Operations",
+          description: "Agent and broker commission payments (new, renewal, contingent), MGA fee settlements, TPA payments, vendor invoice processing, and state premium tax payments.",
+          sub_flows: [
+            { id: "SP-09.1", name: "Vendor Invoice Processing" },
+            { id: "SP-09.2", name: "Agent/Broker Commission Payments" },
+            { id: "SP-09.3", name: "TPA & MGA Settlements" },
+            { id: "SP-09.4", name: "Premium Tax Payment" },
+          ],
+          agent_wave: 1,
+          agent_level: "L2",
+          agent_pattern: "document_intelligence",
+          agent_opportunity: "Commission statement parsing, 3-way PO matching, and MGA settlement reconciliation with exception-only human review",
+          agent_key_insight: "Agent/broker commission statements are semi-structured — document intelligence converts manual keying into supervised automation",
+        },
+        {
+          id: "pa-10", pa_id: "PA-10", name: "Accounts Receivable & Premium Collections",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 4, process_area: "Financial Operations",
+          description: "Agent balance accounting, direct-bill premium collections, installment billing, premium receivable aging and bad debt provisioning, commission offset and netting.",
+          sub_flows: [
+            { id: "SP-10.1", name: "Agent Balance Accounting" },
+            { id: "SP-10.2", name: "Direct Bill Collections" },
+            { id: "SP-10.3", name: "Premium Receivable Aging & Bad Debt" },
+            { id: "SP-10.4", name: "Reinsurance Receivable Management" },
+          ],
+          agent_wave: 1,
+          agent_level: "L2",
+          agent_pattern: "reconciliation",
+          agent_opportunity: "Cash application agent with automated unapplied cash resolution and premium aging exception triage by agent/broker",
+          agent_key_insight: "Remittance matching and aging exception handling are high-volume, low-judgment tasks — the strongest L2 candidate in the AR cycle",
+        },
+        {
+          id: "pa-11", pa_id: "PA-11", name: "Intercompany & Pooling",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 3, process_area: "Financial Operations",
+          description: "Pool leader/member premium and loss settlements, intercompany service agreements, management fee allocations, and GAAP consolidation eliminations while preserving entity-level STAT.",
+          sub_flows: [
+            { id: "SP-11.1", name: "Pooling Arrangement Accounting" },
+            { id: "SP-11.2", name: "Intercompany Service Agreements" },
+            { id: "SP-11.3", name: "Intercompany Elimination" },
+          ],
+          agent_wave: 2,
+          agent_level: "L3",
+          agent_pattern: "reconciliation",
+          agent_opportunity: "Autonomous pool settlement agent with real-time net position monitoring and automated elimination posting",
+          agent_key_insight: "Pool arithmetic is fully deterministic once participation percentages are codified — L3 with minimal human oversight is achievable",
+        },
+        {
+          id: "pa-12", pa_id: "PA-12", name: "Fixed Assets & Leases",
+          scope: "deferred", work_status: "not_started", sub_flow_count: 3, process_area: "Financial Operations",
+          description: "Asset capitalization and depreciation allocated to IEE expense categories, ASC 842/IFRS 16 lease accounting, and Schedule A real estate investment treatment. Standard ERP capability — defer to Phase 2.",
+          sub_flows: [
+            { id: "SP-12.1", name: "Fixed Asset Lifecycle" },
+            { id: "SP-12.2", name: "Lease Accounting (ASC 842 / IFRS 16)" },
+            { id: "SP-12.3", name: "Real Estate Investment Accounting" },
+          ],
+          agent_wave: 3,
+          agent_level: "L2",
+          agent_pattern: "allocation",
+          agent_opportunity: "Asset lifecycle automation with depreciation scheduling and IEE expense category allocation",
+          agent_key_insight: "Standard ERP capability — defer agent investment until Phase 2 to avoid scope creep on a non-differentiating process",
+        },
+        {
+          id: "pa-13", pa_id: "PA-13", name: "Cash Management & Treasury",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 4, process_area: "Financial Operations",
+          description: "Cash positioning, bank reconciliation, claims payment funding and catastrophe liquidity planning, and reinsurance collateral management (LOCs, trust accounts, funds withheld).",
+          sub_flows: [
+            { id: "SP-13.1", name: "Cash Positioning & Bank Reconciliation" },
+            { id: "SP-13.2", name: "Claims Payment Funding" },
+            { id: "SP-13.3", name: "Reinsurance Collateral Management" },
+            { id: "SP-13.4", name: "Investment Cash Management" },
+          ],
+          agent_wave: 1,
+          agent_level: "L3",
+          agent_pattern: "reconciliation",
+          agent_opportunity: "Autonomous bank reconciliation agent with claims payment funding monitoring and CAT liquidity alert generation",
+          agent_key_insight: "Bank reconciliation is the canonical L3 finance automation use case — 24/7 operation, clear matching rules, zero tolerance for breaks",
+        },
+        // Close & Reporting
+        {
+          id: "pa-14", pa_id: "PA-14", name: "Expense Management & Cost Allocation",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 4, process_area: "Close & Reporting",
+          description: "Expense classification into LAE (DCC/A&O), underwriting, and investment categories. IEE (Exhibit 2) LOB allocation per NAIC methodology. DAC-eligible expense identification.",
+          erp_notes: {
+            sap: "CO-CCA (Cost Center Accounting), CO-PA (Profitability Analysis), and SAP Allocation Management. IEE expense allocation to LOB is always custom configuration — no standard template exists for insurance.",
+            oracle: "Oracle PCM Cloud is a strong allocation engine that can be configured for IEE methodology. Requires a distinct licensing and implementation workstream.",
+            workday: "Workday Allocations module is often insufficient for complex IEE requirements. Frequently supplemented with third-party allocation tools.",
+          },
+          sub_flows: [
+            { id: "SP-14.1", name: "Expense Classification" },
+            { id: "SP-14.2", name: "LOB & Segment Allocation" },
+            { id: "SP-14.3", name: "DAC-Eligible Expense Identification" },
+            { id: "SP-14.4", name: "IEE Production (Exhibit 2)" },
+          ],
+          agent_wave: 2,
+          agent_level: "L2",
+          agent_pattern: "allocation",
+          agent_opportunity: "IEE allocation agent applying NAIC methodology to LOB/segment attribution with full audit trail for exam readiness",
+          agent_key_insight: "IEE allocation is rules-based but computationally intensive — L2 handles the math; actuarial validates the results",
+        },
+        {
+          id: "pa-15", pa_id: "PA-15", name: "Financial Close & Consolidation",
+          scope: "in_scope", work_status: "in_progress", sub_flow_count: 6, process_area: "Close & Reporting",
+          description: "Sub-ledger to GL reconciliation across all feeder systems, reserve true-up entries, multi-basis close sequence (STAT first, then GAAP overlay), consolidation, and pool eliminations.",
+          erp_notes: {
+            sap: "Financial Closing Cockpit for task management. Group Reporting for real-time GAAP consolidation. Advanced Financial Closing (AFC) for automated close workflows. Strong native support for multi-basis close sequencing.",
+            oracle: "FCCS (Financial Consolidation and Close Service) for consolidation. Close Manager for task tracking. Account Reconciliation Cloud Service (ARCS) for sub-ledger reconciliation.",
+            workday: "Basic close management capability. Typically supplemented with Workday Adaptive Planning or third-party close management tools for complex insurance requirements.",
+          },
+          scoping_questions: [
+            "What is your current close timeline (business days), and what is the target?",
+            "Which close activities are on the critical path?",
+            "How many manual journal entries per close, and what percentage could be automated?",
+            "Do you close STAT and GAAP sequentially or in parallel?",
+            "How many sub-ledger reconciliations do you perform, and which break most often?",
+            "Do pool settlements clear to zero within tolerance?",
+          ],
+          sub_flows: [
+            { id: "SP-15.1", name: "Close Calendar & Task Management" },
+            { id: "SP-15.2", name: "Sub-Ledger to GL Reconciliation" },
+            { id: "SP-15.3", name: "Reserve True-Up & Actuarial Close Entries" },
+            { id: "SP-15.4", name: "Multi-Basis Close Sequence" },
+            { id: "SP-15.5", name: "Consolidation & Elimination" },
+            { id: "SP-15.6", name: "Close Analytics & Continuous Close" },
+          ],
+          agent_wave: 3,
+          agent_level: "L3",
+          agent_pattern: "close_orchestration",
+          agent_opportunity: "Close conductor agent orchestrating 40+ task dependencies, exception escalation, and real-time critical-path visibility",
+          agent_key_insight: "Close orchestration is the L3 apex — when Wave 1–2 sub-ledger agents are operational, the close agent coordinates them autonomously",
+        },
+        {
+          id: "pa-16", pa_id: "PA-16", name: "Statutory & Regulatory Reporting",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 7, process_area: "Close & Reporting",
+          description: "NAIC Annual Statement (Schedules A–T), Schedule P 10-year accident-year loss triangles, Schedule F reinsurance recoverables, RBC calculation, IRIS ratios, and multi-state filings.",
+          erp_notes: {
+            sap: "Does not natively produce NAIC Annual Statements. Specialized statutory reporting tools are required (WoltersKluwer Wdesk, Clearwater, or similar). SAP provides the underlying data but not the statutory output.",
+            oracle: "No native NAIC reporting capability. Third-party statutory tools required — same tools as SAP.",
+            workday: "No statutory reporting capability. Third-party required.",
+          },
+          scoping_questions: [
+            "Which statutory reporting tool do you use today, and is it being replaced?",
+            "How automated is Schedule P production — system-generated or manually compiled triangles?",
+            "How many states do you file in, and do any have supplemental requirements?",
+            "What is the data lineage from GL to each Annual Statement line item — is it documented?",
+            "Do you file combined or entity basis, and does the group include non-insurance entities?",
+          ],
+          sub_flows: [
+            { id: "SP-16.1", name: "Annual/Quarterly Statement Preparation" },
+            { id: "SP-16.2", name: "Schedule P Production" },
+            { id: "SP-16.3", name: "Schedule F Production" },
+            { id: "SP-16.4", name: "Investment Schedule Production (A/B/BA/D/DA)" },
+            { id: "SP-16.5", name: "Risk-Based Capital Calculation" },
+            { id: "SP-16.6", name: "State Filing & UCAA" },
+            { id: "SP-16.7", name: "Solvency II / International Regulatory" },
+          ],
+          agent_wave: 2,
+          agent_level: "L2",
+          agent_pattern: "compliance_reporting",
+          agent_opportunity: "NAIC statement data assembly from closed GL with automated mapping validation and cross-schedule consistency checks",
+          agent_key_insight: "NAIC mapping from GL is deterministic — L2 automation saves 80+ hours per quarter-end filing cycle with full auditability",
+        },
+        {
+          id: "pa-17", pa_id: "PA-17", name: "GAAP/IFRS External Reporting",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 4, process_area: "Close & Reporting",
+          description: "10-K/10-Q GAAP financial statements with insurance-specific line items (UPR, loss reserves net of RI, RI recoverables), segment reporting (ASC 280), and AOCI disclosure.",
+          sub_flows: [
+            { id: "SP-17.1", name: "GAAP Financial Statement Production" },
+            { id: "SP-17.2", name: "LDTI / IFRS 17 Disclosures" },
+            { id: "SP-17.3", name: "Segment Reporting (ASC 280 / IFRS 8)" },
+            { id: "SP-17.4", name: "EPS & Equity Roll-Forward" },
+          ],
+          agent_wave: 2,
+          agent_level: "L2",
+          agent_pattern: "compliance_reporting",
+          agent_opportunity: "GAAP financial statement assembly plus AI-drafted MD&A, footnotes, and segment disclosure tables from structured data",
+          agent_key_insight: "LLM footnote drafting from structured financial data is a high-visibility L2 capability — auditors can trace every sentence to source",
+        },
+        // Analytics & Tax
+        {
+          id: "pa-18", pa_id: "PA-18", name: "Tax Accounting & Compliance",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 4, process_area: "Analytics & Tax",
+          description: "Section 846 loss reserve discounting, Section 848 DAC tax, ASC 740 current and deferred tax provision, state premium tax by LOB with retaliatory provisions, Form 1120-PC data sourcing.",
+          scoping_questions: [
+            "What tax provision software do you use, and will it be retained?",
+            "How do you currently calculate Section 846 loss reserve discounting — system-based or spreadsheet?",
+            "What is your approach to Section 848 DAC tax — statutory line level calculation?",
+            "Do you have tax-exempt investment income, and how is proration handled?",
+            "Are there anticipated tax law changes that should influence the design?",
+          ],
+          sub_flows: [
+            { id: "SP-18.1", name: "Current Tax Provision (ASC 740)" },
+            { id: "SP-18.2", name: "Deferred Tax Calculation" },
+            { id: "SP-18.3", name: "State Premium Tax" },
+            { id: "SP-18.4", name: "Federal Tax Return Data Sourcing" },
+          ],
+          agent_wave: 2,
+          agent_level: "L1",
+          agent_pattern: "compliance_reporting",
+          agent_opportunity: "Section 846 discounting calculation, premium tax computation by state with retaliatory provisions, and tax provision data assembly",
+          agent_key_insight: "Regulatory constraint (Sections 841/846) and external audit scrutiny limit autonomy — L1 copilot is the appropriate ceiling for tax",
+        },
+        {
+          id: "pa-19", pa_id: "PA-19", name: "Management Reporting & Analytics",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 5, process_area: "Analytics & Tax",
+          description: "Combined ratio and underwriting performance by LOB and accident year, reserve adequacy and development reporting, capital adequacy/surplus tracking, and investment performance dashboards.",
+          sub_flows: [
+            { id: "SP-19.1", name: "Combined Ratio & Underwriting Performance" },
+            { id: "SP-19.2", name: "Reserve Adequacy & Development Reporting" },
+            { id: "SP-19.3", name: "Capital Adequacy & Surplus Reporting" },
+            { id: "SP-19.4", name: "Investment Performance Reporting" },
+            { id: "SP-19.5", name: "Ad Hoc & Board Reporting" },
+          ],
+          agent_wave: 2,
+          agent_level: "L3",
+          agent_pattern: "compliance_reporting",
+          agent_opportunity: "Combined ratio narrative generation, reserve adequacy commentary, and ad hoc query agent for CFO and board reporting packs",
+          agent_key_insight: "Management reporting is where agents earn executive trust — narrative generation from structured data is the defining L3 showcase",
+        },
+        {
+          id: "pa-20", pa_id: "PA-20", name: "Data Integration & Sub-Ledger Interfaces",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 6, process_area: "Analytics & Tax",
+          description: "Policy admin, claims, actuarial, investment, and reinsurance system interfaces via SAP Integration Suite. Historical data migration strategy including 10-year Schedule P triangles.",
+          erp_notes: {
+            sap: "SAP Integration Suite (cloud-native, replaces PI/PO) as primary middleware. FPSL can serve as an intermediate sub-ledger buffer for high-volume transactions. Native S/4HANA APIs available for real-time integration.",
+            oracle: "Oracle Integration Cloud (OIC) as primary middleware. FBDI for bulk loads. SLA for GL posting rule transformation.",
+            workday: "Workday Integration Cloud, Studio, and EIBs (Enterprise Interface Builder). Fewer insurance-specific pre-built connectors than SAP or Oracle.",
+          },
+          scoping_questions: [
+            "How many source systems currently feed the GL, and which are being replaced vs. retained?",
+            "What is the current interface technology, and what is the target architecture?",
+            "Which interfaces currently require manual reconciliation or intervention, and how often do they break?",
+            "What is the desired frequency for each interface — daily, weekly, monthly?",
+            "Are there regulatory requirements around data lineage or auditability of interface data?",
+            "What is the data conversion / historical data migration strategy?",
+          ],
+          sub_flows: [
+            { id: "SP-20.1", name: "Policy Admin to GL Interface" },
+            { id: "SP-20.2", name: "Claims to GL Interface" },
+            { id: "SP-20.3", name: "Actuarial to GL Interface" },
+            { id: "SP-20.4", name: "Investment to GL Interface" },
+            { id: "SP-20.5", name: "Reinsurance System Interface" },
+            { id: "SP-20.6", name: "Integration Architecture & Middleware" },
+          ],
+          agent_wave: 1,
+          agent_level: "L3",
+          agent_pattern: "reconciliation",
+          agent_opportunity: "Always-on interface monitoring agent with automated exception triage, break resolution workflow, and SLA alerting",
+          agent_key_insight: "Integration failures cascade into every downstream process — L3 monitoring agent is the highest-leverage infrastructure investment in Wave 1",
+        },
+        // Extended / Specialist
+        {
+          id: "pa-06", pa_id: "PA-06", name: "Assumed Reinsurance Accounting",
+          scope: "deferred", work_status: "not_started", sub_flow_count: 4, process_area: "Extended / Specialist",
+          description: "Bordereaux processing, assumed premium recognition, assumed reserve estimation, and funds withheld accounting. Deferred — confirm pool membership and assumed reinsurance book scope.",
+          erp_notes: {
+            sap: "FS-RI handles assumed treaty setup and bordereaux processing. Without FS-RI, a dedicated reinsurance system (SOLIS, GENIUS) with GL interface is standard.",
+            oracle: "No native module. Dedicated reinsurance system plus interface is standard.",
+            workday: "No capability. Interface only.",
+          },
+          sub_flows: [
+            { id: "SP-06.1", name: "Bordereaux Processing & Reconciliation" },
+            { id: "SP-06.2", name: "Assumed Premium Recognition" },
+            { id: "SP-06.3", name: "Assumed Reserve Estimation" },
+            { id: "SP-06.4", name: "Funds Held / Funds Withheld Accounting" },
+          ],
+          agent_wave: 4,
+          agent_level: "L1",
+          agent_pattern: "document_intelligence",
+          agent_opportunity: "Bordereaux OCR and reconciliation automation against assumed treaty terms with exception flagging",
+          agent_key_insight: "Deferred scope limits near-term investment — include in Wave 4 once assumed reinsurance book scope is confirmed with client",
+        },
+        {
+          id: "pa-08", pa_id: "PA-08", name: "Investment Accounting Interface",
+          scope: "in_scope", work_status: "not_started", sub_flow_count: 5, process_area: "Extended / Specialist",
+          description: "Investment subledger (Clearwater) to GL interface for income accruals, realized/unrealized gains, bond amortization, STAT/GAAP dual-basis treatment, and NAIC investment schedule data.",
+          sub_flows: [
+            { id: "SP-08.1", name: "Investment Income Accrual" },
+            { id: "SP-08.2", name: "Realized Gain / Loss" },
+            { id: "SP-08.3", name: "Unrealized Gain / Loss & OTTI/CECL" },
+            { id: "SP-08.4", name: "Bond Amortization" },
+            { id: "SP-08.5", name: "Derivative & Hedge Accounting" },
+          ],
+          agent_wave: 1,
+          agent_level: "L2",
+          agent_pattern: "reconciliation",
+          agent_opportunity: "Clearwater-to-GL reconciliation agent with automated exception resolution and dual-basis STAT/GAAP posting",
+          agent_key_insight: "Clearwater output is highly structured — investment interface is the fastest L2 win with near-zero false-positive risk in Wave 1",
+        },
+        {
+          id: "pa-07", pa_id: "PA-07", name: "Policyholder Liabilities & Reserves",
+          scope: "out_of_scope", work_status: "not_started", sub_flow_count: 5, process_area: "Extended / Specialist",
+          description: "LDTI policy reserves (LFPB, MRB), DAC/VOBA, and separate account accounting. Out of scope — P&C carrier with no life or annuity products. Applicable if life/health subsidiary added.",
+          sub_flows: [
+            { id: "SP-07.1", name: "Policy Reserve Calculation Interface" },
+            { id: "SP-07.2", name: "DAC / VOBA / Unearned Revenue Accounting" },
+            { id: "SP-07.3", name: "Guaranteed Minimum Benefits (GMxB)" },
+            { id: "SP-07.4", name: "Policyholder Dividend Accounting" },
+            { id: "SP-07.5", name: "Separate Account Accounting" },
+          ],
+          agent_wave: 4,
+          agent_level: "L2",
+          agent_pattern: "compliance_reporting",
+          agent_opportunity: "LDTI cohort modeling assistance and LFPB/MRB posting automation with ASC 944 disclosure generation",
+          agent_key_insight: "Out of scope for P&C — reassess agent investment if a life or health subsidiary is added to the engagement scope",
+        },
       ],
       edges: [
-        { id: "e-close-premium", source: "financial-close", target: "premium-accounting", label: "premium data lock" },
-        { id: "e-close-reserve", source: "financial-close", target: "loss-reserving", label: "IBNR true-up" },
-        { id: "e-close-ceded", source: "financial-close", target: "ceded-reinsurance", label: "recoverable calc" },
-        { id: "e-stat-close", source: "statutory-reporting", target: "financial-close", label: "closed trial balance" },
+        { id: "e-pa01-pa02", source: "pa-01", target: "pa-02", label: "CoA drives GL" },
+        { id: "e-pa03-pa15", source: "pa-03", target: "pa-15", label: "premium data lock" },
+        { id: "e-pa04-pa15", source: "pa-04", target: "pa-15", label: "IBNR true-up" },
+        { id: "e-pa05-pa15", source: "pa-05", target: "pa-15", label: "ceded recoverable" },
+        { id: "e-pa15-pa16", source: "pa-15", target: "pa-16", label: "closed trial balance" },
+        { id: "e-pa15-pa17", source: "pa-15", target: "pa-17", label: "closed trial balance" },
       ],
     } satisfies ProcessInventoryData,
     activity: [
-      { step: 1, label: "Loaded P&C process library", detail: "13 process areas identified", status: "complete", duration_ms: 890 },
-      { step: 2, label: "Matched processes to footprint", detail: "10 processes matched to P&C segment for SAP S/4HANA transformation", status: "complete", duration_ms: 1240 },
-      { step: 3, label: "Awaiting scope confirmation", detail: "Investment Accounting Integration deferred to Phase 2", status: "active" },
+      { step: 1, label: "Loaded P&C process library", detail: "20 process areas · Insurance Finance · SAP S/4HANA", status: "complete", duration_ms: 890 },
+      { step: 2, label: "Matched processes to P&C footprint", detail: "17 in scope · 2 deferred · 1 out of scope", status: "complete", duration_ms: 1240 },
+      { step: 3, label: "Awaiting scope confirmation", detail: "Fixed Assets and Assumed Reinsurance marked deferred — confirm with client", status: "active" },
     ],
   },
 
@@ -608,13 +1076,13 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
     deliverable_id: "d-004-03",
     agent_kind: "knowledge_grounded",
     run_state: "preflight",
-    preflight_title: "Future State R2R Process Map",
+    preflight_title: "SP-02.1 · Journal Entry Processing",
     preflight_bullets: [
-      "Process area: Record-to-Report (R2R)",
+      "PA-02 General Ledger & Multi-Basis Accounting · sub-flow 1 of 5",
       "8 nodes across 3 swimlanes: GL Accountant, Finance Controller, SAP S/4HANA",
       "2 overlay suggestions pre-loaded from GL Design Coach account analysis",
       "Approval gateway identified — key person risk on Finance Controller lane",
-      "Document splitting constraint flagged for ACDOCA posting configuration",
+      "Document splitting constraint flagged for GL posting configuration",
     ],
     columns: [],
     rows: [],
@@ -628,7 +1096,7 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
         { id: "review-completeness", type: "task", label: "Review for Completeness", role: "GL Accountant", status: "leading_practice" },
         { id: "gateway-approval", type: "gateway_exclusive", label: "Approval required?", role: "GL Accountant" },
         { id: "fc-review", type: "task", label: "Finance Controller Review", role: "Finance Controller", status: "client_overlay" },
-        { id: "post-acdoca", type: "task", label: "Post to ACDOCA", role: "SAP S/4HANA", system: "SAP S/4HANA", status: "leading_practice" },
+        { id: "post-acdoca", type: "task", label: "Post to General Ledger", role: "SAP S/4HANA", system: "SAP S/4HANA", status: "leading_practice" },
         { id: "end", type: "end", label: "End", role: "SAP S/4HANA" },
       ],
       edges: [
@@ -642,7 +1110,7 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
       ],
       overlays: [
         { id: "ov-1", node_id: "fc-review", kind: "risk", text: "JSMITH currently approves 91% of actuarial JEs — key person concentration risk identified in account analysis", source: "gl_finding" },
-        { id: "ov-2", node_id: "post-acdoca", kind: "constraint", text: "Document splitting required for 4 accounts — posting workflow must handle splitting configuration", source: "gl_finding" },
+                { id: "ov-2", node_id: "post-acdoca", kind: "constraint", text: "Document splitting required for 4 accounts — GL posting workflow must handle splitting configuration", source: "gl_finding" },
       ],
     } satisfies ProcessFlowData,
     activity: [],
