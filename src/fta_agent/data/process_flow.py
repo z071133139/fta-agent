@@ -49,16 +49,33 @@ class ProcessFlow(BaseModel):
     overlays: list[ProcessOverlay] = Field(default_factory=list)
 
 
+class ProcessInventoryErpNotes(BaseModel):
+    sap: str | None = None
+    oracle: str | None = None
+    workday: str | None = None
+
+
+class ProcessSubFlow(BaseModel):
+    id: str = Field(..., description="Sub-process reference ID, e.g. SP-01.1")
+    name: str = Field(..., min_length=1)
+    deliverable_id: str | None = Field(
+        default=None, description="Deliverable ID of the future state process map for this sub-flow"
+    )
+
+
 class ProcessInventoryNode(BaseModel):
     id: str
+    pa_id: str | None = None
     name: str = Field(..., min_length=1)
-    scope_status: Literal[
-        "in_scope", "out_of_scope", "in_progress", "complete", "deferred"
-    ]
+    scope: Literal["in_scope", "deferred", "out_of_scope"]
+    work_status: Literal["not_started", "in_progress", "complete"] = "not_started"
     owner_agent: str | None = None
     sub_flow_count: int = Field(default=0, ge=0)
     process_area: str | None = None
     description: str | None = None
+    erp_notes: ProcessInventoryErpNotes | None = None
+    scoping_questions: list[str] = Field(default_factory=list)
+    sub_flows: list[ProcessSubFlow] = Field(default_factory=list)
 
 
 class ProcessInventoryEdge(BaseModel):

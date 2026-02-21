@@ -1,10 +1,20 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-20 (Session 013)
+> Last updated: 2026-02-20 (Session 014)
 > Current phase: Phase 1 — Personal Use MVP
 > Current iteration: 1.5 — Agent Harness
 
 ---
+
+## ✅ Completed Session 014 — Business Requirements + ERP Fit/Gap Workspace
+
+### Business Requirements Table (d-004-04)
+- 324 requirements across 20 process areas with typed model (BusinessRequirement, FitGapAnalysis, ERPAssessment)
+- PA-05 Ceded Reinsurance as Fit/Gap pilot: 25 requirements assessed across 4 ERP platforms (SAP w/ FS-RI, SAP w/o FS-RI, Oracle Cloud, Workday)
+- Agentic gap closure ratings (A0–A3) with autonomy levels applied to all assessed requirements
+- BusinessRequirementsTable component: SummaryBar, FilterBar (tag/segment/fit/agentic chips + search + assessed-only toggle), Framework legend, collapsible PA groups, RequirementRow with FitGapCard detail panel
+- Workspace dispatch extended for `business_requirements` kind
+- Business Process Design workstream now has 3 of 5 deliverables with frontend workspaces (d-004-01, d-004-03, d-004-04)
 
 ## ✅ Completed Session 013 — Custom Flow Renderer + AI Framework
 
@@ -146,10 +156,10 @@ Key features:
 
 ### Build sequence (when ready)
 
-1. Process Inventory workspace — interactive scoping, workplan expansion trigger
-2. Future State workspace — overlay model, standard question set, baseline generation
+1. ~~Process Inventory workspace~~ — ✅ Session 012–013
+2. ~~Future State workspace~~ — ✅ Session 012–013
 3. Cross-agent connection wiring — GL finding `process_area` tagging + Functional Consultant query
-4. Business Requirements workspace — library pre-population, overlay-driven requirements
+4. ~~Business Requirements workspace~~ — ✅ Session 014 (324 reqs + Fit/Gap pilot on PA-05)
 5. Gap Analysis workspace — ERP-dependent preflight + artifact
 6. User Stories workspace — optional, gated by engagement scope toggle
 

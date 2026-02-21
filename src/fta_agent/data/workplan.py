@@ -29,11 +29,23 @@ class Deliverable(BaseModel):
         default=True,
         description="Whether this deliverable is in scope for the engagement",
     )
+    agent_summary: str | None = Field(
+        default=None,
+        description="One-line output summary or blocker reason written by the agent",
+    )
+    needs_input: bool = Field(
+        default=False,
+        description="Agent is waiting on consultant judgment or action to proceed",
+    )
 
 
 class Workstream(BaseModel):
     workstream_id: str = Field(..., description="Unique identifier for this workstream")
     name: str = Field(..., min_length=1, description="Workstream display name")
+    owner_agent: str | None = Field(
+        default=None,
+        description="Agent responsible for this workstream: consulting_agent | gl_design_coach | functional_consultant",
+    )
     deliverables: list[Deliverable] = Field(default_factory=list)
 
 

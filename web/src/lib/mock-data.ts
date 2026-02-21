@@ -1,3 +1,5 @@
+import { BUSINESS_REQUIREMENTS } from "./mock-requirements";
+
 export type EngagementPhase =
   | "discovery"
   | "current_state"
@@ -119,7 +121,7 @@ const ACME_WORKPLAN: Workplan = {
       deliverables: [
         { deliverable_id: "d-004-01", name: "Process Inventory (R2R, P2P, FP&A, Financial Close, Treasury, Fixed Assets, Reinsurance Accounting, Claims Finance, Regulatory/Statutory Reporting, Tax)", status: "in_progress", owner_agent: "functional_consultant", agent_summary: "R2R, P2P, and Financial Close complete · Claims Finance and Reinsurance in progress" },
         { deliverable_id: "d-004-03", name: "Future State Process Maps", status: "not_started", owner_agent: "functional_consultant", agent_summary: "SP-02.1 Journal Entry Processing · 1 of 70 maps" },
-        { deliverable_id: "d-004-04", name: "Business Requirements by Process", status: "in_progress", owner_agent: "functional_consultant", agent_summary: "47 requirements captured · Structured, tagged, and linked to process steps" },
+        { deliverable_id: "d-004-04", name: "Business Requirements by Process", status: "in_progress", owner_agent: "functional_consultant", agent_summary: "314 requirements · 25 assessed with ERP Fit/Gap (PA-05 pilot) · Awaiting validation" },
         { deliverable_id: "d-004-05", name: "User Stories Backlog", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-004-06", name: "Process Gap Analysis", status: "not_started", owner_agent: "functional_consultant" },
       ],
@@ -481,7 +483,48 @@ export interface ProcessInventoryData {
   edges: ProcessInventoryEdge[];
 }
 
-export type ProcessGraphData = ProcessFlowData | ProcessInventoryData;
+// ── Business Requirements + Fit/Gap types ─────────────────────────────────
+
+export type BRTag = "REG" | "FIN" | "OPS" | "CTL" | "INT";
+export type BRSegment = "P&C" | "Life" | "Re" | "All";
+export type BRStatus = "draft" | "validated" | "deferred" | "out_of_scope";
+
+export type FitRating = "F1" | "F2" | "F3" | "F4" | "F5";
+export type AgenticRating = "A0" | "A1" | "A2" | "A3";
+export type EffortSize = "S" | "M" | "L" | "XL";
+
+export interface ERPAssessment {
+  platform: string;
+  rating: FitRating;
+  notes: string;
+}
+
+export interface FitGapAnalysis {
+  erp_assessments: ERPAssessment[];
+  gap_remediation?: string;
+  gap_effort?: string;
+  agentic_rating?: AgenticRating;
+  agentic_bridge?: string;
+  agentic_autonomy?: string;
+}
+
+export interface BusinessRequirement {
+  id: string;
+  pa_id: string;
+  sp_id: string;
+  tag: BRTag;
+  segment: BRSegment;
+  text: string;
+  status: BRStatus;
+  fit_gap?: FitGapAnalysis;
+}
+
+export interface BusinessRequirementsData {
+  kind: "business_requirements";
+  requirements: BusinessRequirement[];
+}
+
+export type ProcessGraphData = ProcessFlowData | ProcessInventoryData | BusinessRequirementsData;
 
 // ── Workspace types ────────────────────────────────────────────────────────
 
@@ -1119,27 +1162,24 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
   "d-004-04": {
     deliverable_id: "d-004-04",
     agent_kind: "knowledge_grounded",
-    run_state: "preflight",
+    run_state: "running",
     preflight_title: "Business Requirements by Process",
     preflight_bullets: [
-      "47 standard requirements pre-populated from insurance finance library",
-      "Process areas: R2R, P2P, Financial Close, Reinsurance Accounting",
-      "Each requirement tagged to process step and RACI role",
-      "SAP S/4HANA fit-gap indicators pre-filled",
+      "314 requirements across 20 process areas from insurance finance library",
+      "25 requirements assessed with ERP Fit/Gap analysis (PA-05 pilot)",
+      "4 ERP platforms assessed: SAP with/without FS-RI, Oracle Cloud, Workday",
+      "Agentic gap closure ratings applied to all assessed requirements",
       "Ready for workshop validation with client finance team",
     ],
-    columns: [
-      { key: "req_id", label: "ID", width: "70px" },
-      { key: "process", label: "Process", width: "120px" },
-      { key: "requirement", label: "Requirement", width: "320px" },
-      { key: "priority", label: "Priority", width: "80px" },
-      { key: "status", label: "Status", width: "100px" },
-    ],
+    columns: [],
     rows: [],
+    graph: BUSINESS_REQUIREMENTS,
     activity: [
-      { step: 1, label: "Load leading practice library", detail: "47 requirements · Insurance Finance · SAP S/4HANA", status: "pending" },
-      { step: 2, label: "Adapt to engagement context", detail: "Apply segment, ERP, and phase filters", status: "pending" },
-      { step: 3, label: "Generate requirements draft", detail: "Structured, tagged, and linked to process steps", status: "pending" },
+      { step: 1, label: "Loaded leading practice library", detail: "314 requirements · 20 process areas · Insurance Finance", status: "complete", duration_ms: 1120 },
+      { step: 2, label: "Applied engagement context", detail: "P&C segment · SAP S/4HANA · Design phase", status: "complete", duration_ms: 890 },
+      { step: 3, label: "Ran ERP Fit/Gap pilot", detail: "PA-05 Ceded Reinsurance · 25 requirements · 4 platforms", status: "complete", duration_ms: 4320 },
+      { step: 4, label: "Applied agentic gap closure", detail: "A1–A3 ratings with autonomy levels", status: "complete", duration_ms: 2150 },
+      { step: 5, label: "Awaiting validation", detail: "Workshop with client finance team", status: "active" },
     ],
   },
 };

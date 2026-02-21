@@ -8,6 +8,7 @@ import {
   type AgentRunState,
   type ProcessInventoryData,
   type ProcessFlowData,
+  type BusinessRequirementsData,
 } from "@/lib/mock-data";
 import PreflightScreen from "@/components/workspace/PreflightScreen";
 import InsightCards from "@/components/workspace/InsightCards";
@@ -17,6 +18,7 @@ import AgentChatInput from "@/components/workspace/AgentChatInput";
 import ActivityPanel from "@/components/workspace/ActivityPanel";
 import { ProcessInventoryGraph } from "@/components/workspace/ProcessInventoryGraph";
 import { ProcessFlowMap } from "@/components/workspace/ProcessFlowMap";
+import { BusinessRequirementsTable } from "@/components/workspace/BusinessRequirementsTable";
 
 const AGENT_LABEL: Record<string, string> = {
   gl_design_coach: "GL Design Coach",
@@ -131,10 +133,10 @@ export default function DeliverablePage() {
 
         {/* Artifact view */}
         {showArtifact && runState !== "running" && (
-          <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
             {/* Graph path — process inventory */}
             {hasGraph && workspaceTemplate.graph!.kind === "process_inventory" && (
-              <div className="flex-1 overflow-hidden">
+              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
                 <ProcessInventoryGraph
                   data={workspaceTemplate.graph as ProcessInventoryData}
                 />
@@ -143,9 +145,18 @@ export default function DeliverablePage() {
 
             {/* Graph path — process flow map */}
             {hasGraph && workspaceTemplate.graph!.kind === "process_flow" && (
-              <div className="flex-1 overflow-hidden">
+              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
                 <ProcessFlowMap
                   data={workspaceTemplate.graph as ProcessFlowData}
+                />
+              </div>
+            )}
+
+            {/* Graph path — business requirements */}
+            {hasGraph && workspaceTemplate.graph!.kind === "business_requirements" && (
+              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <BusinessRequirementsTable
+                  data={workspaceTemplate.graph as BusinessRequirementsData}
                 />
               </div>
             )}
