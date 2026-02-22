@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-22 (Session 015)
+> Last updated: 2026-02-22 (Session 016)
 > Current phase: Phase 1 — Personal Use MVP
 > Strategy: Workshop Mode first (differentiator), then Framework Expansion + Data Slice
 
@@ -34,7 +34,7 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 | Session | Focus | Stream | Items |
 |---------|-------|--------|-------|
 | **015** | Product plan docs ✅ + 4 knowledge workspaces ✅ | A | A1, A2, A3, A9 |
-| **016** | Workshop layout + keyboard capture system | W | W1, W2 |
+| **016** | Workshop layout toggle ✅ + brightness fix ✅ | W | W1 |
 | 017 | Live requirements + process flow editing | W | W3, W4 |
 | 018 | Agent listening mode + micro-interactions | W | W5, W6 |
 | 019 | Backend persistence + workshop session continuity | W | W7, W8 |
@@ -53,15 +53,9 @@ The differentiator. Live capture against the leading practice baseline during cl
 
 **Key principle:** Most common action is modification/annotation of existing content, not creation from scratch.
 
-### W1 — Workshop Layout Toggle (Session 016)
+### W1 — Workshop Layout Toggle ✅ (Session 016)
 
-Toggle workshop mode with `Cmd+Shift+W`. Layout changes:
-- WorkplanSpine hidden
-- Process canvas 70%, requirements panel 30%
-- Capture bar pinned to bottom
-- Visual indicator that workshop mode is active (subtle amber bar or mode badge)
-
-Applies to Business Process workspaces: d-004-01 (Process Inventory), d-004-03 (Process Flow Maps), d-004-04 (Business Requirements).
+PA-scoped workshop mode. Click "Workshop" button in TopBar → select a process area from dropdown → WorkplanSpine + ActivityPanel hide, artifact expands to full width. Process Inventory and Business Requirements filter to selected PA. Workshop mode persists across d-004-* navigation. Zustand store with session identity + locking model (local state, backend enforcement in W7). `Cmd+E` as power-user shortcut to exit. Brightness/contrast fix across all workspace components.
 
 ### W2 — Keyboard Capture System (Session 016)
 
@@ -221,6 +215,12 @@ Pre-engagement phase with its own deliverables. Sits upstream of the workplan �
 
 ---
 
+## Parked Items
+
+- **d-004-03 index view:** Future State Process Maps needs a list/index of all sub-flows across all PAs (currently hardcoded to SP-02.1). Natural flow: Process Inventory → click sub-flow → lands on specific map. d-004-03 itself should show browsable index. Workshop PA filter would apply.
+
+---
+
 ## What We're NOT Building Yet
 
 - Supabase integration (Phase 2)
@@ -236,9 +236,11 @@ Pre-engagement phase with its own deliverables. Sits upstream of the workplan �
 ## Key Files
 
 ### Frontend
-- `web/src/lib/mock-data.ts` — types, workspace configs, workplan
+- `web/src/lib/mock-data.ts` — types, workspace configs, workplan, PROCESS_AREAS
 - `web/src/lib/mock-requirements.ts` — BR data (324 requirements)
+- `web/src/lib/workshop-store.ts` — Zustand store for workshop mode + session + locks
 - `web/src/app/[engagementId]/deliverables/[deliverableId]/page.tsx` — workspace dispatch
+- `web/src/components/workspace/WorkspaceShell.tsx` — workshop layout wrapper + keyboard shortcut
 - `web/src/components/workspace/` — all workspace components
 
 ### Backend
@@ -256,5 +258,5 @@ Pre-engagement phase with its own deliverables. Sits upstream of the workplan �
 
 - `pnpm --filter web build` — clean TypeScript compilation
 - Navigate to each new workspace via landing page → workplan → deliverable
-- Workshop mode: toggle `Cmd+Shift+W`, verify layout change, test keyboard shortcuts
+- Workshop mode: click Workshop button → select PA, verify layout change, `Cmd+E` to exit
 - No regressions: existing workspaces still render correctly
