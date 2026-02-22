@@ -14,6 +14,7 @@ import type {
   AgentLevel,
   AgentPattern,
 } from "@/lib/mock-data";
+import { useWorkshopStore } from "@/lib/workshop-store";
 
 // ── Agent framework config ─────────────────────────────────────────────────
 
@@ -65,8 +66,8 @@ function dotClass(node: ProcessInventoryNode): string {
 }
 
 function nameClass(node: ProcessInventoryNode): string {
-  if (node.scope === "out_of_scope") return "text-muted/40 line-through";
-  if (node.scope === "deferred")     return "text-muted/60";
+  if (node.scope === "out_of_scope") return "text-muted/80 line-through";
+  if (node.scope === "deferred")     return "text-muted";
   return "text-foreground";
 }
 
@@ -88,12 +89,12 @@ function ErpNotesPanel({ notes }: { notes: ProcessInventoryErpNotes }) {
       className="overflow-hidden"
     >
       <div className="mx-3 mb-1 px-4 py-3 rounded-lg bg-surface/60 border border-border/40 space-y-3">
-        <p className="text-[9px] uppercase tracking-[0.12em] text-[#3B82F6]/70 font-semibold">
+        <p className="text-[9px] uppercase tracking-[0.12em] text-[#3B82F6] font-semibold">
           ERP Notes
         </p>
         {entries.map(({ label, text }) => (
           <div key={label}>
-            <p className="text-[9px] font-semibold text-muted/60 mb-1">{label}</p>
+            <p className="text-[9px] font-semibold text-muted mb-1">{label}</p>
             <p className="text-[11px] text-muted leading-relaxed">{text}</p>
           </div>
         ))}
@@ -113,13 +114,13 @@ function ScopingQsPanel({ questions }: { questions: string[] }) {
       className="overflow-hidden"
     >
       <div className="mx-3 mb-1 px-4 py-3 rounded-lg bg-surface/60 border border-border/40">
-        <p className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6]/70 font-semibold mb-2.5">
+        <p className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold mb-2.5">
           Scoping Questions
         </p>
         <ol className="space-y-2">
           {questions.map((q, i) => (
             <li key={i} className="flex gap-2.5">
-              <span className="flex-shrink-0 text-[10px] font-mono text-muted/40 w-4 pt-px">
+              <span className="flex-shrink-0 text-[10px] font-mono text-muted/80 w-4 pt-px">
                 {i + 1}.
               </span>
               <span className="text-[11px] text-muted leading-relaxed">{q}</span>
@@ -144,13 +145,13 @@ function SubFlowsPanel({ subFlows }: { subFlows: ProcessSubFlow[] }) {
       className="overflow-hidden"
     >
       <div className="mx-3 mb-1 px-4 py-3 rounded-lg bg-surface/60 border border-border/40">
-        <p className="text-[9px] uppercase tracking-[0.12em] text-[#10B981]/70 font-semibold mb-2.5">
+        <p className="text-[9px] uppercase tracking-[0.12em] text-[#10B981] font-semibold mb-2.5">
           Sub-Flows
         </p>
         <div className="space-y-1.5">
           {subFlows.map((sf) => (
             <div key={sf.id} className="flex items-center gap-2.5">
-              <span className="flex-shrink-0 text-[9px] font-mono text-muted/40 w-12">{sf.id}</span>
+              <span className="flex-shrink-0 text-[9px] font-mono text-muted/80 w-12">{sf.id}</span>
               {sf.deliverable_id ? (
                 <Link
                   href={`/${params.engagementId}/deliverables/${sf.deliverable_id}`}
@@ -158,7 +159,7 @@ function SubFlowsPanel({ subFlows }: { subFlows: ProcessSubFlow[] }) {
                   className="group flex items-center gap-1.5 text-[11px] text-foreground/80 hover:text-foreground transition-colors"
                 >
                   <span className="group-hover:underline underline-offset-2">{sf.name}</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/10 text-accent/60 group-hover:bg-accent/20 group-hover:text-accent transition-colors font-mono">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent/10 text-accent group-hover:bg-accent/20 group-hover:text-accent transition-colors font-mono">
                     map ↗
                   </span>
                 </Link>
@@ -212,7 +213,7 @@ function ProcessRow({
 
       {/* PA ID */}
       {node.pa_id && (
-        <span className="flex-shrink-0 text-[9px] font-mono text-muted/40 w-9">
+        <span className="flex-shrink-0 text-[9px] font-mono text-muted/80 w-9">
           {node.pa_id}
         </span>
       )}
@@ -266,13 +267,13 @@ function ProcessRow({
             "text-[10px] font-mono flex-shrink-0 mr-1 transition-colors",
             expandedSection === "flows"
               ? "text-[#10B981]"
-              : "text-muted/50 hover:text-muted",
+              : "text-muted hover:text-foreground/90",
           ].join(" ")}
         >
           {node.sub_flow_count} flows {expandedSection === "flows" ? "▲" : "▾"}
         </button>
       ) : (
-        <span className="text-[10px] font-mono text-muted/50 flex-shrink-0 mr-1">
+        <span className="text-[10px] font-mono text-muted flex-shrink-0 mr-1">
           {node.sub_flow_count} flows
         </span>
       )}
@@ -289,7 +290,7 @@ function ProcessRow({
               "text-[9px] px-2 py-0.5 rounded border transition-colors",
               expandedSection === "erp"
                 ? "bg-[#3B82F6]/15 text-[#3B82F6] border-[#3B82F6]/40"
-                : "border-border/20 text-muted/30 hover:text-muted/60 hover:border-border/50",
+                : "border-border/20 text-muted/70 hover:text-muted hover:border-border/50",
             ].join(" ")}
           >
             ERP {expandedSection === "erp" ? "▲" : "▾"}
@@ -302,7 +303,7 @@ function ProcessRow({
               "text-[9px] px-2 py-0.5 rounded border transition-colors",
               expandedSection === "qs"
                 ? "bg-[#8B5CF6]/15 text-[#8B5CF6] border-[#8B5CF6]/40"
-                : "border-border/20 text-muted/30 hover:text-muted/60 hover:border-border/50",
+                : "border-border/20 text-muted/70 hover:text-muted hover:border-border/50",
             ].join(" ")}
           >
             Qs {expandedSection === "qs" ? "▲" : "▾"}
@@ -323,7 +324,7 @@ function ProcessRow({
               "text-[9px] px-2 py-0.5 rounded border transition-colors",
               node.scope === value
                 ? activeClass
-                : "border-border/20 text-muted/30 hover:text-muted/60 hover:border-border/50",
+                : "border-border/20 text-muted/70 hover:text-muted hover:border-border/50",
             ].join(" ")}
           >
             {label === "In Scope" ? "In" : label === "Out of Scope" ? "Out" : "Defer"}
@@ -372,7 +373,7 @@ function DetailDrawer({
         {/* Name + area */}
         <div>
           {node.pa_id && (
-            <p className="text-[9px] font-mono text-muted/40 mb-1">{node.pa_id}</p>
+            <p className="text-[9px] font-mono text-muted/80 mb-1">{node.pa_id}</p>
           )}
           <p className="text-[13px] font-medium text-foreground leading-snug">
             {node.name}
@@ -380,7 +381,7 @@ function DetailDrawer({
           {node.process_area && (
             <p className="mt-1 text-[10px] text-muted">{node.process_area}</p>
           )}
-          <p className="mt-1.5 text-[10px] font-mono text-muted/60">
+          <p className="mt-1.5 text-[10px] font-mono text-muted">
             {node.sub_flow_count} sub-flow{node.sub_flow_count !== 1 ? "s" : ""}
           </p>
         </div>
@@ -388,7 +389,7 @@ function DetailDrawer({
         {/* Description */}
         {node.description && (
           <div>
-            <p className="text-[9px] uppercase tracking-[0.1em] text-muted/50 mb-1.5">
+            <p className="text-[9px] uppercase tracking-[0.1em] text-muted mb-1.5">
               Description
             </p>
             <p className="text-[11px] text-muted leading-relaxed">{node.description}</p>
@@ -401,7 +402,7 @@ function DetailDrawer({
           const lc = LEVEL_CFG[node.agent_level];
           return (
             <div style={{ borderTop: "1px solid rgba(71,85,105,0.3)", paddingTop: 14 }}>
-              <p className="text-[9px] uppercase tracking-[0.1em] text-muted/50 mb-3">
+              <p className="text-[9px] uppercase tracking-[0.1em] text-muted mb-3">
                 Agent Framework
               </p>
               <div className="flex gap-1.5 mb-3">
@@ -444,7 +445,7 @@ function DetailDrawer({
               </div>
               {node.agent_opportunity && (
                 <div className="mb-2.5">
-                  <p className="text-[9px] text-muted/40 mb-1">Opportunity</p>
+                  <p className="text-[9px] text-muted/80 mb-1">Opportunity</p>
                   <p className="text-[10.5px] text-muted leading-relaxed">{node.agent_opportunity}</p>
                 </div>
               )}
@@ -457,8 +458,8 @@ function DetailDrawer({
                     padding: "8px 10px",
                   }}
                 >
-                  <p className="text-[9px] text-[#3B82F6]/60 mb-1">Key Insight</p>
-                  <p className="text-[10px] text-muted/80 leading-relaxed">{node.agent_key_insight}</p>
+                  <p className="text-[9px] text-[#3B82F6] mb-1">Key Insight</p>
+                  <p className="text-[10px] text-muted leading-relaxed">{node.agent_key_insight}</p>
                 </div>
               )}
             </div>
@@ -467,7 +468,7 @@ function DetailDrawer({
 
         {/* Scope */}
         <div>
-          <p className="text-[9px] uppercase tracking-[0.1em] text-muted/50 mb-2">
+          <p className="text-[9px] uppercase tracking-[0.1em] text-muted mb-2">
             Scope
           </p>
           <div className="flex flex-col gap-1.5">
@@ -481,7 +482,7 @@ function DetailDrawer({
                     "text-left text-[10px] font-medium px-3 py-2 rounded border transition-colors",
                     isActive
                       ? activeClass
-                      : "border-border/30 text-muted/40 hover:text-muted hover:border-border/60",
+                      : "border-border/30 text-muted/80 hover:text-muted hover:border-border/60",
                   ].join(" ")}
                 >
                   {isActive && <span className="mr-1.5 text-[8px]">●</span>}
@@ -494,7 +495,7 @@ function DetailDrawer({
 
         {/* Work status */}
         <div>
-          <p className="text-[9px] uppercase tracking-[0.1em] text-muted/50 mb-2">
+          <p className="text-[9px] uppercase tracking-[0.1em] text-muted mb-2">
             Status
           </p>
           <div className="flex flex-col gap-1.5">
@@ -508,7 +509,7 @@ function DetailDrawer({
                     "text-left text-[10px] font-medium px-3 py-2 rounded border transition-colors",
                     isActive
                       ? activeClass
-                      : "border-border/30 text-muted/40 hover:text-muted hover:border-border/60",
+                      : "border-border/30 text-muted/80 hover:text-muted hover:border-border/60",
                   ].join(" ")}
                 >
                   {isActive && <span className="mr-1.5 text-[8px]">●</span>}
@@ -536,52 +537,52 @@ function SummaryBar({ nodes }: { nodes: ProcessInventoryNode[] }) {
 
   return (
     <div className="flex items-center gap-4 px-6 py-2.5 border-b border-border/40 text-[10px] flex-wrap">
-      <span className="text-muted/60">{nodes.length} processes</span>
+      <span className="text-muted">{nodes.length} processes</span>
       <span>
-        <span className="text-muted/60 mr-1">In scope</span>
+        <span className="text-muted mr-1">In scope</span>
         <span className="font-mono text-foreground">{inScope}</span>
       </span>
       {complete > 0 && (
         <span>
-          <span className="text-muted/60 mr-1">Complete</span>
+          <span className="text-muted mr-1">Complete</span>
           <span className="font-mono text-[#10B981]">{complete}</span>
         </span>
       )}
       {inProgress > 0 && (
         <span>
-          <span className="text-muted/60 mr-1">In progress</span>
+          <span className="text-muted mr-1">In progress</span>
           <span className="font-mono text-[#3B82F6]">{inProgress}</span>
         </span>
       )}
       {deferred > 0 && (
         <span>
-          <span className="text-[#F59E0B]/70 mr-1">Deferred</span>
-          <span className="font-mono text-[#F59E0B]/70">{deferred}</span>
+          <span className="text-[#F59E0B] mr-1">Deferred</span>
+          <span className="font-mono text-[#F59E0B]">{deferred}</span>
         </span>
       )}
       {outOfScope > 0 && (
         <span>
-          <span className="text-[#EF4444]/60 mr-1">Out of scope</span>
-          <span className="font-mono text-[#EF4444]/60">{outOfScope}</span>
+          <span className="text-[#EF4444] mr-1">Out of scope</span>
+          <span className="font-mono text-[#EF4444]">{outOfScope}</span>
         </span>
       )}
       <div className="w-px h-3 bg-border/40" />
       {wave1 > 0 && (
         <span>
-          <span className="text-[#10B981]/60 mr-1">Wave 1</span>
+          <span className="text-[#10B981] mr-1">Wave 1</span>
           <span className="font-mono text-[#10B981]">{wave1}</span>
         </span>
       )}
       {l3plus > 0 && (
         <span>
-          <span className="text-[#A855F7]/60 mr-1">L3+</span>
+          <span className="text-[#A855F7] mr-1">L3+</span>
           <span className="font-mono text-[#A855F7]">{l3plus}</span>
         </span>
       )}
       <div style={{ marginLeft: "auto" }}>
         <Link
           href="/framework"
-          className="text-[9px] font-mono text-muted/40 hover:text-muted/80 transition-colors"
+          className="text-[9px] font-mono text-muted hover:text-foreground transition-colors"
         >
           framework ↗
         </Link>
@@ -593,12 +594,20 @@ function SummaryBar({ nodes }: { nodes: ProcessInventoryNode[] }) {
 // ── Main component ────────────────────────────────────────────────────────
 
 export function ProcessInventoryGraph({ data }: { data: ProcessInventoryData }) {
-  const [nodes, setNodes] = useState<ProcessInventoryNode[]>(data.nodes);
+  const [allNodes, setAllNodes] = useState<ProcessInventoryNode[]>(data.nodes);
   const [selectedNode, setSelectedNode] = useState<ProcessInventoryNode | null>(null);
   const [expandedSection, setExpandedSection] = useState<{ id: string; section: "erp" | "qs" | "flows" } | null>(null);
 
+  // Workshop filter: show only selected PA when workshop is active
+  const workshopMode = useWorkshopStore((s) => s.workshopMode);
+  const workshopSession = useWorkshopStore((s) => s.workshopSession);
+
+  const nodes = workshopMode && workshopSession
+    ? allNodes.filter((n) => n.pa_id === workshopSession.processAreaId)
+    : allNodes;
+
   const updateNode = (nodeId: string, patch: Partial<ProcessInventoryNode>) => {
-    setNodes((prev) => prev.map((n) => (n.id === nodeId ? { ...n, ...patch } : n)));
+    setAllNodes((prev) => prev.map((n) => (n.id === nodeId ? { ...n, ...patch } : n)));
     setSelectedNode((prev) => (prev?.id === nodeId ? { ...prev, ...patch } : prev));
   };
 

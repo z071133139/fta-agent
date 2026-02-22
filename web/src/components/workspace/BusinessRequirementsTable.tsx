@@ -12,6 +12,7 @@ import type {
   ERPAssessment,
   FitGapAnalysis,
 } from "@/lib/mock-data";
+import { useWorkshopStore } from "@/lib/workshop-store";
 
 // ── Config ────────────────────────────────────────────────────────────────
 
@@ -106,7 +107,7 @@ function FitGapCard({ fitGap }: { fitGap: FitGapAnalysis }) {
       {/* ERP Assessment table */}
       <div className="rounded-lg bg-surface/60 border border-border/40 overflow-hidden">
         <div className="px-3 py-2 border-b border-border/30">
-          <span className="text-[9px] uppercase tracking-[0.12em] text-[#3B82F6]/70 font-semibold">
+          <span className="text-[9px] uppercase tracking-[0.12em] text-[#3B82F6] font-semibold">
             ERP Assessment
           </span>
         </div>
@@ -115,7 +116,7 @@ function FitGapCard({ fitGap }: { fitGap: FitGapAnalysis }) {
             const fc = FIT_CFG[a.rating];
             return (
               <div key={a.platform} className="flex items-start gap-3 px-3 py-2">
-                <span className="flex-shrink-0 w-[120px] text-[10px] text-muted/70 pt-0.5">
+                <span className="flex-shrink-0 w-[120px] text-[10px] text-muted pt-0.5">
                   {a.platform}
                 </span>
                 <Badge label={a.rating} color={fc.color} bg={fc.bg} border />
@@ -133,7 +134,7 @@ function FitGapCard({ fitGap }: { fitGap: FitGapAnalysis }) {
         <div className="rounded-lg bg-surface/60 border border-border/40 px-3 py-2.5">
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <span className="text-[9px] uppercase tracking-[0.12em] text-[#F59E0B]/70 font-semibold">
+              <span className="text-[9px] uppercase tracking-[0.12em] text-[#F59E0B] font-semibold">
                 Gap Remediation
               </span>
               <p className="text-[10px] text-muted mt-1 leading-relaxed">{fitGap.gap_remediation}</p>
@@ -148,7 +149,7 @@ function FitGapCard({ fitGap }: { fitGap: FitGapAnalysis }) {
       {/* Agentic Bridge */}
       {fitGap.agentic_rating && (
         <div className="rounded-lg bg-surface/60 border border-border/40 px-3 py-2.5">
-          <span className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6]/70 font-semibold">
+          <span className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold">
             Agentic Bridge
           </span>
           <div className="flex items-center gap-2 mt-1.5">
@@ -159,7 +160,7 @@ function FitGapCard({ fitGap }: { fitGap: FitGapAnalysis }) {
               border
             />
             {fitGap.agentic_autonomy && (
-              <span className="text-[9px] font-mono text-muted/50">{fitGap.agentic_autonomy}</span>
+              <span className="text-[9px] font-mono text-muted">{fitGap.agentic_autonomy}</span>
             )}
           </div>
           {fitGap.agentic_bridge && (
@@ -191,15 +192,15 @@ function FrameworkLegend() {
             <div className="grid grid-cols-2 gap-6">
               {/* Fit Rating column */}
               <div>
-                <p className="text-[9px] uppercase tracking-[0.12em] text-[#3B82F6]/70 font-semibold mb-2.5">
+                <p className="text-[9px] uppercase tracking-[0.12em] text-[#3B82F6] font-semibold mb-2.5">
                   ERP Fit Rating
                 </p>
                 <div className="space-y-1.5">
                   {(["F1", "F2", "F3", "F4", "F5"] as FitRating[]).map((r) => (
                     <div key={r} className="flex items-center gap-2">
                       <Badge label={r} color={FIT_CFG[r].color} bg={FIT_CFG[r].bg} border />
-                      <span className="text-[10px] text-foreground/80">{FIT_CFG[r].label}</span>
-                      <span className="text-[9px] text-muted/40 ml-auto">
+                      <span className="text-[10px] text-foreground/90">{FIT_CFG[r].label}</span>
+                      <span className="text-[9px] text-muted/80 ml-auto">
                         {r === "F1" ? "Config only" : r === "F2" ? "Low-mod effort" : r === "F3" ? "Custom dev" : r === "F4" ? "Separate tool" : "Redesign likely"}
                       </span>
                     </div>
@@ -209,15 +210,15 @@ function FrameworkLegend() {
 
               {/* Agentic column */}
               <div>
-                <p className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6]/70 font-semibold mb-2.5">
+                <p className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold mb-2.5">
                   Agentic Gap Closure
                 </p>
                 <div className="space-y-1.5">
                   {(["A1", "A2", "A3", "A0"] as AgenticRating[]).map((r) => (
                     <div key={r} className="flex items-center gap-2">
                       <Badge label={r} color={AGENTIC_CFG[r].color} bg={AGENTIC_CFG[r].bg} border />
-                      <span className="text-[10px] text-foreground/80">{AGENTIC_CFG[r].label}</span>
-                      <span className="text-[9px] text-muted/40 ml-auto">
+                      <span className="text-[10px] text-foreground/90">{AGENTIC_CFG[r].label}</span>
+                      <span className="text-[9px] text-muted/80 ml-auto">
                         {r === "A1" ? "Agent replaces" : r === "A2" ? "Common cases" : r === "A3" ? "Accelerates" : "Arch change"}
                       </span>
                     </div>
@@ -228,8 +229,8 @@ function FrameworkLegend() {
 
             {/* Effort + pilot note */}
             <div className="mt-4 pt-3 border-t border-border/30">
-              <p className="text-[9px] text-muted/50">
-                <span className="font-semibold text-muted/60">Effort:</span>{" "}
+              <p className="text-[9px] text-muted">
+                <span className="font-semibold text-muted">Effort:</span>{" "}
                 S = &lt;100 hrs · M = 100–500 hrs · L = 500–2K hrs · XL = 2K+ hrs
               </p>
               <p className="text-[9px] text-muted/50 mt-1.5">
@@ -246,7 +247,7 @@ function FrameworkLegend() {
           "text-[9px] px-2 py-0.5 rounded border transition-colors",
           expanded
             ? "bg-[#8B5CF6]/15 text-[#8B5CF6] border-[#8B5CF6]/40"
-            : "border-border/20 text-muted/30 hover:text-muted/60 hover:border-border/50",
+            : "border-border/20 text-muted/70 hover:text-muted hover:border-border/50",
         ].join(" ")}
       >
         Framework {expanded ? "▲" : "▾"}
@@ -289,7 +290,7 @@ function RequirementRow({
         ].join(" ")}
       >
         {/* ID */}
-        <span className="flex-shrink-0 text-[9px] font-mono text-muted/50 w-[72px]">
+        <span className="flex-shrink-0 text-[9px] font-mono text-muted w-[72px]">
           {req.id}
         </span>
 
@@ -300,7 +301,7 @@ function RequirementRow({
         <Badge label={sc.label} color={sc.color} bg={sc.bg} />
 
         {/* Text */}
-        <span className="flex-1 text-[11px] text-foreground/80 leading-snug truncate">
+        <span className="flex-1 text-[11px] text-foreground/90 leading-snug truncate">
           {req.text}
         </span>
 
@@ -316,7 +317,7 @@ function RequirementRow({
         <Badge label={req.status} color={stc.color} bg={stc.bg} />
 
         {/* Chevron */}
-        <span className="text-[10px] text-muted/30 flex-shrink-0">
+        <span className="text-[10px] text-muted/70 flex-shrink-0">
           {expanded ? "▲" : "▾"}
         </span>
       </div>
@@ -334,7 +335,7 @@ function RequirementRow({
           >
             <div className="mx-3 mb-1 px-4 py-3 rounded-lg bg-surface/60 border border-border/40">
               {/* SP + full text */}
-              <p className="text-[9px] font-mono text-muted/40 mb-1">
+              <p className="text-[9px] font-mono text-muted/80 mb-1">
                 {req.sp_id} · {req.pa_id}
               </p>
               <p className="text-[11px] text-muted leading-relaxed">
@@ -382,25 +383,25 @@ function SummaryBar({ requirements, hasAssessed }: { requirements: BusinessRequi
 
   return (
     <div className="flex items-center gap-4 px-6 py-2.5 border-b border-border/40 text-[10px] flex-wrap">
-      <span className="text-muted/60">{total} requirements</span>
+      <span className="text-muted">{total} requirements</span>
       {hasAssessed && (
         <>
           <span>
-            <span className="text-muted/60 mr-1">Assessed</span>
+            <span className="text-muted mr-1">Assessed</span>
             <span className="font-mono text-foreground">{assessed}</span>
-            <span className="text-muted/40 ml-1">(PA-05)</span>
+            <span className="text-muted/80 ml-1">(PA-05)</span>
           </span>
           <div className="w-px h-3 bg-border/40" />
           <span>
-            <span className="text-[#10B981]/60 mr-1">F1/F2</span>
+            <span className="text-[#10B981] mr-1">F1/F2</span>
             <span className="font-mono text-[#10B981]">{fitCounts.f12}</span>
           </span>
           <span>
-            <span className="text-[#F59E0B]/60 mr-1">F3</span>
+            <span className="text-[#F59E0B] mr-1">F3</span>
             <span className="font-mono text-[#F59E0B]">{fitCounts.f3}</span>
           </span>
           <span>
-            <span className="text-[#EF4444]/60 mr-1">F4/F5</span>
+            <span className="text-[#EF4444] mr-1">F4/F5</span>
             <span className="font-mono text-[#EF4444]">{fitCounts.f45}</span>
           </span>
           <div className="w-px h-3 bg-border/40" />
@@ -590,14 +591,25 @@ export function BusinessRequirementsTable({ data }: { data: BusinessRequirements
     assessedOnly: false,
   });
 
+  // Workshop filter
+  const workshopMode = useWorkshopStore((s) => s.workshopMode);
+  const workshopSession = useWorkshopStore((s) => s.workshopSession);
+
+  const baseRequirements = useMemo(() => {
+    if (workshopMode && workshopSession) {
+      return data.requirements.filter((r) => r.pa_id === workshopSession.processAreaId);
+    }
+    return data.requirements;
+  }, [data.requirements, workshopMode, workshopSession]);
+
   const hasAssessed = useMemo(
-    () => data.requirements.some((r) => r.fit_gap),
-    [data.requirements]
+    () => baseRequirements.some((r) => r.fit_gap),
+    [baseRequirements]
   );
 
   // Filter requirements
   const filtered = useMemo(() => {
-    return data.requirements.filter((r) => {
+    return baseRequirements.filter((r) => {
       if (filters.search) {
         const q = filters.search.toLowerCase();
         if (
@@ -621,7 +633,7 @@ export function BusinessRequirementsTable({ data }: { data: BusinessRequirements
       }
       return true;
     });
-  }, [data.requirements, filters]);
+  }, [baseRequirements, filters]);
 
   // Group by PA
   const groups = useMemo(() => {
@@ -650,9 +662,10 @@ export function BusinessRequirementsTable({ data }: { data: BusinessRequirements
       <div className="flex-1 overflow-y-auto px-4 py-4">
         <div className="max-w-3xl space-y-5">
           {groups.size === 0 && (
-            <div className="flex items-center justify-center py-16 text-sm text-muted/50">
+            <div className="flex items-center justify-center py-16 text-sm text-muted">
               No requirements match the current filters.
             </div>
+
           )}
 
           {[...groups].map(([paId, reqs]) => {
@@ -666,17 +679,17 @@ export function BusinessRequirementsTable({ data }: { data: BusinessRequirements
                   onClick={() => togglePA(paId)}
                   className="flex items-center gap-2.5 w-full text-left px-3 mb-1.5 group"
                 >
-                  <span className="text-[9px] font-mono text-muted/40">{paId}</span>
+                  <span className="text-[9px] font-mono text-muted/80">{paId}</span>
                   <h3 className="text-[10px] uppercase tracking-[0.14em] text-muted font-semibold">
                     {PA_NAMES[paId] ?? paId}
                   </h3>
-                  <span className="text-[9px] font-mono text-muted/40 ml-1">
+                  <span className="text-[9px] font-mono text-muted/80 ml-1">
                     {reqs.length}
                   </span>
                   {assessedCount > 0 && (
                     <Badge label={`${assessedCount} assessed`} color="#3B82F6" bg="rgba(59,130,246,0.1)" />
                   )}
-                  <span className="text-[10px] text-muted/30 ml-auto group-hover:text-muted/50 transition-colors">
+                  <span className="text-[10px] text-muted/70 ml-auto group-hover:text-muted transition-colors">
                     {collapsed ? "▾" : "▲"}
                   </span>
                 </button>

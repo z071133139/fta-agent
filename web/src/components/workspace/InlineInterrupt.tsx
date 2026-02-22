@@ -32,7 +32,7 @@ export default function InlineInterrupt({
         <span className="text-success text-xs">✓</span>
         <span className="text-xs text-muted">
           Decision recorded:{" "}
-          <span className="text-foreground/70">{resolved}</span>
+          <span className="text-foreground/90">{resolved}</span>
         </span>
       </div>
     );
@@ -49,7 +49,7 @@ export default function InlineInterrupt({
       </div>
 
       {/* Context */}
-      <p className="text-xs text-foreground/80 leading-relaxed mb-4">
+      <p className="text-xs text-foreground/90 leading-relaxed mb-4">
         {interrupt.context}
       </p>
 
@@ -57,7 +57,7 @@ export default function InlineInterrupt({
       <div className="flex flex-col gap-3 mb-4">
         {interrupt.options.map((opt, i) => (
           <div key={i} className="flex gap-3">
-            <span className="shrink-0 text-xs font-mono text-muted/60 mt-0.5">
+            <span className="shrink-0 text-xs font-mono text-muted mt-0.5">
               {String.fromCharCode(65 + i)}
             </span>
             <div>
@@ -84,7 +84,7 @@ export default function InlineInterrupt({
           </button>
         ))}
 
-        <span className="text-[10px] text-muted/50 mx-1">
+        <span className="text-[10px] text-muted mx-1">
           or type a different direction ↓
         </span>
       </div>

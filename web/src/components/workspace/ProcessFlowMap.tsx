@@ -43,7 +43,7 @@ function ZoomControls({
       <button onClick={onZoomOut} className={`${btn} text-[13px] leading-none`} title="Zoom out (−)">
         −
       </button>
-      <span className="px-2 py-1.5 text-[10px] font-mono text-muted/50 min-w-[42px] text-center select-none">
+      <span className="px-2 py-1.5 text-[10px] font-mono text-muted min-w-[42px] text-center select-none">
         {Math.round(zoom * 100)}%
       </span>
       <button onClick={onZoomIn} className={`${btn} text-[13px] leading-none`} title="Zoom in (+)">
@@ -86,7 +86,7 @@ function OverlayPanel({
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-[9px] uppercase tracking-[0.12em] font-medium text-muted/60">
+        <span className="text-[9px] uppercase tracking-[0.12em] font-medium text-muted">
           {node.overlays.length} annotation{node.overlays.length > 1 ? "s" : ""}
         </span>
         <button
@@ -248,7 +248,7 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
 
       {/* Hint */}
       <div className="absolute bottom-4 left-4 z-10">
-        <span className="text-[9px] font-mono text-muted/25 select-none">
+        <span className="text-[9px] font-mono text-muted/70 select-none">
           scroll to zoom · space+drag to pan · double-click to edit
         </span>
       </div>

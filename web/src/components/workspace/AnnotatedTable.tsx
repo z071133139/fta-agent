@@ -77,7 +77,7 @@ export default function AnnotatedTable({
                   return (
                     <td
                       key={col.key}
-                      className="px-3 py-2 text-foreground/80 font-mono align-top relative"
+                      className="px-3 py-2 text-foreground/90 font-mono align-top relative"
                     >
                       {/* Flags column — render row.flags as badges */}
                       {col.key === "flags" ? (
@@ -127,7 +127,7 @@ export default function AnnotatedTable({
                     colSpan={columns.length}
                     className="px-4 py-1.5 bg-surface/60"
                   >
-                    <span className="text-[10px] font-mono text-muted/60">
+                    <span className="text-[10px] font-mono text-muted">
                       {row.provenance}
                     </span>
                   </td>
@@ -149,7 +149,7 @@ export default function AnnotatedTable({
 
       {/* Rows hidden indicator */}
       {interruptIdx >= 0 && !interruptResolved && rows.length > visibleRows.length && (
-        <div className="px-4 py-2 border-t border-border/30 text-[10px] text-muted/50 font-mono">
+        <div className="px-4 py-2 border-t border-border/30 text-[10px] text-muted font-mono">
           {rows.length - visibleRows.length} row
           {rows.length - visibleRows.length !== 1 ? "s" : ""} pending decision
         </div>

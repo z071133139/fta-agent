@@ -109,20 +109,20 @@ export default function WorkplanSpine({
               <button
                 onClick={() => toggleWs(ws.workstream_id)}
                 className={`w-full flex items-center gap-2 px-4 py-2 text-left transition-colors hover:bg-surface-alt/50 ${
-                  hasActive ? "text-foreground/90" : "text-muted"
+                  hasActive ? "text-foreground" : "text-muted"
                 }`}
               >
                 <motion.span
                   animate={{ rotate: isOpen ? 90 : 0 }}
                   transition={{ duration: 0.15 }}
-                  className="text-muted/60 text-[10px] shrink-0"
+                  className="text-muted text-[10px] shrink-0"
                 >
                   ›
                 </motion.span>
                 <span className="text-[11px] font-medium leading-snug flex-1 min-w-0 truncate">
                   {ws.name}
                 </span>
-                <span className="text-[9px] font-mono text-muted/50 shrink-0">
+                <span className="text-[9px] font-mono text-muted shrink-0">
                   {complete}/{ws.deliverables.length}
                 </span>
               </button>

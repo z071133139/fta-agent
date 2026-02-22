@@ -84,19 +84,19 @@ export default function ActivityPanel({ activity }: { activity: ActivityEntry[] 
                         entry.status === "active"
                           ? "text-accent"
                           : entry.status === "complete"
-                          ? "text-foreground/80"
+                          ? "text-foreground/90"
                           : "text-muted"
                       }`}
                     >
                       {entry.label}
                     </p>
                     {entry.detail && (
-                      <p className="text-[10px] text-muted/70 mt-0.5 leading-snug">
+                      <p className="text-[10px] text-muted mt-0.5 leading-snug">
                         {entry.detail}
                       </p>
                     )}
                     {entry.duration_ms !== undefined && entry.status === "complete" && (
-                      <p className="text-[9px] font-mono text-muted/40 mt-0.5">
+                      <p className="text-[9px] font-mono text-muted/80 mt-0.5">
                         {formatDuration(entry.duration_ms)}
                       </p>
                     )}

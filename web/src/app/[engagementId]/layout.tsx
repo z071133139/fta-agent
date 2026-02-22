@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { MOCK_ENGAGEMENTS } from "@/lib/mock-data";
-import WorkplanSpine from "@/components/workspace/WorkplanSpine";
 import WorkspaceTopBar from "@/components/workspace/WorkspaceTopBar";
+import WorkspaceShell from "@/components/workspace/WorkspaceShell";
 
 export default async function EngagementLayout({
   children,
@@ -19,10 +19,7 @@ export default async function EngagementLayout({
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
       <WorkspaceTopBar engagement={engagement} />
-      <div className="flex flex-1 overflow-hidden">
-        <WorkplanSpine engagement={engagement} />
-        <div className="flex flex-1 min-w-0 overflow-hidden">{children}</div>
-      </div>
+      <WorkspaceShell engagement={engagement}>{children}</WorkspaceShell>
     </div>
   );
 }

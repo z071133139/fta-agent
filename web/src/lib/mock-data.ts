@@ -1366,3 +1366,39 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
     ],
   },
 };
+
+// ── Process areas for workshop PA picker ──────────────────────────
+
+export interface ProcessArea {
+  pa_id: string;
+  name: string;
+  process_area: string;
+}
+
+export const PROCESS_AREAS: ProcessArea[] = [
+  { pa_id: "PA-01", name: "Chart of Accounts & Org Structure", process_area: "Foundation" },
+  { pa_id: "PA-02", name: "General Ledger & Multi-Basis Accounting", process_area: "Foundation" },
+  { pa_id: "PA-03", name: "Premium Accounting & Revenue Recognition", process_area: "Insurance Core" },
+  { pa_id: "PA-04", name: "Loss & Claims Accounting", process_area: "Insurance Core" },
+  { pa_id: "PA-05", name: "Ceded Reinsurance Accounting", process_area: "Insurance Core" },
+  { pa_id: "PA-06", name: "Assumed Reinsurance Accounting", process_area: "Insurance Core" },
+  { pa_id: "PA-07", name: "Policyholder Liabilities & Reserves", process_area: "Insurance Core" },
+  { pa_id: "PA-08", name: "Investment Accounting Interface", process_area: "Insurance Core" },
+  { pa_id: "PA-09", name: "Accounts Payable & Commission Payments", process_area: "Operational Finance" },
+  { pa_id: "PA-10", name: "Accounts Receivable & Premium Collections", process_area: "Operational Finance" },
+  { pa_id: "PA-11", name: "Intercompany & Pooling", process_area: "Operational Finance" },
+  { pa_id: "PA-12", name: "Fixed Assets & Leases", process_area: "Operational Finance" },
+  { pa_id: "PA-13", name: "Cash Management & Treasury", process_area: "Operational Finance" },
+  { pa_id: "PA-14", name: "Expense Management & Cost Allocation", process_area: "Operational Finance" },
+  { pa_id: "PA-15", name: "Financial Close & Consolidation", process_area: "Close & Reporting" },
+  { pa_id: "PA-16", name: "Statutory & Regulatory Reporting", process_area: "Close & Reporting" },
+  { pa_id: "PA-17", name: "GAAP/IFRS External Reporting", process_area: "Close & Reporting" },
+  { pa_id: "PA-18", name: "Tax Accounting & Compliance", process_area: "Close & Reporting" },
+  { pa_id: "PA-19", name: "Management Reporting & Analytics", process_area: "Close & Reporting" },
+  { pa_id: "PA-20", name: "Data Integration & Sub-Ledger Interfaces", process_area: "Foundation" },
+];
+
+/** Workshop eligibility: any deliverable in ws-004 (Requirements & Design) */
+export function isWorkshopEligible(deliverableId: string): boolean {
+  return deliverableId.startsWith("d-004-");
+}

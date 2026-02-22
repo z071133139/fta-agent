@@ -58,7 +58,7 @@ export default function PreflightScreen({
           {/* Source badge */}
           {sourceLabel && (
             <div className="flex items-center gap-2 mb-6 pt-4 border-t border-border/30">
-              <span className="text-[10px] text-muted/60 uppercase tracking-[0.1em]">
+              <span className="text-[10px] text-muted uppercase tracking-[0.1em]">
                 Source
               </span>
               <span className="text-[11px] font-mono text-muted bg-surface-alt/60 px-2 py-0.5 rounded">

@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   MOCK_ENGAGEMENTS,
   MOCK_WORKSPACES,
+  isWorkshopEligible,
   type AgentRunState,
   type ProcessInventoryData,
   type ProcessFlowData,
   type BusinessRequirementsData,
 } from "@/lib/mock-data";
+import { useWorkshopStore } from "@/lib/workshop-store";
 import PreflightScreen from "@/components/workspace/PreflightScreen";
 import InsightCards from "@/components/workspace/InsightCards";
 import AnnotatedTable from "@/components/workspace/AnnotatedTable";
@@ -51,6 +54,11 @@ export default function DeliverablePage() {
   }
 
   const agentName = AGENT_LABEL[agentId] ?? agentId;
+
+  // Workshop mode
+  const workshopMode = useWorkshopStore((s) => s.workshopMode);
+  const eligible = isWorkshopEligible(params.deliverableId);
+  const isWorkshopActive = workshopMode && eligible;
 
   // Run state: start from template, allow transitions
   const [runState, setRunState] = useState<AgentRunState>(
@@ -202,12 +210,37 @@ export default function DeliverablePage() {
 
             {/* Chat input — always visible at bottom */}
             <AgentChatInput runState={runState} agentName={agentName} />
+
+            {/* Workshop capture bar placeholder */}
+            <AnimatePresence>
+              {isWorkshopActive && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="shrink-0 overflow-hidden"
+                >
+                  <div className="flex items-center gap-3 px-5 py-2.5 border-t border-warning/20 bg-warning/5">
+                    <div className="h-1.5 w-1.5 rounded-full bg-warning/50" />
+                    <span className="text-[11px] font-mono text-warning/60">
+                      Capture bar — W2
+                    </span>
+                    <span className="text-[9px] text-muted/40 font-mono ml-auto">
+                      N step · R requirement · G gap · A annotate
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>
 
-      {/* Activity panel — right rail */}
-      <ActivityPanel activity={workspaceTemplate.activity} />
+      {/* Activity panel — right rail (hidden in workshop mode) */}
+      {!isWorkshopActive && (
+        <ActivityPanel activity={workspaceTemplate.activity} />
+      )}
     </div>
   );
 }
