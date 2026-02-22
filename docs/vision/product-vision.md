@@ -25,13 +25,34 @@ The framework handles structured domain content and analytical work. The consult
 
 FTA is built around **deliverables**, not conversations. Each deliverable in the engagement workplan has a dedicated workspace. Some workspaces are **agent-powered** (GL Account Analysis — agent ingests data, runs analysis, produces artifacts). Others are **knowledge-powered** (Business Requirements — curated domain library the consultant navigates and customizes). Some are **hybrid** (Process Inventory — knowledge library enriched by agent findings).
 
+### The Full Lifecycle
+
+FTA covers the complete engagement lifecycle — from first executive meeting through delivery:
+
+**Pursuit phase** — before you win the work. The consultant pulls up the Scoping Canvas in a first meeting with the CFO. 7 transformation themes radiating from the client's company. As the conversation flows, scope decisions, pain points, and priorities are captured structured and in real-time. The canvas itself signals domain competence. At the end, the scope document exports as a PDF leave-behind. Pursuit deliverables include: Scoping Canvas, Executive Summary, Value Hypothesis, Proposal, RFP Response.
+
+**Delivery phase** — after you win. The scope captured in pursuit flows directly into the workplan. The 7 themes become the 7 workstreams. Pain points become early findings. Nothing is re-gathered.
+
 ### The Navigation Flow
 
-1. **Landing screen** — consultant sees their active engagements, open decisions, and high-priority items
-2. **Workplan panel** — click an engagement to see the full workplan (workstreams, deliverables, status, scope)
-3. **Deliverable workspace** — click any deliverable to open the workspace where the agent does its work
+1. **Landing screen** — consultant sees active pursuits (pre-engagement) and active engagements (delivery), clearly separated
+2. **Pursuit workspace** (`/pursue/[pursuitId]`) — scoping canvas, proposal tools
+3. **Workplan panel** — click an engagement to see the full workplan (workstreams, deliverables, status, scope)
+4. **Deliverable workspace** — click any deliverable to open the workspace
 
 This is intentionally not a chat interface. It is a structured workspace where agents produce artifacts that consultants review and steer.
+
+### Three Product Modes
+
+The same workspaces serve three distinct interaction patterns:
+
+| Mode | When | Interaction |
+|------|------|------------|
+| **Pursuit** | Pre-engagement, exec meeting | Scoping canvas, radial domain map, pain point capture |
+| **Workshop** | During delivery, client in the room | Live capture against leading practice baseline, keyboard-first, agent-assisted |
+| **Solo** | Between workshops, consultant alone | Review, refine, run agent analysis, prepare next session |
+
+**Workshop mode** is where FTA's agent value is most visible. The consultant pulls up the process flow or requirements table on a projector. The leading practice baseline is pre-loaded. The client team reacts — "we have an extra approval step here," "that takes us 3 days," "we don't do that today." The consultant captures changes with keyboard shortcuts (`N` new step, `R` new requirement, `G` flag gap). The agent quietly assists: auto-classifying requirements, flagging cross-session overlaps, detecting gaps. The artifact updates in real-time — no post-workshop manual update needed.
 
 ### Three Deliverable Models
 

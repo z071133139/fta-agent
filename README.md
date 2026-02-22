@@ -19,11 +19,27 @@ Some deliverables are **agent-powered** (GL Account Analysis — agent ingests d
 
 ## The Product Experience
 
+### Full Lifecycle — Pursuit Through Delivery
+
+FTA covers the complete engagement lifecycle:
+
+**Pursuit phase** (`/pursue/[pursuitId]`) — before you win the work. The Scoping Canvas — a radial domain map with 7 transformation themes — is pulled up on screen during a first executive meeting. Pain points, scope decisions, and priorities are captured live. When you win, scope flows directly into the workplan.
+
+**Delivery phase** (`/[engagementId]/deliverables/[deliverableId]`) — the workplan drives. 7 workstreams, 35 deliverables, each with a dedicated workspace.
+
+### Three Product Modes
+
+| Mode | When | How it works |
+|------|------|-------------|
+| **Pursuit** | Exec meeting | Scoping canvas on projector, capturing scope and pain points |
+| **Workshop** | Client in the room | Live capture against pre-loaded leading practice baseline, keyboard-first |
+| **Solo** | Consultant alone | Review, refine, run agent analysis, prepare next session |
+
 ### Landing Screen
-Consultants open FTA and see their active engagements. Each card shows live status — open decisions, high-severity findings, blocked items — and the team of consultants on the engagement. Clicking reveals the full workplan: 7 workstreams, 35+ deliverables, scope editing, per-workstream progress tracking.
+Consultants open FTA and see active **pursuits** (pre-engagement) above active **engagements** (delivery). Pursuit cards show scope progress and pain points. Engagement cards show open decisions, findings, and blocked items. Clicking reveals the workspace.
 
 ### Deliverable Workspace
-Clicking any deliverable opens the workspace — the core product screen. Every deliverable has a dedicated workspace where content is produced — either by an agent analyzing client data, from a curated domain library, or a combination.
+Every deliverable has a dedicated workspace where content is produced — either by an agent analyzing client data, from a curated domain library, or a combination.
 
 ```
 ┌──────────────────────┬─────────────────────────────────┬─────────────┐

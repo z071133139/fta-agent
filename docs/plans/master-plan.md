@@ -27,6 +27,25 @@ It is **not** a chatbot with finance knowledge. It is **not** a template library
 
 All agents read from and write to the **Shared Engagement Context** ("Engagement Brain").
 
+**Three product modes (Session 015):**
+
+| Mode | When | What FTA does |
+|------|------|--------------|
+| **Pursuit** | Pre-engagement, exec meeting | Scoping canvas, pain points, proposal generation |
+| **Workshop** | During delivery, client in the room | Live capture against leading practice baseline, agent-assisted structuring |
+| **Solo** | Between workshops, consultant alone | Review, refine, run agent analysis, prepare next session |
+
+**Full product lifecycle:**
+
+```
+PURSUIT PHASE                           DELIVERY PHASE
+─────────────                           ──────────────
+Qualify → Scope → Propose → Win ────►   Workplan created from pursuit scope
+                              Lost ──►  Archived
+```
+
+The pursuit phase has its own deliverables (Scoping Canvas, Executive Summary, Value Hypothesis, Proposal, RFP Response) and its own route (`/pursue/[pursuitId]`). The workplan (WS-001 through WS-007) only exists after you win the work. Scope captured in pursuit flows directly into the workplan — nothing is re-gathered.
+
 **Full three-layer architecture (post-MVP):**
 - **Layer 1:** General consulting tools (expanded from Functional Consultant)
 - **Layer 2:** Domain specialist agents (GL Design Coach first, then Close Process Architect, Regulatory Advisor, etc.)

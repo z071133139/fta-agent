@@ -121,13 +121,28 @@ This distinction drives the preflight screen, insight card display, and the "lib
 
 ```
 / (landing)
-├── Engagement cards + workplan panel
+├── Pursuit cards (pre-engagement)
+│   └── /pursue/[pursuitId]/                     ← pursuit workspace
+│       └── /[deliverableId]/                    ← pursuit deliverable (scoping canvas, proposal, etc.)
 │
-└── /[engagementId]/                         ← engagement layout (WorkplanSpine + TopBar)
-    └── /deliverables/[deliverableId]/        ← deliverable workspace
+├── Engagement cards (delivery)
+│   └── /[engagementId]/                         ← engagement layout (WorkplanSpine + TopBar)
+│       └── /deliverables/[deliverableId]/        ← deliverable workspace
 ```
 
+**Two-phase lifecycle:** Pursuits (pre-engagement) and engagements (delivery) live on the same landing page but are visually distinct. When a pursuit is won, scope data flows into a new engagement's workplan.
+
 **Deliverable-centric routing:** Routes are scoped to the deliverable being built, not to the agent that builds it. The agent is metadata on the deliverable. This means the URL and navigation model are stable even as agents evolve.
+
+### Three Product Modes
+
+| Mode | When | Layout changes |
+|------|------|---------------|
+| **Pursuit** | Exec meeting, pre-engagement | Scoping canvas full-screen, no WorkplanSpine |
+| **Workshop** | Client workshop, projector | `Cmd+Shift+W` — WorkplanSpine hidden, canvas 70%, requirements panel 30%, capture bar pinned |
+| **Solo** | Consultant alone, between workshops | Full 3-panel layout (WorkplanSpine + artifact + activity) |
+
+Workshop mode is keyboard-first: `N` new step, `R` new requirement, `G` flag gap, `A` annotate, `Y` accept agent suggestion, `Cmd+K` command palette. The agent runs in "listening" mode — subtle blue breathing pulse, non-blocking suggestion chips.
 
 ### Workspace Shell (Three Panels)
 

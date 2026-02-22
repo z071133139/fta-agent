@@ -10,7 +10,15 @@
 
 FTA is an **interactive consulting framework** for insurance finance transformations, with AI agents embedded as capabilities. The framework is the product. Some deliverables are agent-powered (GL Account Analysis), others are knowledge-powered (Business Requirements, RACI Matrix), some are hybrid (Process Inventory).
 
-**Three workstreams, interleaved:**
+### Three Product Modes
+
+| Mode | When | What FTA does |
+|------|------|--------------|
+| **Pursuit** | Pre-engagement, exec meeting | Scoping canvas, pain points, proposal generation |
+| **Workshop** | During delivery, client in the room | Live capture against leading practice baseline, agent-assisted structuring |
+| **Solo** | Between workshops, consultant alone | Review, refine, run agent analysis, prepare next session |
+
+### Three Build Streams (interleaved)
 
 | Stream | Focus | Dependency |
 |--------|-------|------------|
@@ -97,12 +105,46 @@ Get d-005-01 working with real data: upload GL → agent analyzes → workspace 
 
 ---
 
+## Pursuit Phase (designed Session 015, build TBD)
+
+Pre-engagement phase with its own deliverables. Sits upstream of the workplan — same app, same login, separate navigation.
+
+**Route:** `/pursue/[pursuitId]` and `/pursue/[pursuitId]/[deliverableId]`
+
+**Landing page:** Pursuits above engagements (Option A — landing page split).
+
+**Scoping Canvas (P1):** Radial domain map with 7 transformation themes. Pulled up on screen during first executive meeting. Each theme captures scope signal, priority, pain points. Themes map to the 7 workstreams — scope flows into workplan on win.
+
+**Pursuit deliverables:** Scoping Canvas, Executive Summary, Value Hypothesis, Proposal, RFP Response.
+
+**Scoping questions** derived from existing `ProcessInventoryNode.scoping_questions` and `description` fields, elevated to executive language.
+
+---
+
+## Workshop Mode (designed Session 015, build TBD)
+
+Live capture against leading practice baseline during client workshops. The consultant pulls up the workspace on the projector — the process flow and requirements are pre-loaded from the domain library. The client team reacts to what exists.
+
+**Key principle:** Most common action is modification/annotation of existing content, not creation from scratch.
+
+**Layout:** WorkplanSpine hidden, process canvas 70%, requirements panel 30%, capture bar pinned to bottom. Toggle with `Cmd+Shift+W`.
+
+**Keyboard-first:** `N` new step, `R` new requirement, `G` flag gap, `A` annotate, `Y` accept agent suggestion, `Cmd+K` command palette.
+
+**Agent role:** Quiet colleague — breathing pulse (listening), suggestion chips (non-blocking), cross-session continuity, auto-classification of captured items.
+
+**Micro-interactions:** Node creation springs (200ms), connector draws itself (250ms), requirement "ejects" to panel (350ms), count flips on increment.
+
+---
+
 ## What We're NOT Building Yet
 
 - Supabase integration (Phase 2)
 - Multi-agent handoff protocol
 - Functional Consultant agent implementation
 - Additional data tools beyond GL Account Analysis
+- Pursuit phase implementation (designed, build after Stream A/B/C milestone)
+- Workshop mode implementation (designed, build after Stream A/B/C milestone)
 - Mobile / responsive design
 - Auth beyond mock
 
