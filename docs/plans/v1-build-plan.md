@@ -1,8 +1,8 @@
 # GL Design Coach V1 -- Build Plan
 
-> Status: APPROVED (Session 005, updated Sessions 006, 008, 009, 010, 011)
+> Status: APPROVED (Session 005, updated Sessions 006, 008, 009, 010, 011, 015)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-02-19 (Session 011)
+> Last updated: 2026-02-22 (Session 015)
 
 ## Plan Philosophy
 
@@ -468,33 +468,32 @@
 
 ## Iteration Dependencies
 
+> Updated Session 015: Linear iteration sequence replaced by three-stream build strategy.
+> See NEXT-STEPS.md for the active build plan. Iterations below remain the reference
+> for what needs to be built, but the sequencing is now interleaved across three streams.
+
 ```
 Iteration 0 (Test Data + Eval)     ✅ DONE
          │
 Iteration 1 (Domain Knowledge)    ✅ DONE
          │
-Iteration 1.5 (Agent Harness)     ← IN PROGRESS (1.5A next)
+Iteration 1.5 (Agent Harness)     ✅ Frontend complete (Sessions 007–014)
          │
-         ├── Informs ──► Iteration 2 (Persistence / DuckDB)
-         │                               │
-         ├── Informs ──► Iteration 3 (Data Pipeline)
-         │                               │
-         ├── Gap analysis ──► Iteration 4 (RAG)
-         │                               │
-         └───────────────────────────────┤
-                                         ▼
-                                  Iteration 5 (Integration)
-                                         │
-                                         ▼
-                                  Iteration 6 (Polish)
+         ├── Stream A: Framework Expansion (knowledge workspaces, no agent needed)
+         │   └── Sessions 015, 018, 020
+         │
+         ├── Stream B: Data Slice (d-005-01 end-to-end)
+         │   ├── B1/B5: SSE endpoint + consumer (≈ parts of 1.5A)
+         │   ├── B2/B3: GL data tools (≈ Iteration 3)
+         │   └── B4: Workspace wiring (≈ Iteration 5 for one vertical)
+         │
+         └── Stream C: Platform Polish (navigation, layout)
+             └── Sessions 019, 020
+
+Post-streams: Iterations 2, 4, 6 (persistence, RAG, polish) informed by stream results
 ```
 
-**Critical path:** 0 → 1 → 1.5 → 2 → 5 → 6 (agent harness before persistence, persistence before integration)
-
-**Parallel opportunities:**
-- Iterations 2, 3, 4 can overlap after Iteration 1.5 completes
-- Knowledge base curation (4A) can start during Iteration 2/3 builds
-- Data pipeline (3) is independent of persistence (2) -- both can start after agent harness
+**Critical path is no longer linear.** Stream A (framework) and Stream C (polish) have no backend dependency. Stream B (data slice) is the vertical that proves the agent concept — it pulls selectively from Iterations 1.5A, 3, and 5.
 
 ---
 

@@ -1,189 +1,135 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-20 (Session 014)
+> Last updated: 2026-02-22 (Session 015)
 > Current phase: Phase 1 — Personal Use MVP
-> Current iteration: 1.5 — Agent Harness
+> Strategy: Three-stream build (Framework Expansion + Data Slice + Platform Polish)
 
 ---
 
-## ✅ Completed Session 014 — Business Requirements + ERP Fit/Gap Workspace
+## Strategic Reframe (Session 015)
 
-### Business Requirements Table (d-004-04)
-- 324 requirements across 20 process areas with typed model (BusinessRequirement, FitGapAnalysis, ERPAssessment)
-- PA-05 Ceded Reinsurance as Fit/Gap pilot: 25 requirements assessed across 4 ERP platforms (SAP w/ FS-RI, SAP w/o FS-RI, Oracle Cloud, Workday)
-- Agentic gap closure ratings (A0–A3) with autonomy levels applied to all assessed requirements
-- BusinessRequirementsTable component: SummaryBar, FilterBar (tag/segment/fit/agentic chips + search + assessed-only toggle), Framework legend, collapsible PA groups, RequirementRow with FitGapCard detail panel
-- Workspace dispatch extended for `business_requirements` kind
-- Business Process Design workstream now has 3 of 5 deliverables with frontend workspaces (d-004-01, d-004-03, d-004-04)
+FTA is an **interactive consulting framework** for insurance finance transformations, with AI agents embedded as capabilities. The framework is the product. Some deliverables are agent-powered (GL Account Analysis), others are knowledge-powered (Business Requirements, RACI Matrix), some are hybrid (Process Inventory).
 
-## ✅ Completed Session 013 — Custom Flow Renderer + AI Framework
+**Three workstreams, interleaved:**
 
-### Custom Process Flow Renderer (replaced React Flow)
-- React Flow removed from ProcessFlowMap — swimlane node click blocking was intractable
-- Custom SVG/HTML hybrid renderer built (4 files in `process-flow/`):
-  - `useFlowLayout.ts` — Dagre LR layout, cubic bezier edge paths, swimlane-pinned Y
-  - `useFlowViewport.ts` — pan/zoom with wheel events, space+drag, fit view (rAF)
-  - `FlowEdgeLayer.tsx` — SVG edges, arrowhead markers, `edge-animated` CSS dashes
-  - `FlowNodeLayer.tsx` — HTML nodes, click debounce for select vs double-click edit
-- Inline editing working: double-click task node → textarea → Enter/Escape/blur commit
-- Overlay panel positioned in viewport coords (outside canvas transform)
-- Keyboard shortcuts: F=fit, +/-=zoom, Escape=deselect
-
-### AI & Agentic Engineering Framework
-- 5 new optional fields on `ProcessInventoryNode`: `agent_wave`, `agent_level`, `agent_opportunity`, `agent_pattern`, `agent_key_insight`
-- 2 new exported types: `AgentLevel` ("L0"–"L4"), `AgentPattern` (6 values)
-- All 20 PA nodes populated with wave/level/pattern/opportunity/insight data
-- `/framework` page built — hero, Why section, L0–L4 maturity model, 6 dimensions, 6 patterns, 4-wave roadmap timeline, value metrics table
-- ProcessInventoryGraph updated: W1/L3 badges on each row, agent intel panel in detail drawer, framework link in summary bar
-
-## ✅ Completed Session 012 — Process Visualization (React Flow, initial build)
-
-- `@xyflow/react` + `@dagrejs/dagre` installed
-- ProcessInventoryGraph: two-column layout, scope-status colors, detail drawer, MiniMap
-- ProcessFlowMap: swimlane groups, task/gateway/start-end nodes, NodeToolbar overlays, animated edges
-- Workspace dispatch: `graph` field → graph component; absent → AnnotatedTable
-- React Flow dark theme CSS overrides
-- Python Pydantic models: ProcessFlow + ProcessInventory with discriminated union
-- Mock workspaces: d-004-01 (auto-transitions running→complete), d-004-03 (preflight→flow map)
+| Stream | Focus | Dependency |
+|--------|-------|------------|
+| **A — Framework Expansion** | Knowledge-powered workspaces across all 7 workstreams | None — mock data |
+| **B — Data Slice** | d-005-01 Account Analysis end-to-end with real data | Backend SSE + data tools |
+| **C — Platform Polish** | Navigation, layout, breadcrumbs, WorkplanSpine wiring | Existing components |
 
 ---
 
-## Immediate Priority — Iteration 1.5A (Backend)
+## Session Plan
 
-The frontend is ahead of the backend. The workspace UI is fully built but has zero real API calls — everything runs on mock data. The critical path item is building the agent infrastructure so the frontend has something to connect to.
+| Session | Focus | Stream | Deliverables |
+|---------|-------|--------|--------------|
+| **015** | Product plan doc ✅ + 4 knowledge workspaces | A | A1, A2, A3, A9 |
+| 016 | SSE streaming endpoint + frontend SSE consumer | B | B1, B5 |
+| 017 | GL data ingestion + account profiling tools | B | B2, B3 |
+| 018 | End-to-end data slice + 2 knowledge workspaces | B+A | B4, A4, A5 |
+| 019 | Navigation, layout, WorkplanSpine wiring | C | C1, C2 |
+| 020 | Remaining knowledge workspaces + polish | A+C | A6–A10, C3 |
 
-### What to build next (1.5A):
-
-1. **Extended AgentState** — Add engagement context fields to the LangGraph state:
-   - Engagement metadata (client, segment, ERP)
-   - Active decisions registry reference
-   - Data state (what files have been ingested, what analyses are available)
-
-2. **LLM-based intent router** — Replace keyword routing in `consulting_agent.py` with a lightweight LLM classifier:
-   - Input: user message + conversation summary → Output: target agent + intent label
-   - Target: >90% routing accuracy on 20 representative messages
-   - Fallback: keyword heuristics for clearly identifiable patterns
-
-3. **Outcome capture tools** — `@tool` decorated functions that agents invoke:
-   - `capture_decision(dimension, decision, rationale, alternatives)` → writes to engagement context
-   - `capture_finding(category, text, severity, account)` → writes to engagement context
-   - `capture_requirement(process, text, priority)` → writes to engagement context
-   - All write to in-memory AgentState for now (DuckDB persistence in Iteration 2)
-
-4. **Agent self-introduction** — Each agent greets with engagement context:
-   - GL Design Coach: "I have [N] accounts profiled, [N] decisions recorded..."
-   - Consulting Agent: "You're in [phase], [N] items need input..."
-   - Functional Consultant: "I've captured [N] requirements, [N] unvalidated..."
-
-5. **Handoff protocol** — Consulting Agent → sub-agent → structured outcome → back:
-   - Context packaging before handoff
-   - Outcome capture on return
-   - Latency target: <2s for routing + context packaging
-
-### Reference
-- `src/fta_agent/agent/consulting_agent.py` — current keyword router to replace
-- `src/fta_agent/agent/state.py` — AgentState to extend
-- Session 006 agent design: `docs/design/mvp-agent-design.md`
-- v1-build-plan.md Iteration 1.5A section
+**Milestone after Session 020:** 15/35 deliverables (43%), all 7 workstreams covered, 1 fully agent-powered vertical.
 
 ---
 
-## After 1.5A — Connect Frontend to Backend
+## Stream A — Framework Expansion (Knowledge Workspaces)
 
-Once the agent infrastructure exists:
+10 highest-impact deliverables, one per uncovered workstream + key gaps:
 
-### SSE streaming to workspace
+| # | Deliverable | Workstream | Type | Session |
+|---|-------------|------------|------|---------|
+| A1 | d-001-03 RACI Matrix | WS-001 PM & Governance | Table | 015 |
+| A2 | d-002-02 Scope Definition | WS-002 Business Case | Table | 015 |
+| A3 | d-003-04 ERP Evaluation Summary | WS-003 ERP Selection | Table + scores | 015 |
+| A9 | d-001-04 Risk & Issue Log | WS-001 PM & Governance | Table | 015 |
+| A4 | d-005-02 Chart of Accounts Design | WS-005 COA & GL | Custom | 018 |
+| A5 | d-006-01 Reporting Inventory | WS-006 Reporting | Table | 018 |
+| A6 | d-007-04 Interface Inventory | WS-007 Data & Integration | Table | 020 |
+| A7 | d-004-06 Process Gap Analysis | WS-004 Business Process | Table + fit/gap | 020 |
+| A8 | d-005-04 ACDOCA Dimension Design | WS-005 COA & GL | Custom | 020 |
+| A10 | d-006-03 Regulatory Reporting Map | WS-006 Reporting | Table | 020 |
 
-The workspace `AnnotatedTable` is designed for progressive row reveal. Wire it:
-- Replace mock `run_state` transitions with real SSE events
-- Use `@microsoft/fetch-event-source` (already in CLAUDE.md standards)
-- Match the SSE event envelope defined in CLAUDE.md:
-  ```typescript
-  type SSEEvent = {
-    type: 'token' | 'tool_call' | 'trace_step' | 'interrupt' | 'complete' | 'error'
-    session_id: string
-    timestamp: string
-    payload: Record<string, unknown>
-  }
-  ```
-- Use `ts-pattern` exhaustive match on event types
-
-### Preflight CTA → real agent run
-
-The "Start Analysis" / "Review Library" button currently fakes a 1.2s transition. Wire to:
-- `POST /api/v1/agents/{agent_id}/run` with SSE response
-- AgentChatInput "Steer" messages → `POST /api/v1/agents/{agent_id}/message`
-
-### Generate TypeScript types from OpenAPI
-
-When the API is stable enough:
-```bash
-npx openapi-typescript http://localhost:8000/openapi.json -o web/types/api.generated.ts
-```
+**Build approach:** Most are AnnotatedTable with domain-specific mock data. No new component types needed. Define columns, write mock rows, add to MOCK_WORKSPACES.
 
 ---
 
-## Deferred Items
+## Stream B — Data Slice (GL Account Analysis End-to-End)
 
-| Item | Deferred Until | Notes |
-|------|---------------|-------|
-| WorkplanPanel scope changes → API | Iteration 1.5C | `build_pc_plan_design_template()` factory ready; Consulting Agent workplan management tools needed first |
-| ActivityPanel → real trace data | Post-1.5A | Currently mock; wire to `trace_step` SSE events |
-| WorkplanSpine status updates | Post-1.5C | Deliverable status should update in real-time via Supabase subscriptions in Phase 2 |
-| `loading.tsx` suspense boundaries | Before Phase 2 | Required per CLAUDE.md; skipped in frontend-first sessions |
-| DuckDB persistence for capture tools | Iteration 2 | Capture tools write to in-memory state in 1.5; persistence wired in Iteration 2 |
-| Supabase auth integration | Phase 2 | Using mock auth in Phase 1 |
-| `(workspace)` route group | Cleanup sprint | Old route group `/analysis`, `/design`, etc. can be retired once workspace is fully wired |
+Get d-005-01 working with real data: upload GL → agent analyzes → workspace shows real results.
 
----
+| Step | What | Session |
+|------|------|---------|
+| B1 | SSE streaming endpoint — convert `/api/chat` to SSE, `astream_events(version="v2")` | 016 |
+| B2 | GL data ingestion tool — `@tool ingest_gl_data(file_path)`, Excel/CSV → Polars → DuckDB | 017 |
+| B3 | Account profiling tool — `@tool profile_accounts()`, DuckDB queries, MJE detection | 017 |
+| B4 | Workspace wiring — Preflight CTA → POST with SSE, progressive row reveal | 018 |
+| B5 | Frontend SSE consumer — `@microsoft/fetch-event-source`, `ts-pattern` match, real agent state | 016 |
 
-## Designed but Not Yet Built — Business Process Design Workstream
-
-The Business Process Design workstream is fully designed (Session 010). Build starts after Backend 1.5A is complete and the frontend is connected to real API calls.
-
-### What was designed
-
-Full design at [`docs/design/business-process-design-workstream.md`](docs/design/business-process-design-workstream.md).
-
-Key features:
-- **Process Inventory as scope gate** — interactive workspace, per-process parallelism
-- **Overlay model for Future State** — no Current State deliverable; leading-practice baseline + client overlays
-- **Standard question set** — structured elicitation built into the agent's workflow
-- **Cross-agent connection** — GL Design Coach findings → Future State overlay suggestions (shared engagement context)
-- **Dynamic workplan expansion** — child rows appear as processes are confirmed; parent rows persist
-- **ERP-dependent Gap Analysis** — reads `engagement.erp_target`, SAP S/4HANA first
-- **User Stories Backlog** — optional, scope toggle at engagement setup
-
-### Build sequence (when ready)
-
-1. ~~Process Inventory workspace~~ — ✅ Session 012–013
-2. ~~Future State workspace~~ — ✅ Session 012–013
-3. Cross-agent connection wiring — GL finding `process_area` tagging + Functional Consultant query
-4. ~~Business Requirements workspace~~ — ✅ Session 014 (324 reqs + Fit/Gap pilot on PA-05)
-5. Gap Analysis workspace — ERP-dependent preflight + artifact
-6. User Stories workspace — optional, gated by engagement scope toggle
-
-### Decisions
-
-DEC-035 through DEC-041 in [`docs/decisions/decision-log.md`](docs/decisions/decision-log.md).
+**End state:** Upload Acme_TB_FY2025.xlsx → agent profiles 68 accounts → workspace shows real results with provenance.
 
 ---
 
-## Architecture Notes for Next Session
+## Stream C — Platform Polish
 
-**Current state of the frontend:**
-- Landing page: complete and wired to mock data
-- WorkplanPanel: complete, CTAs navigate to workspace
-- Workspace shell: complete (layout, spine, top bar)
-- Workspace content: complete (preflight, table, interrupt, chat, activity) — all mock data
-- Zero API calls anywhere in the frontend yet
+| Step | What | Session |
+|------|------|---------|
+| C1 | WorkplanSpine as left sidebar, breadcrumb nav, cross-deliverable linking | 019 |
+| C2 | Landing page: workstream progress bars, recent activity feed, status badges | 019 |
+| C3 | Loading states, error states, keyboard navigation | 020 |
 
-**Backend state:**
-- Consulting Agent: keyword router, basic LangGraph graph
-- GL Design Coach: domain knowledge prompts, no data tools yet
-- Functional Consultant: skeleton only
-- Agent state: basic, no engagement context fields
-- Data engine: schema defined but not wired to agents
-- No SSE endpoints yet
+---
 
-**The gap to close:** Backend 1.5A → API endpoints → SSE streaming → workspace wired.
+## Current Coverage
+
+| Workstream | Deliverables with Workspaces | Coverage |
+|-----------|------------------------------|----------|
+| WS-001 PM & Governance | — | 0/5 |
+| WS-002 Business Case | — | 0/4 |
+| WS-003 ERP Selection | — | 0/5 |
+| WS-004 Business Process | d-004-01, d-004-03, d-004-04 | 3/5 |
+| WS-005 COA & GL | d-005-01, d-005-03 | 2/8 |
+| WS-006 Reporting | — | 0/5 |
+| WS-007 Data & Integration | — | 0/5 |
+| **Total** | **5** | **5/35 (14%)** |
+
+---
+
+## What We're NOT Building Yet
+
+- Supabase integration (Phase 2)
+- Multi-agent handoff protocol
+- Functional Consultant agent implementation
+- Additional data tools beyond GL Account Analysis
+- Mobile / responsive design
+- Auth beyond mock
+
+---
+
+## Key Files
+
+### Frontend
+- `web/src/lib/mock-data.ts` — types, workspace configs, workplan
+- `web/src/lib/mock-requirements.ts` — BR data (324 requirements)
+- `web/src/app/[engagementId]/deliverables/[deliverableId]/page.tsx` — workspace dispatch
+- `web/src/components/workspace/` — all workspace components
+
+### Backend
+- `src/fta_agent/agents/consulting_agent.py` — router agent
+- `src/fta_agent/agents/gl_design_coach.py` — specialist (needs tools)
+- `src/fta_agent/api/routes/chat.py` — needs SSE conversion
+- `src/fta_agent/data/engine.py` — DuckDB wrapper
+- `src/fta_agent/data/schemas.py` — GL data models
+- `src/fta_agent/data/outcomes.py` — outcome models
+- `src/fta_agent/data/synthetic.py` — test data generator
+
+---
+
+## Verification (per session)
+
+- `pnpm --filter web build` — clean TypeScript compilation
+- Navigate to each new workspace via landing page → workplan → deliverable
+- For data slice: upload test data → verify agent output in workspace
+- No regressions: existing workspaces still render correctly

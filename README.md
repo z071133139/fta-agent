@@ -1,29 +1,29 @@
 # Finance Transformation Agent (FTA)
 
-> An AI-native agent that reimagines how consultants deliver finance transformation projects in the insurance industry.
+> An interactive consulting framework for insurance finance transformations, with AI agents embedded as capabilities.
 
-**Status: Phase 1 — Personal Use MVP · Iteration 1.5 in progress**
-Full workspace UI complete (Sessions 007–009). Backend agent infrastructure (1.5A) is the next critical path item.
+**Status: Phase 1 — Personal Use MVP · Three-stream build in progress (Session 015+)**
+Full workspace UI complete. 5 of 35 deliverables have workspaces. Building toward 15/35 (all 7 workstreams) + one agent-powered vertical.
 
 ---
 
 ## What is FTA?
 
-FTA is not a delivery platform with AI bolted on. It is a **virtual consulting team** — three agents, each with a distinct role — serving human consultants on insurance finance transformation engagements.
+FTA is an **interactive consulting framework** — not an agent with a UI bolted on. A consultant opens it every day to navigate workstreams, review deliverables, make scoping decisions, and capture requirements.
 
 **The shift:** From consultants who gather, assemble, and format → consultants who steer, validate, and advise.
 
-The agents don't replace consultants. They handle the research, synthesis, and structured output so consultants can spend their time on what only humans can do: judgment, relationships, and accountability.
+Some deliverables are **agent-powered** (GL Account Analysis — agent ingests data, runs analysis, produces artifacts). Others are **knowledge-powered** (Business Requirements — curated domain library the consultant navigates and customizes). Some are **hybrid** (Process Inventory — knowledge library enriched by agent findings). The agent is a capability inside the framework, not the product itself.
 
 ---
 
 ## The Product Experience
 
 ### Landing Screen
-Consultants open FTA and see their active engagements. Each card shows live status — open decisions, high-severity findings, blocked items — and the team of consultants on the engagement. Clicking reveals the full workplan: 7 workstreams, 38+ deliverables, scope editing, per-workstream progress tracking.
+Consultants open FTA and see their active engagements. Each card shows live status — open decisions, high-severity findings, blocked items — and the team of consultants on the engagement. Clicking reveals the full workplan: 7 workstreams, 35+ deliverables, scope editing, per-workstream progress tracking.
 
 ### Deliverable Workspace
-Clicking any deliverable (View →, Open →, Review →, Resolve →) opens the workspace — the core product screen. Every deliverable has a dedicated workspace where an agent does its work and the consultant reviews, steers, and confirms.
+Clicking any deliverable opens the workspace — the core product screen. Every deliverable has a dedicated workspace where content is produced — either by an agent analyzing client data, from a curated domain library, or a combination.
 
 ```
 ┌──────────────────────┬─────────────────────────────────┬─────────────┐
@@ -31,27 +31,43 @@ Clicking any deliverable (View →, Open →, Review →, Resolve →) opens the
 │  (collapsible)       │  (flex-1)                       │  (collapsed │
 │                      │                                  │   default)  │
 │  all workstreams     │  InsightCards (data agents)     │             │
-│  active deliverable  │  AnnotatedTable                 │  what the   │
+│  active deliverable  │  AnnotatedTable / Graph          │  what the   │
 │  highlighted         │  InlineInterrupt (if waiting)   │  agent did, │
 │                      │  ─────────────────────────────  │  step by    │
 │                      │  AgentChatInput (always open)   │  step       │
 └──────────────────────┴─────────────────────────────────┴─────────────┘
 ```
 
-**Two agent value models:**
+### Three Deliverable Models
 
-| Model | Agent | What it means |
-|-------|-------|---------------|
-| **Data-grounded** | GL Design Coach | Findings derived from client data — every row has a source reference, every insight is traceable to a posting line |
-| **Knowledge-grounded** | Functional Consultant | Output starts from a leading practice library, adapted to the engagement's segment and ERP target |
+| Model | Examples | How it works |
+|-------|----------|-------------|
+| **Agent-powered** | GL Account Analysis, Account Mapping | Agent ingests client data, runs analysis. Every row traces to source. |
+| **Knowledge-powered** | Business Requirements, RACI Matrix, Scope Definition, ERP Evaluation | Curated domain library adapted to engagement context. No agent run required. |
+| **Hybrid** | Process Inventory | Knowledge library enriched by agent findings (GL analysis overlays). |
 
-**Preflight screens** — before the agent runs, it shows what it's about to do and what data or library it will use. One button starts the run.
+### Workspace Components
 
-**InlineInterrupt** — when the agent reaches a decision it can't make alone (e.g., "Account 2340 carries both ceded and assumed flows — split or use posting key differentiation?"), it stops mid-table and surfaces an amber decision card. Rows below stay hidden until the consultant resolves it.
+**PreflightScreen** — before the agent runs, shows what it's about to do and what data/library it will use. One button starts.
 
-**AgentChatInput** — always visible at the bottom of the artifact area. During a run: steer the agent. After completion: ask follow-up questions about the analysis.
+**InlineInterrupt** — when the agent reaches a decision it can't make alone, it stops mid-table and surfaces an amber decision card. Rows below stay hidden until the consultant resolves it.
+
+**AgentChatInput** — always visible at the bottom. During a run: steer the agent. After completion: ask follow-up questions.
 
 **ActivityPanel** — right rail (collapsed by default). Consultant-readable step log: "Auto-mapped 34 accounts · avg confidence 0.96" — not raw tool call JSON.
+
+---
+
+## Workspace Coverage
+
+| Component | Deliverables |
+|-----------|-------------|
+| `AnnotatedTable` | d-005-01 Account Analysis, d-005-03 Account Mapping |
+| `ProcessInventoryGraph` | d-004-01 Process Inventory (20 PAs, scope/status, AI framework) |
+| `ProcessFlowMap` | d-004-03 Future State Process Maps (custom SVG/HTML renderer) |
+| `BusinessRequirementsTable` | d-004-04 Business Requirements (324 reqs, PA-05 Fit/Gap pilot) |
+
+5 of 35 deliverables. Target: 15/35 with all 7 workstreams represented.
 
 ---
 
@@ -61,10 +77,10 @@ Clicking any deliverable (View →, Open →, Review →, Resolve →) opens the
 Routes work to the right agent. Tracks the workplan. Owns the decision registry, open items, and status synthesis. The only routing hub — specialists never hand off to each other.
 
 ### GL Design Coach — P&C Domain Specialist
-The deepest agent. Ingests real GL data (posting lines, account master, trial balance), profiles every account, detects MJE patterns, flags key person risk. Designs COA structure, ACDOCA dimensions, document splitting configuration, and multi-GAAP ledger strategy — grounded in actual client data, not generic templates. Has opinions and will push back on suboptimal design proposals with specific reasoning.
+The deepest agent. Ingests real GL data (posting lines, account master, trial balance), profiles every account, detects MJE patterns, flags key person risk. Designs COA structure, ACDOCA dimensions, document splitting configuration, and multi-GAAP ledger strategy. Has opinions and will push back on suboptimal design proposals.
 
 ### Functional Consultant — Generalist
-Structured requirements extraction from meeting notes and transcripts. Process flow documentation. Works from a leading practice library adapted to engagement context. Deck generation for steering committee updates and client workshops.
+Structured requirements extraction. Process flow documentation. Works from a leading practice library adapted to engagement context. Deck generation for steering committee updates and client workshops.
 
 ---
 
@@ -92,14 +108,6 @@ Structured requirements extraction from meeting notes and transcripts. Process f
 └───────────────────────────────────────────────────────────────────┘
 ```
 
-**Hub-and-spoke routing:** The Consulting Agent is the only router. Specialist agents are destinations, not routers. All cross-agent coordination flows through the hub.
-
-**Shared Engagement Context ("Engagement Brain"):** All agents read from and write to the same store. Switching agents never breaks context.
-
-**ERP-agnostic:** SAP S/4HANA in MVP. Oracle Cloud ERP and Workday Financials via platform adapters in later phases.
-
-**Segment-agnostic UI:** No segment or ERP strings hardcoded in any component. Content (preflight bullets, data sources, agent labels, deliverable names) comes entirely from engagement data. The same workspace shell serves a P&C carrier on SAP and a reinsurer on Oracle.
-
 ---
 
 ## Monorepo Structure
@@ -115,23 +123,12 @@ fta-agent/
 │   ├── src/app/
 │   │   ├── page.tsx                              # Landing screen
 │   │   └── [engagementId]/
-│   │       ├── layout.tsx                        # 3-panel workspace shell
 │   │       └── deliverables/[deliverableId]/
-│   │           └── page.tsx                      # Workspace page
-│   └── src/components/
-│       ├── WorkplanPanel.tsx                     # Landing workplan accordion
-│       └── workspace/                            # All workspace components
-│           ├── WorkspaceTopBar.tsx               # Breadcrumb + agent status
-│           ├── WorkplanSpine.tsx                 # Collapsible left rail
-│           ├── PreflightScreen.tsx               # Pre-run screen (2 variants)
-│           ├── InsightCards.tsx                  # Finding/risk/info cards
-│           ├── AnnotatedTable.tsx                # Artifact table w/ provenance
-│           ├── InlineInterrupt.tsx               # Amber decision card
-│           ├── AgentChatInput.tsx                # Persistent bottom input
-│           └── ActivityPanel.tsx                 # Collapsible right rail
+│   │           └── page.tsx                      # Workspace dispatch
+│   └── src/components/workspace/                 # All workspace components
 ├── tests/                  # pytest, synthetic data fixtures
-├── docs/                   # All documentation
-└── NEXT-STEPS.md           # Current session pickup document
+├── docs/                   # Plans, vision, session notes, design docs
+└── NEXT-STEPS.md           # Active build plan + session schedule
 ```
 
 ---
@@ -146,7 +143,7 @@ uv run uvicorn fta_agent.api.app:app --reload
 
 **Frontend:**
 ```bash
-cd web && pnpm dev
+cd web && pnpm install && pnpm dev
 ```
 Open [http://localhost:3000](http://localhost:3000)
 
@@ -158,23 +155,31 @@ pnpm --filter web build   # TypeScript check
 
 ---
 
+## Build Strategy (Session 015+)
+
+Three streams, interleaved:
+
+| Stream | Focus | Dependency |
+|--------|-------|------------|
+| **A — Framework Expansion** | Knowledge-powered workspaces across all 7 workstreams | None — mock data |
+| **B — Data Slice** | d-005-01 Account Analysis end-to-end with real data | Backend SSE + data tools |
+| **C — Platform Polish** | Navigation, layout, breadcrumbs, WorkplanSpine wiring | Existing components |
+
+See [NEXT-STEPS.md](NEXT-STEPS.md) for the active session plan.
+
+---
+
 ## Documentation
 
 | Document | What it covers |
 |----------|---------------|
-| **[NEXT-STEPS.md](NEXT-STEPS.md)** | **Session pickup — what to build next** |
+| **[NEXT-STEPS.md](NEXT-STEPS.md)** | **Active build plan + session schedule** |
 | [Master Plan](docs/plans/master-plan.md) | Full three-phase product roadmap |
-| [V1 Build Plan](docs/plans/v1-build-plan.md) | Detailed Phase 1 iteration plan |
+| [V1 Build Plan](docs/plans/v1-build-plan.md) | Phase 1 iteration detail |
 | [Product Vision](docs/vision/product-vision.md) | Problem, vision, value proposition |
 | [Architecture Overview](docs/vision/architecture-overview.md) | System architecture, routing, frontend |
 | [Design Principles](docs/vision/design-principles.md) | Six non-negotiable product principles |
-| [MVP Agent Design](docs/design/mvp-agent-design.md) | Three-agent skills specification |
-| [GL Design Coach](docs/agents/gl-design-coach.md) | P&C domain specialist spec |
-| [Functional Consultant](docs/agents/functional-consultant.md) | Generalist agent spec |
-| [Consulting Agent](docs/agents/consulting-agent.md) | Orchestrator + PMO spec |
-| [Decision Log](docs/decisions/decision-log.md) | All 40 decisions with rationale |
-| [Tech Stack](docs/tech/tech-stack.md) | Technology choices and rationale |
-| [Day in the Life](docs/engagement-flow/day-in-the-life.md) | How consultants navigate the product |
+| [Decision Log](docs/decisions/decision-log.md) | All decisions with rationale |
 | [Session Log](docs/sessions/) | Build history, session by session |
 
 ---

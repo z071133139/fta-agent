@@ -1,10 +1,10 @@
 # Architecture Overview
 
-> Last updated: Session 009
+> Last updated: Session 015
 
 ## System Architecture
 
-FTA is a full-stack AI system: a Next.js frontend, a FastAPI backend, LangGraph agent orchestration, and Supabase for persistence. The backend streams agent output to the frontend over SSE.
+FTA is an interactive consulting framework: a Next.js frontend providing deliverable-centric workspaces, a FastAPI backend with LangGraph agent orchestration, and Supabase for persistence. Agent-powered deliverables stream output to the frontend over SSE. Knowledge-powered deliverables draw from curated domain libraries without requiring agent runs.
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
@@ -101,14 +101,15 @@ See [Configuration Agent](../features/configuration-agent.md).
 
 ---
 
-## Two Agent Value Models
+## Three Deliverable Models
 
-The workspace UI reflects two fundamentally different ways agents produce output:
+The workspace UI reflects three fundamentally different ways deliverables produce content:
 
-| Model | Agent | How it works |
-|-------|-------|-------------|
-| **Data-grounded** | GL Design Coach | Every finding derives from client data. Each artifact row has a source reference (posting file, row range, MJE analysis). Insights are traceable. |
-| **Knowledge-grounded** | Functional Consultant | Output starts from a leading practice library (curated requirements, process templates), adapted to the engagement's segment and ERP target. |
+| Model | Examples | How it works |
+|-------|----------|-------------|
+| **Agent-powered** | GL Account Analysis, Account Mapping | Agent ingests client data, runs analysis. Every artifact row has a source reference. Requires backend agent run. |
+| **Knowledge-powered** | Business Requirements, RACI Matrix, Scope Definition, ERP Evaluation | Curated domain library adapted to engagement context. No agent run needed — framework provides structured content. |
+| **Hybrid** | Process Inventory | Knowledge library (leading practice process areas) enriched by agent findings (GL analysis overlays). |
 
 This distinction drives the preflight screen, insight card display, and the "library source" vs "data source" badge in the workspace.
 
@@ -155,6 +156,19 @@ This distinction drives the preflight screen, insight card display, and the "lib
 | `InlineInterrupt` | Amber decision card embedded between table rows at the agent's stop point |
 | `AgentChatInput` | Persistent bottom input; context-aware placeholder; local chat history |
 | `ActivityPanel` | Right rail; consultant-readable step log with durations; collapsed by default |
+
+### Workspace Coverage (Session 015)
+
+5 of 35 deliverables have workspaces (14%). Four workspace component types:
+
+| Component | Deliverables | Type |
+|-----------|-------------|------|
+| `AnnotatedTable` | d-005-01 Account Analysis, d-005-03 Account Mapping | Agent-powered table |
+| `ProcessInventoryGraph` | d-004-01 Process Inventory | Hybrid graph |
+| `ProcessFlowMap` | d-004-03 Future State Process Maps | Knowledge graph |
+| `BusinessRequirementsTable` | d-004-04 Business Requirements | Knowledge table |
+
+Target: 15/35 (43%) by Session 020, all 7 workstreams represented.
 
 ### Agent State Machine
 

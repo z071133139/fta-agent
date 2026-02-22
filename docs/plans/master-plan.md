@@ -1,8 +1,8 @@
 # FTA Master Plan
 
-> Status: APPROVED (Session 005, updated Session 006)
+> Status: APPROVED (Session 005, updated Sessions 006, 015)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-02-16 (Session 006)
+> Last updated: 2026-02-22 (Session 015)
 
 ## Purpose
 
@@ -12,9 +12,13 @@ This is the single source of truth for what we are building, in what order, and 
 
 ## What FTA Is
 
-FTA is an AI-native agent that changes how consultants deliver insurance finance transformation projects. It shifts consultants from gathering/assembling/formatting to steering/validating/advising.
+> Updated Session 015: Strategic reframe — FTA is an interactive consulting framework, not just an agent.
 
-It is **not** a chatbot with finance knowledge. It is **not** a template library. It is a system of agents that reason, advise, push back, and work with real client data -- connected by a shared engagement context that never breaks.
+FTA is an **interactive consulting framework** for insurance finance transformations, with AI agents embedded as capabilities within it. The framework is the product. A consultant opens it every day to navigate workstreams, review deliverables, make scoping decisions, and capture requirements.
+
+Some deliverables are **agent-powered** (GL Account Analysis — agent ingests data, runs analysis, produces artifacts). Others are **knowledge-powered** (Business Requirements — curated domain library the consultant navigates and customizes). Some are **hybrid** (Process Inventory — knowledge library enriched by agent findings). The agent is a capability inside the framework, not the product itself.
+
+It is **not** a chatbot with finance knowledge. It is **not** a template library. It is **not** an agent with a UI bolted on. It is a structured consulting framework where agents do analytical work, domain libraries provide knowledge, and the consultant steers everything through deliverable-centric workspaces.
 
 **Three-agent MVP architecture (DEC-029, Session 006):**
 - **Consulting Agent:** Orchestrator + engagement lead + PMO. Routes work, tracks progress, owns the plan.
@@ -292,6 +296,8 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
+> Updated Session 015: Strategic reframe. Three-stream build strategy replaces linear backend-first approach.
+
 ```
 Phase 1: Personal Use MVP
 ├── Project skeleton                         ✅ Session 004
@@ -300,22 +306,36 @@ Phase 1: Personal Use MVP
 ├── MVP agent design (skills spec)           ✅ Session 006
 │
 ├── Iteration 0: Test Data + Eval Framework  ✅ Complete
-├── Iteration 1: Domain Knowledge + Frontend ✅ Complete (backend + frontend)
-├── Iteration 1.5: Agent Harness             ← IN PROGRESS
-│   ├── 1.5A: Agent Infrastructure           ← NEXT (backend critical path)
-│   ├── 1.5B: Functional Consultant          (after 1.5A)
-│   ├── 1.5C: Consulting Agent Upgrade       (after 1.5B)
-│   ├── 1.5D: GL Design Coach Tool Wiring    (after 1.5C)
-│   │
+├── Iteration 1: Domain Knowledge + Frontend ✅ Complete
+├── Iteration 1.5: Agent Harness             ✅ Frontend complete (Sessions 007–014)
 │   ├── Frontend — Landing + Workplan        ✅ Sessions 007–008
-│   └── Frontend — Agent Workspace           ✅ Session 009
+│   ├── Frontend — Agent Workspace           ✅ Session 009
+│   ├── Frontend — Process Visualization     ✅ Sessions 012–013
+│   └── Frontend — Business Requirements     ✅ Session 014
 │
-├── Iteration 2: Persistence Layer
-├── Iteration 3: Data Pipeline
-├── Iteration 4: RAG Pipeline
-├── Iteration 5: Integration
-└── Iteration 6: Polish + Validation
-
+├── THREE-STREAM BUILD (Session 015+)        ← IN PROGRESS
+│   │
+│   ├── Stream A: Framework Expansion        ← ACTIVE
+│   │   ├── 10 knowledge workspaces planned
+│   │   ├── A1–A3, A9 (Session 015)         ← NEXT
+│   │   ├── A4–A5 (Session 018)
+│   │   └── A6–A10 (Session 020)
+│   │
+│   ├── Stream B: Data Slice (d-005-01)
+│   │   ├── B1 SSE endpoint (Session 016)
+│   │   ├── B2 GL data ingestion (Session 017)
+│   │   ├── B3 Account profiling (Session 017)
+│   │   ├── B4 Workspace wiring (Session 018)
+│   │   └── B5 Frontend SSE consumer (Session 016)
+│   │
+│   └── Stream C: Platform Polish
+│       ├── C1 Navigation + WorkplanSpine (Session 019)
+│       ├── C2 Landing page enhancements (Session 019)
+│       └── C3 Workspace polish (Session 020)
+│
+├── Iteration 2: Persistence Layer           (after Stream B proves vertical)
+├── Iteration 3–6: Deferred                  (informed by Streams A–C)
+│
 Phase 2: Super Testers
 └── (not started)
 
@@ -323,7 +343,11 @@ Phase 3: Broad Rollout
 └── (not started)
 ```
 
-**Note:** The frontend is ahead of the backend. The full workspace UI (workspace shell, preflight screens, annotated tables, inline interrupts, activity panel, workplan spine) is built and running on mock data. Zero API calls exist yet. The next critical priority is Iteration 1.5A (backend agent infrastructure) to give the frontend something real to connect to.
+**Coverage:** 5 of 35 deliverables have workspaces (14%). Target after Session 020: 15/35 (43%), all 7 workstreams represented, 1 fully agent-powered vertical.
+
+**Frontend state:** Full workspace UI running on mock data. Landing page, workspace shell, 4 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable). Zero API calls.
+
+**Backend state:** Consulting Agent keyword router, GL Design Coach domain prompts, data schemas + DuckDB engine + synthetic data generator ready. No SSE, no data tools wired, no Supabase.
 
 ---
 

@@ -1,6 +1,6 @@
 # Product Vision
 
-> Last updated: Session 009
+> Last updated: Session 015
 
 ## The Problem
 
@@ -15,15 +15,15 @@ A typical P&C insurer finance transformation — discovery through design — co
 
 ## The Vision
 
-FTA reimagines how consultants deliver finance transformation projects. It is not a tool that assists consultants — it is a **virtual consulting team** that changes what consultants do.
+FTA is an **interactive consulting framework** for insurance finance transformations, with AI agents embedded as capabilities within it. The framework is the product. A consultant opens it every day to navigate workstreams, review deliverables, make scoping decisions, and capture requirements.
 
 **Shift:** From consultants who gather, assemble, and format → to consultants who steer, validate, and advise.
 
-The agents handle analytical and synthesis work. The consultant applies judgment, manages relationships, and makes decisions.
+The framework handles structured domain content and analytical work. The consultant applies judgment, manages relationships, and makes decisions. AI agents are capabilities within the framework — not the product itself.
 
 ## The Product
 
-FTA is built around **deliverables**, not conversations. Each deliverable in the engagement workplan has a dedicated workspace. An agent runs in that workspace — either analyzing client data or drawing from a leading practice library — and the consultant reviews, steers, and confirms.
+FTA is built around **deliverables**, not conversations. Each deliverable in the engagement workplan has a dedicated workspace. Some workspaces are **agent-powered** (GL Account Analysis — agent ingests data, runs analysis, produces artifacts). Others are **knowledge-powered** (Business Requirements — curated domain library the consultant navigates and customizes). Some are **hybrid** (Process Inventory — knowledge library enriched by agent findings).
 
 ### The Navigation Flow
 
@@ -33,11 +33,13 @@ FTA is built around **deliverables**, not conversations. Each deliverable in the
 
 This is intentionally not a chat interface. It is a structured workspace where agents produce artifacts that consultants review and steer.
 
-### Two Agent Value Models
+### Three Deliverable Models
 
-**Data-grounded** (GL Design Coach): The agent's output derives entirely from the client's actual data. Every row in the artifact table traces back to a specific source — posting lines, MJE analysis output, account master entries. Findings are not generated from general knowledge; they are detected in the data.
+**Agent-powered** (e.g., GL Account Analysis): The agent ingests client data, runs analysis, and produces artifacts. Every row traces back to a specific source — posting lines, MJE analysis output, account master entries. Findings are detected in the data, not generated from general knowledge.
 
-**Knowledge-grounded** (Functional Consultant): The agent starts from a curated leading practice library — standard requirements, process templates, benchmark patterns — and adapts them to the engagement's context (segment, ERP target, phase). The output is not generic; it is calibrated to this engagement.
+**Knowledge-powered** (e.g., Business Requirements, RACI Matrix, Scope Definition): The workspace draws from a curated domain library — standard requirements, process templates, benchmark patterns — adapted to the engagement's context (segment, ERP target, phase). No agent run required; the framework provides the content.
+
+**Hybrid** (e.g., Process Inventory): Starts from a knowledge library (leading practice process areas), enriched by agent findings (GL analysis results surface as overlay suggestions on process nodes).
 
 ### Human Oversight by Design
 
