@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 015: Strategic reframe. Three-stream build strategy replaces linear backend-first approach.
+> Updated Session 015: Workshop Mode prioritized as the differentiator. Streams A/B/C deferred until after Workshop Mode milestone.
 
 ```
 Phase 1: Personal Use MVP
@@ -332,28 +332,24 @@ Phase 1: Personal Use MVP
 │   ├── Frontend — Process Visualization     ✅ Sessions 012–013
 │   └── Frontend — Business Requirements     ✅ Session 014
 │
-├── THREE-STREAM BUILD (Session 015+)        ← IN PROGRESS
-│   │
-│   ├── Stream A: Framework Expansion        ← ACTIVE
-│   │   ├── 10 knowledge workspaces planned
-│   │   ├── A1–A3, A9 (Session 015)         ← NEXT
-│   │   ├── A4–A5 (Session 018)
-│   │   └── A6–A10 (Session 020)
-│   │
-│   ├── Stream B: Data Slice (d-005-01)
-│   │   ├── B1 SSE endpoint (Session 016)
-│   │   ├── B2 GL data ingestion (Session 017)
-│   │   ├── B3 Account profiling (Session 017)
-│   │   ├── B4 Workspace wiring (Session 018)
-│   │   └── B5 Frontend SSE consumer (Session 016)
-│   │
-│   └── Stream C: Platform Polish
-│       ├── C1 Navigation + WorkplanSpine (Session 019)
-│       ├── C2 Landing page enhancements (Session 019)
-│       └── C3 Workspace polish (Session 020)
+├── Stream A: Framework Expansion            ✅ A1–A3, A9 complete (Session 015)
+│
+├── WORKSHOP MODE (Sessions 016–019)         ← IN PROGRESS
+│   ├── W1 Workshop layout toggle            (Session 016) ← NEXT
+│   ├── W2 Keyboard capture system           (Session 016)
+│   ├── W3 Live requirements editing         (Session 017)
+│   ├── W4 Live process flow editing         (Session 017)
+│   ├── W5 Agent listening mode              (Session 018)
+│   ├── W6 Micro-interactions                (Session 018)
+│   ├── W7 Backend persistence               (Session 019)
+│   └── W8 Workshop session continuity       (Session 019)
+│
+├── Stream A continued: A4–A10               (Session 020)
+├── Stream C: Platform Polish                (Session 020)
+├── Stream B: Data Slice (d-005-01)          (Session 021+)
 │
 ├── Iteration 2: Persistence Layer           (after Stream B proves vertical)
-├── Iteration 3–6: Deferred                  (informed by Streams A–C)
+├── Iteration 3–6: Deferred                  (informed by Workshop Mode + Streams)
 │
 Phase 2: Super Testers
 └── (not started)
@@ -362,11 +358,13 @@ Phase 3: Broad Rollout
 └── (not started)
 ```
 
-**Coverage:** 5 of 35 deliverables have workspaces (14%). Target after Session 020: 15/35 (43%), all 7 workstreams represented, 1 fully agent-powered vertical.
+**Coverage:** 9 of 35 deliverables have workspaces (26%). Target after Session 020: 15/35 (43%), all 7 workstreams represented.
 
-**Frontend state:** Full workspace UI running on mock data. Landing page, workspace shell, 4 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable). Zero API calls.
+**Frontend state:** Full workspace UI running on mock data. Landing page, workspace shell, 4 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable). 9 deliverables with workspaces across 4 workstreams. Zero API calls.
 
 **Backend state:** Consulting Agent keyword router, GL Design Coach domain prompts, data schemas + DuckDB engine + synthetic data generator ready. No SSE, no data tools wired, no Supabase.
+
+**Next priority:** Workshop Mode — the differentiator. Live capture against leading practice baseline during client workshops.
 
 ---
 
