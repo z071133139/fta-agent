@@ -333,6 +333,28 @@ No `any`. No `as Type` without an explanatory comment. Discriminated unions over
 
 ---
 
+## Session Workflow
+
+### Before building anything
+
+1. **Explain how it relates to the plan** — reference the specific stream (A/B/C), deliverable ID, and session from `NEXT-STEPS.md`
+2. **Ask for approval to proceed** — do not start coding until the user confirms
+
+### After completing a task
+
+1. **Mark the task as complete** in the task list
+2. **Update documentation** — update `NEXT-STEPS.md` (coverage table, session progress) and `docs/plans/master-plan.md` (Current Position) to reflect what was built
+3. **List the next 5 items** from `NEXT-STEPS.md` that are up next, so the user can choose what to work on
+
+### General
+
+- Always check `NEXT-STEPS.md` at the start of a session to understand current priorities
+- Build check (`pnpm --filter web build`) before any commit
+- Session docs go to `docs/sessions/YYYY-MM-DD-session-NNN-title.md`
+- Commit message format: `Session NNN: [short description]`
+
+---
+
 ## Anti-Patterns — Hard Stops
 
 ### Backend
