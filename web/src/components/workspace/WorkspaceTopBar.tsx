@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Engagement } from "@/lib/mock-data";
-import { isWorkshopEligible, PROCESS_AREAS } from "@/lib/mock-data";
+import { isWorkshopEligible, PROCESS_AREAS, MOCK_WORKSPACES } from "@/lib/mock-data";
 import { useWorkshopStore } from "@/lib/workshop-store";
 
 const AGENT_LABEL: Record<string, string> = {
@@ -42,6 +42,15 @@ export default function WorkspaceTopBar({
     : false;
   const isWorkshopActive = workshopMode && eligible;
 
+  // Check if this workspace has a pre-set PA (e.g. process flow already scoped to a PA)
+  const workspace = params.deliverableId
+    ? MOCK_WORKSPACES[params.deliverableId]
+    : undefined;
+  const directPA = workspace?.workshop_pa;
+  const directPAName = directPA
+    ? PROCESS_AREAS.find((p) => p.pa_id === directPA)?.name ?? directPA
+    : undefined;
+
   // Close picker on outside click
   useEffect(() => {
     if (!pickerOpen) return;
@@ -75,6 +84,12 @@ export default function WorkspaceTopBar({
   const handleSelectPA = (paId: string, paName: string) => {
     startWorkshop(paId, paName);
     setPickerOpen(false);
+  };
+
+  const handleDirectStart = () => {
+    if (directPA && directPAName) {
+      startWorkshop(directPA, directPAName);
+    }
   };
 
   return (
@@ -134,8 +149,19 @@ export default function WorkspaceTopBar({
                 </span>
                 <span className="text-[9px] text-warning/80 ml-1">✕</span>
               </button>
+            ) : directPA ? (
+              /* Direct start — workspace already scoped to a PA */
+              <button
+                onClick={handleDirectStart}
+                className="flex items-center gap-2 px-2.5 py-1 rounded border border-border/40 hover:border-warning/30 hover:bg-warning/5 transition-colors cursor-pointer"
+              >
+                <div className="h-1.5 w-1.5 rounded-full bg-muted/40" />
+                <span className="text-[10px] font-mono font-medium text-muted tracking-wide">
+                  Workshop
+                </span>
+              </button>
             ) : (
-              /* Inactive state — click to open PA picker */
+              /* Picker start — need to select a PA */
               <button
                 onClick={() => setPickerOpen(!pickerOpen)}
                 className="flex items-center gap-2 px-2.5 py-1 rounded border border-border/40 hover:border-warning/30 hover:bg-warning/5 transition-colors cursor-pointer"
@@ -147,47 +173,49 @@ export default function WorkspaceTopBar({
               </button>
             )}
 
-            {/* PA picker dropdown */}
-            <AnimatePresence>
-              {pickerOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -4, scale: 0.97 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-1.5 w-[340px] max-h-[420px] overflow-y-auto rounded-lg border border-border/60 bg-surface shadow-xl z-50"
-                >
-                  <div className="px-3 py-2 border-b border-border/30">
-                    <span className="text-[10px] uppercase tracking-[0.1em] font-medium text-muted">
-                      Start workshop for process area
-                    </span>
-                  </div>
-                  {Object.entries(PA_GROUPS).map(([group, pas]) => (
-                    <div key={group}>
-                      <div className="px-3 pt-2.5 pb-1">
-                        <span className="text-[9px] uppercase tracking-[0.1em] font-medium text-muted/80">
-                          {group}
-                        </span>
-                      </div>
-                      {pas.map((pa) => (
-                        <button
-                          key={pa.pa_id}
-                          onClick={() => handleSelectPA(pa.pa_id, pa.name)}
-                          className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left hover:bg-warning/5 transition-colors"
-                        >
-                          <span className="text-[10px] font-mono text-muted w-[36px] shrink-0">
-                            {pa.pa_id}
-                          </span>
-                          <span className="text-xs text-foreground/90 truncate">
-                            {pa.name}
-                          </span>
-                        </button>
-                      ))}
+            {/* PA picker dropdown — only when no directPA */}
+            {!directPA && (
+              <AnimatePresence>
+                {pickerOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-1.5 w-[340px] max-h-[420px] overflow-y-auto rounded-lg border border-border/60 bg-surface shadow-xl z-50"
+                  >
+                    <div className="px-3 py-2 border-b border-border/30">
+                      <span className="text-[10px] uppercase tracking-[0.1em] font-medium text-muted">
+                        Start workshop for process area
+                      </span>
                     </div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    {Object.entries(PA_GROUPS).map(([group, pas]) => (
+                      <div key={group}>
+                        <div className="px-3 pt-2.5 pb-1">
+                          <span className="text-[9px] uppercase tracking-[0.1em] font-medium text-muted/80">
+                            {group}
+                          </span>
+                        </div>
+                        {pas.map((pa) => (
+                          <button
+                            key={pa.pa_id}
+                            onClick={() => handleSelectPA(pa.pa_id, pa.name)}
+                            className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left hover:bg-warning/5 transition-colors"
+                          >
+                            <span className="text-[10px] font-mono text-muted w-[36px] shrink-0">
+                              {pa.pa_id}
+                            </span>
+                            <span className="text-xs text-foreground/90 truncate">
+                              {pa.name}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
           </div>
         )}
       </div>

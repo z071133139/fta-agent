@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, type RefObject } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { CaptureBar, type CaptureBarHandle } from "./CaptureBar";
 import type {
   BusinessRequirementsData,
   BusinessRequirement,
   BRTag,
   BRSegment,
+  BRStatus,
   FitRating,
   AgenticRating,
   ERPAssessment,
@@ -23,6 +25,10 @@ const TAG_CFG: Record<BRTag, { label: string; color: string; bg: string }> = {
   OPS: { label: "OPS", color: "#94A3B8", bg: "rgba(100,116,139,0.20)" },
   INT: { label: "INT", color: "#8B5CF6", bg: "rgba(139,92,246,0.15)" },
 };
+
+const TAG_VALUES: BRTag[] = ["REG", "CTL", "FIN", "OPS", "INT"];
+const SEGMENT_VALUES: BRSegment[] = ["P&C", "Life", "Re", "All"];
+const STATUS_VALUES: BRStatus[] = ["draft", "validated", "deferred", "out_of_scope"];
 
 const SEGMENT_CFG: Record<BRSegment, { label: string; color: string; bg: string }> = {
   "P&C": { label: "P&C", color: "#3B82F6", bg: "rgba(59,130,246,0.12)" },
@@ -78,9 +84,10 @@ const PA_NAMES: Record<string, string> = {
 
 // ── Badge component ───────────────────────────────────────────────────────
 
-function Badge({ label, color, bg, border }: { label: string; color: string; bg: string; border?: boolean }) {
+function Badge({ label, color, bg, border, onClick }: { label: string; color: string; bg: string; border?: boolean; onClick?: () => void }) {
   return (
     <span
+      onClick={onClick}
       style={{
         fontSize: 9,
         fontFamily: "'JetBrains Mono', monospace",
@@ -92,6 +99,7 @@ function Badge({ label, color, bg, border }: { label: string; color: string; bg:
         padding: "1px 6px",
         lineHeight: 1.6,
         whiteSpace: "nowrap",
+        cursor: onClick ? "pointer" : undefined,
       }}
     >
       {label}
@@ -262,10 +270,22 @@ function RequirementRow({
   req,
   expanded,
   onToggle,
+  workshopMode,
+  isSelected,
+  isNew,
+  isModified,
+  onSelect,
+  onInlineEdit,
 }: {
   req: BusinessRequirement;
   expanded: boolean;
   onToggle: () => void;
+  workshopMode: boolean;
+  isSelected: boolean;
+  isNew: boolean;
+  isModified: boolean;
+  onSelect: () => void;
+  onInlineEdit: (field: string) => void;
 }) {
   const tc = TAG_CFG[req.tag];
   const sc = SEGMENT_CFG[req.segment];
@@ -278,27 +298,68 @@ function RequirementRow({
   const fc = primaryAssessment ? FIT_CFG[primaryAssessment.rating] : null;
   const ac = req.fit_gap?.agentic_rating ? AGENTIC_CFG[req.fit_gap.agentic_rating] : null;
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (workshopMode) {
+      e.stopPropagation();
+      onSelect();
+    } else {
+      onToggle();
+    }
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    if (workshopMode) {
+      e.stopPropagation();
+      onInlineEdit("text");
+    }
+  };
+
   return (
     <div>
       <div
-        onClick={onToggle}
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
         className={[
-          "group flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors",
-          expanded
-            ? "bg-surface border-border/60"
-            : "border-transparent hover:bg-surface/50 hover:border-border/30",
+          "group flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all",
+          isSelected
+            ? "bg-surface border-accent/50 ring-1 ring-accent/30"
+            : expanded
+              ? "bg-surface border-border/60"
+              : "border-transparent hover:bg-surface/50 hover:border-border/30",
         ].join(" ")}
+        style={{
+          borderLeftWidth: isNew ? 3 : undefined,
+          borderLeftColor: isNew ? "#10B981" : undefined,
+        }}
       >
+        {/* Modified indicator */}
+        {isModified && !isNew && (
+          <span
+            className="flex-shrink-0 w-1.5 h-1.5 rounded-full"
+            style={{ backgroundColor: "#F59E0B" }}
+          />
+        )}
+
         {/* ID */}
         <span className="flex-shrink-0 text-[9px] font-mono text-muted w-[72px]">
           {req.id}
         </span>
 
-        {/* Tag */}
-        <Badge label={tc.label} color={tc.color} bg={tc.bg} />
+        {/* Tag — clickable cycle in workshop */}
+        <Badge
+          label={tc.label}
+          color={tc.color}
+          bg={tc.bg}
+          onClick={workshopMode ? () => onInlineEdit("tag") : undefined}
+        />
 
-        {/* Segment */}
-        <Badge label={sc.label} color={sc.color} bg={sc.bg} />
+        {/* Segment — clickable cycle in workshop */}
+        <Badge
+          label={sc.label}
+          color={sc.color}
+          bg={sc.bg}
+          onClick={workshopMode ? () => onInlineEdit("segment") : undefined}
+        />
 
         {/* Text */}
         <span className="flex-1 text-[11px] text-foreground/90 leading-snug truncate">
@@ -313,8 +374,13 @@ function RequirementRow({
           <Badge label={req.fit_gap.agentic_rating} color={ac.color} bg={ac.bg} border />
         )}
 
-        {/* Status */}
-        <Badge label={req.status} color={stc.color} bg={stc.bg} />
+        {/* Status — clickable cycle in workshop */}
+        <Badge
+          label={req.status}
+          color={stc.color}
+          bg={stc.bg}
+          onClick={workshopMode ? () => onInlineEdit("status") : undefined}
+        />
 
         {/* Chevron */}
         <span className="text-[10px] text-muted/70 flex-shrink-0">
@@ -352,9 +418,161 @@ function RequirementRow({
   );
 }
 
+// ── Workshop Agent Insight Panel ──────────────────────────────────────────
+
+function AgentInsightPanel({
+  req,
+  onAddRequirement,
+}: {
+  req: BusinessRequirement;
+  onAddRequirement: (text: string) => void;
+}) {
+  const fg = req.fit_gap;
+  if (!fg) return null;
+
+  const hasAgentic = fg.agentic_rating && fg.agentic_bridge;
+  const hasRemediation = fg.gap_remediation;
+  if (!hasAgentic && !hasRemediation) return null;
+
+  const ac = fg.agentic_rating ? AGENTIC_CFG[fg.agentic_rating] : null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.15 }}
+      className="mx-3 mb-1 px-3 py-2.5 rounded-lg border overflow-hidden"
+      style={{
+        backgroundColor: "rgba(139,92,246,0.04)",
+        borderColor: "rgba(139,92,246,0.2)",
+      }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <div className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6] agent-thinking" />
+        <span className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold">
+          Agent Insight
+        </span>
+        {ac && fg.agentic_rating && (
+          <Badge label={`${fg.agentic_rating} ${ac.label}`} color={ac.color} bg={ac.bg} border />
+        )}
+        {fg.agentic_autonomy && (
+          <span className="text-[9px] font-mono text-muted/80">{fg.agentic_autonomy}</span>
+        )}
+      </div>
+
+      {/* Agentic bridge as suggestion chip */}
+      {fg.agentic_bridge && (
+        <button
+          onClick={() => onAddRequirement(fg.agentic_bridge!)}
+          className="group flex items-start gap-2 w-full text-left px-2.5 py-2 rounded-md border border-border/30 hover:border-[#8B5CF6]/30 hover:bg-[#8B5CF6]/5 transition-colors mb-1.5"
+        >
+          <span className="text-[9px] text-[#10B981] font-mono mt-0.5 shrink-0">+R</span>
+          <span className="text-[10px] text-muted leading-relaxed flex-1">
+            {fg.agentic_bridge}
+          </span>
+          <span className="text-[8px] text-muted/50 group-hover:text-[#8B5CF6] transition-colors shrink-0 mt-0.5">
+            click to capture
+          </span>
+        </button>
+      )}
+
+      {/* Gap remediation as suggestion chip */}
+      {fg.gap_remediation && (
+        <button
+          onClick={() => onAddRequirement(fg.gap_remediation!)}
+          className="group flex items-start gap-2 w-full text-left px-2.5 py-2 rounded-md border border-border/30 hover:border-[#F59E0B]/30 hover:bg-[#F59E0B]/5 transition-colors"
+        >
+          <span className="text-[9px] text-[#F59E0B] font-mono mt-0.5 shrink-0">+R</span>
+          <span className="text-[10px] text-muted leading-relaxed flex-1">
+            {fg.gap_remediation}
+          </span>
+          {fg.gap_effort && (
+            <Badge label={fg.gap_effort} color="#F59E0B" bg="rgba(245,158,11,0.12)" />
+          )}
+        </button>
+      )}
+
+      {/* ERP assessment summary chips */}
+      {fg.erp_assessments.length > 0 && (
+        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/20">
+          <span className="text-[8px] text-muted/60 uppercase tracking-wide">ERP Fit</span>
+          {fg.erp_assessments.map((a) => {
+            const fc = FIT_CFG[a.rating];
+            return (
+              <span key={a.platform} className="flex items-center gap-1">
+                <Badge label={a.rating} color={fc.color} bg={fc.bg} />
+                <span className="text-[8px] text-muted/60">{a.platform}</span>
+              </span>
+            );
+          })}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// ── Inline Edit Modal ─────────────────────────────────────────────────────
+
+function InlineEditOverlay({
+  req,
+  field,
+  onCommit,
+  onCancel,
+}: {
+  req: BusinessRequirement;
+  field: string;
+  onCommit: (updates: Partial<BusinessRequirement>) => void;
+  onCancel: () => void;
+}) {
+  const [textDraft, setTextDraft] = useState(req.text);
+
+  if (field === "text") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="bg-surface border border-border rounded-xl p-4 w-[480px] shadow-2xl">
+          <p className="text-[9px] uppercase tracking-[0.12em] text-muted font-semibold mb-2">
+            Edit Requirement — {req.id}
+          </p>
+          <textarea
+            autoFocus
+            value={textDraft}
+            onChange={(e) => setTextDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (textDraft.trim()) onCommit({ text: textDraft.trim() });
+              }
+              if (e.key === "Escape") onCancel();
+            }}
+            className="w-full bg-background border border-border/60 rounded-lg px-3 py-2 text-[11px] text-foreground resize-none focus:outline-none focus:border-accent/60"
+            rows={3}
+          />
+          <div className="flex justify-end gap-2 mt-3">
+            <button
+              onClick={onCancel}
+              className="text-[10px] text-muted px-3 py-1 rounded hover:text-foreground transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => { if (textDraft.trim()) onCommit({ text: textDraft.trim() }); }}
+              className="text-[10px] text-accent bg-accent/15 px-3 py-1 rounded hover:bg-accent/25 transition-colors"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
 // ── Summary Bar ───────────────────────────────────────────────────────────
 
-function SummaryBar({ requirements, hasAssessed }: { requirements: BusinessRequirement[]; hasAssessed: boolean }) {
+function SummaryBar({ requirements, hasAssessed, captureCount }: { requirements: BusinessRequirement[]; hasAssessed: boolean; captureCount: number }) {
   const total = requirements.length;
   const assessed = requirements.filter((r) => r.fit_gap).length;
 
@@ -384,6 +602,17 @@ function SummaryBar({ requirements, hasAssessed }: { requirements: BusinessRequi
   return (
     <div className="flex items-center gap-4 px-6 py-2.5 border-b border-border/40 text-[10px] flex-wrap">
       <span className="text-muted">{total} requirements</span>
+      {captureCount > 0 && (
+        <>
+          <div className="w-px h-3 bg-border/40" />
+          <span
+            className="font-mono font-semibold px-1.5 py-0.5 rounded"
+            style={{ backgroundColor: "rgba(16,185,129,0.15)", color: "#10B981" }}
+          >
+            {captureCount} captured
+          </span>
+        </>
+      )}
       {hasAssessed && (
         <>
           <span>
@@ -579,9 +808,10 @@ function FilterBar({
 
 // ── Main Component ────────────────────────────────────────────────────────
 
-export function BusinessRequirementsTable({ data }: { data: BusinessRequirementsData }) {
+export function BusinessRequirementsTable({ data, captureBarRef }: { data: BusinessRequirementsData; captureBarRef?: RefObject<CaptureBarHandle | null> }) {
   const [expandedReq, setExpandedReq] = useState<string | null>(null);
   const [collapsedPAs, setCollapsedPAs] = useState<Set<string>>(new Set());
+  const [editingField, setEditingField] = useState<{ id: string; field: string } | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     tags: new Set(),
@@ -591,21 +821,55 @@ export function BusinessRequirementsTable({ data }: { data: BusinessRequirements
     assessedOnly: false,
   });
 
-  // Workshop filter
+  // Workshop state
   const workshopMode = useWorkshopStore((s) => s.workshopMode);
   const workshopSession = useWorkshopStore((s) => s.workshopSession);
+  const capturedRequirements = useWorkshopStore((s) => s.capturedRequirements);
+  const newRequirementIds = useWorkshopStore((s) => s.newRequirementIds);
+  const selectedRequirementId = useWorkshopStore((s) => s.selectedRequirementId);
+  const selectRequirement = useWorkshopStore((s) => s.selectRequirement);
+  const updateRequirement = useWorkshopStore((s) => s.updateRequirement);
+  const addRequirement = useWorkshopStore((s) => s.addRequirement);
 
+  // Merge base requirements with captured changes + new requirements
   const baseRequirements = useMemo(() => {
+    let reqs: BusinessRequirement[];
+
     if (workshopMode && workshopSession) {
-      return data.requirements.filter((r) => r.pa_id === workshopSession.processAreaId);
+      reqs = data.requirements.filter((r) => r.pa_id === workshopSession.processAreaId);
+    } else {
+      reqs = data.requirements;
     }
-    return data.requirements;
-  }, [data.requirements, workshopMode, workshopSession]);
+
+    if (!workshopMode) return reqs;
+
+    // Overlay captured modifications on existing requirements
+    const merged = reqs.map((r) => {
+      const captured = capturedRequirements.get(r.id);
+      if (captured) return captured.current;
+      return r;
+    });
+
+    // Append new requirements
+    for (const id of newRequirementIds) {
+      const captured = capturedRequirements.get(id);
+      if (captured) merged.push(captured.current);
+    }
+
+    return merged;
+  }, [data.requirements, workshopMode, workshopSession, capturedRequirements, newRequirementIds]);
 
   const hasAssessed = useMemo(
     () => baseRequirements.some((r) => r.fit_gap),
     [baseRequirements]
   );
+
+  // Capture count for summary bar
+  const captureCount = useMemo(() => {
+    if (!workshopMode) return 0;
+    const modifiedCount = [...capturedRequirements.values()].filter((r) => r.dirty).length;
+    return modifiedCount;
+  }, [workshopMode, capturedRequirements]);
 
   // Filter requirements
   const filtered = useMemo(() => {
@@ -654,10 +918,60 @@ export function BusinessRequirementsTable({ data }: { data: BusinessRequirements
     });
   };
 
+  const handleEditCommit = useCallback((id: string, updates: Partial<BusinessRequirement>) => {
+    // Find the original req to snapshot if first edit
+    const existing = capturedRequirements.get(id);
+    if (existing) {
+      updateRequirement(id, updates);
+    } else {
+      // First edit — find original from data
+      const original = data.requirements.find((r) => r.id === id);
+      if (original) {
+        updateRequirement(id, { ...original, ...updates });
+      }
+    }
+    setEditingField(null);
+  }, [capturedRequirements, updateRequirement, data.requirements]);
+
+  const handleInlineEdit = useCallback((id: string, field: string) => {
+    // Cycle fields are handled immediately — no overlay needed
+    if (field === "tag" || field === "segment" || field === "status") {
+      const req = baseRequirements.find((r) => r.id === id);
+      if (!req) return;
+
+      let updates: Partial<BusinessRequirement>;
+      if (field === "tag") {
+        const idx = TAG_VALUES.indexOf(req.tag);
+        updates = { tag: TAG_VALUES[(idx + 1) % TAG_VALUES.length] };
+      } else if (field === "segment") {
+        const idx = SEGMENT_VALUES.indexOf(req.segment);
+        updates = { segment: SEGMENT_VALUES[(idx + 1) % SEGMENT_VALUES.length] };
+      } else {
+        const idx = STATUS_VALUES.indexOf(req.status);
+        updates = { status: STATUS_VALUES[(idx + 1) % STATUS_VALUES.length] };
+      }
+
+      handleEditCommit(id, updates);
+      return;
+    }
+
+    // Text field → open overlay
+    setEditingField({ id, field });
+  }, [baseRequirements, handleEditCommit]);
+
+  const newIdSet = useMemo(() => new Set(newRequirementIds), [newRequirementIds]);
+
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-      <SummaryBar requirements={filtered} hasAssessed={hasAssessed} />
+      <SummaryBar requirements={filtered} hasAssessed={hasAssessed} captureCount={captureCount} />
       <FilterBar filters={filters} onFiltersChange={setFilters} hasAssessed={hasAssessed} />
+
+      {/* Workshop capture bar */}
+      {workshopMode && (
+        <div className="shrink-0">
+          <CaptureBar ref={captureBarRef} context="requirements" />
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         <div className="max-w-3xl space-y-5">
@@ -665,7 +979,6 @@ export function BusinessRequirementsTable({ data }: { data: BusinessRequirements
             <div className="flex items-center justify-center py-16 text-sm text-muted">
               No requirements match the current filters.
             </div>
-
           )}
 
           {[...groups].map(([paId, reqs]) => {
@@ -706,16 +1019,53 @@ export function BusinessRequirementsTable({ data }: { data: BusinessRequirements
                       className="overflow-hidden"
                     >
                       <div className="space-y-0.5">
-                        {reqs.map((r) => (
-                          <RequirementRow
-                            key={r.id}
-                            req={r}
-                            expanded={expandedReq === r.id}
-                            onToggle={() =>
-                              setExpandedReq((prev) => (prev === r.id ? null : r.id))
-                            }
-                          />
-                        ))}
+                        {reqs.map((r) => {
+                          const isNew = newIdSet.has(r.id);
+                          const isModified = !isNew && capturedRequirements.has(r.id);
+                          const isSelected = workshopMode && selectedRequirementId === r.id;
+
+                          const row = (
+                            <RequirementRow
+                              req={r}
+                              expanded={expandedReq === r.id}
+                              onToggle={() =>
+                                setExpandedReq((prev) => (prev === r.id ? null : r.id))
+                              }
+                              workshopMode={workshopMode}
+                              isSelected={isSelected}
+                              isNew={isNew}
+                              isModified={isModified}
+                              onSelect={() => selectRequirement(r.id)}
+                              onInlineEdit={(field) => handleInlineEdit(r.id, field)}
+                            />
+                          );
+
+                          return isNew ? (
+                            <div key={r.id}>
+                              <motion.div
+                                initial={{ opacity: 0, x: -12 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.25 }}
+                              >
+                                {row}
+                              </motion.div>
+                              <AnimatePresence>
+                                {isSelected && r.fit_gap && (
+                                  <AgentInsightPanel req={r} onAddRequirement={addRequirement} />
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          ) : (
+                            <div key={r.id}>
+                              {row}
+                              <AnimatePresence>
+                                {isSelected && r.fit_gap && (
+                                  <AgentInsightPanel req={r} onAddRequirement={addRequirement} />
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          );
+                        })}
                       </div>
                     </motion.div>
                   )}
@@ -725,6 +1075,16 @@ export function BusinessRequirementsTable({ data }: { data: BusinessRequirements
           })}
         </div>
       </div>
+
+      {/* Inline edit overlay */}
+      {editingField && (
+        <InlineEditOverlay
+          req={filtered.find((r) => r.id === editingField.id) ?? baseRequirements.find((r) => r.id === editingField.id)!}
+          field={editingField.field}
+          onCommit={(updates) => handleEditCommit(editingField.id, updates)}
+          onCancel={() => setEditingField(null)}
+        />
+      )}
     </div>
   );
 }

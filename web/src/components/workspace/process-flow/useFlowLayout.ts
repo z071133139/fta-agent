@@ -3,6 +3,7 @@ import Dagre from "@dagrejs/dagre";
 import type {
   ProcessFlowData,
   ProcessFlowNode,
+  ProcessFlowEdge,
   ProcessOverlay,
 } from "@/lib/mock-data";
 
@@ -121,27 +122,63 @@ function buildEdgePath(
 
 // ── Hook ───────────────────────────────────────────────────────────────────────
 
-export function useFlowLayout(data: ProcessFlowData): FlowLayout {
+export interface FlowLayoutOptions {
+  extraNodes?: ProcessFlowNode[];
+  extraEdges?: ProcessFlowEdge[];
+  /** Edges to remove (by edge id) when inserting nodes mid-flow */
+  removeEdgeIds?: Set<string>;
+  /** Nodes to remove (by node id) when deleting steps */
+  removeNodeIds?: Set<string>;
+}
+
+export function useFlowLayout(
+  data: ProcessFlowData,
+  options?: FlowLayoutOptions
+): FlowLayout {
+  const extraNodes = options?.extraNodes;
+  const extraEdges = options?.extraEdges;
+  const removeEdgeIds = options?.removeEdgeIds;
+  const removeNodeIds = options?.removeNodeIds;
+
   return useMemo(() => {
     const laneLabels = data.swimlanes ?? [];
+
+    // Merge nodes: base (minus deleted) + extras
+    let baseNodes = data.nodes;
+    if (removeNodeIds && removeNodeIds.size > 0) {
+      baseNodes = baseNodes.filter((n) => !removeNodeIds.has(n.id));
+    }
+    const allNodes = extraNodes
+      ? [...baseNodes, ...extraNodes]
+      : baseNodes;
+
+    // Merge edges: base (minus removed) + extras
+    let allEdges = data.edges;
+    if (removeEdgeIds && removeEdgeIds.size > 0) {
+      allEdges = allEdges.filter((e) => !removeEdgeIds.has(e.id));
+    }
+    if (extraEdges) {
+      allEdges = [...allEdges, ...extraEdges];
+    }
+
     const canvasH = Math.max(laneLabels.length, 1) * LANE_H;
 
     // Dagre: LR layout to determine x-axis ordering
     const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
     g.setGraph({ rankdir: "LR", ranksep: RANKSEP, nodesep: NODESEP });
 
-    for (const n of data.nodes) {
+    for (const n of allNodes) {
       const [w, h] = nodeDims(n.type);
       g.setNode(n.id, { width: w, height: h });
     }
-    for (const e of data.edges) {
+    for (const e of allEdges) {
       g.setEdge(e.source, e.target);
     }
     Dagre.layout(g);
 
     // Derive canvas width from Dagre output
     let maxX = 0;
-    for (const n of data.nodes) {
+    for (const n of allNodes) {
       const p = g.node(n.id);
       const [w] = nodeDims(n.type);
       maxX = Math.max(maxX, p.x + w / 2);
@@ -159,7 +196,7 @@ export function useFlowLayout(data: ProcessFlowData): FlowLayout {
     // NOTE: Y position is swimlane-pinned (not Dagre's Y).
     // Dagre Y is discarded; only Dagre X is used for left→right ordering.
     const nodeMap = new Map<string, NodeLayout>();
-    for (const n of data.nodes) {
+    for (const n of allNodes) {
       const dp = g.node(n.id);
       const [w, h] = nodeDims(n.type);
       const laneIdx = laneLabels.indexOf(n.role ?? "");
@@ -181,7 +218,7 @@ export function useFlowLayout(data: ProcessFlowData): FlowLayout {
 
     // Build EdgeLayout
     const edges: EdgeLayout[] = [];
-    for (const e of data.edges) {
+    for (const e of allEdges) {
       const src = nodeMap.get(e.source);
       const tgt = nodeMap.get(e.target);
       if (!src || !tgt) continue;
@@ -213,5 +250,5 @@ export function useFlowLayout(data: ProcessFlowData): FlowLayout {
       canvasW,
       canvasH,
     };
-  }, [data]);
+  }, [data, extraNodes, extraEdges, removeEdgeIds, removeNodeIds]);
 }

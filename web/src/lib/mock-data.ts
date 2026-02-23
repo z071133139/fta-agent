@@ -541,6 +541,8 @@ export interface DeliverableWorkspace {
   interrupt?: InlineInterruptData;
   activity: ActivityEntry[];
   graph?: ProcessGraphData;
+  /** When set, workshop mode starts directly for this PA (no picker needed) */
+  workshop_pa?: string;
 }
 
 export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
@@ -1119,6 +1121,7 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
     deliverable_id: "d-004-03",
     agent_kind: "knowledge_grounded",
     run_state: "preflight",
+    workshop_pa: "PA-02",
     preflight_title: "SP-02.1 · Journal Entry Processing",
     preflight_bullets: [
       "PA-02 General Ledger & Multi-Basis Accounting · sub-flow 1 of 5",

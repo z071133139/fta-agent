@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-22 (Session 016)
+> Last updated: 2026-02-22 (Session 017)
 > Current phase: Phase 1 — Personal Use MVP
 > Strategy: Workshop Mode first (differentiator), then Framework Expansion + Data Slice
 
@@ -35,8 +35,8 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 |---------|-------|--------|-------|
 | **015** | Product plan docs ✅ + 4 knowledge workspaces ✅ | A | A1, A2, A3, A9 |
 | **016** | Workshop layout toggle ✅ + brightness fix ✅ | W | W1 |
-| 017 | Live requirements + process flow editing | W | W3, W4 |
-| 018 | Agent listening mode + micro-interactions | W | W5, W6 |
+| **017** | CaptureBar + live req/flow editing + agent insights ✅ | W | W2, W3, W4, W5 (partial) |
+| 018 | Agent listening mode + micro-interactions | W | W5 (remainder), W6 |
 | 019 | Backend persistence + workshop session continuity | W | W7, W8 |
 | 020 | Remaining knowledge workspaces (A4–A10) + platform polish | A+C | A4–A10, C1–C3 |
 | 021+ | Data slice (SSE, GL tools, end-to-end wiring) | B | B1–B5 |
@@ -57,50 +57,31 @@ The differentiator. Live capture against the leading practice baseline during cl
 
 PA-scoped workshop mode. Click "Workshop" button in TopBar → select a process area from dropdown → WorkplanSpine + ActivityPanel hide, artifact expands to full width. Process Inventory and Business Requirements filter to selected PA. Workshop mode persists across d-004-* navigation. Zustand store with session identity + locking model (local state, backend enforcement in W7). `Cmd+E` as power-user shortcut to exit. Brightness/contrast fix across all workspace components.
 
-### W2 — Keyboard Capture System (Session 016)
+### W2 — Keyboard Capture System ✅ (Session 017)
 
-Global keyboard shortcuts active in workshop mode:
-- `N` — new process step (opens inline node creator on canvas)
-- `R` — new requirement (opens inline requirement form in panel)
-- `G` — flag gap on selected item
-- `A` — annotate selected item (opens annotation input)
-- `Y` — accept agent suggestion
-- `Cmd+K` — command palette (search, navigate, bulk actions)
+CaptureBar component with command prefix parsing (`R` requirement, `N` step, `G` gap, `A` annotate). Global keyboard hook (`useWorkshopKeyboard`) focuses capture bar with prefix. Context-aware: G/A hidden on requirements, shown on flow. Agent proofreading on new requirements (mock cleanup → review card → Y accept / E edit / Esc discard).
 
-Must not conflict with standard browser/OS shortcuts. Only active when workshop mode is toggled on.
+### W3 — Live Requirements Editing ✅ (Session 017)
 
-### W3 — Live Requirements Editing (Session 017)
+Click to select, double-click to edit text, badge click cycles tag/segment/status. Modified rows: amber dot. New rows: emerald border + slide animation. Workshop captures overlay base data via `capturedRequirements` Map. Inline edit modal for text field. CaptureBar embedded below filter bar in requirements context.
 
-In-place editing of BusinessRequirementsTable:
-- Click a requirement row to edit text, tag, segment, status
-- `R` shortcut opens a new requirement form pre-populated with current process area context
-- `G` on a requirement toggles its status to "gap" with visual treatment
-- Inline validation status toggle (draft → validated → deferred)
-- Changes tracked as "workshop capture" with timestamp and source attribution
-- Filter by "modified this session" to see what changed during the workshop
+### W4 — Live Process Flow Editing ✅ (Session 017)
 
-### W4 — Live Process Flow Editing (Session 017)
+Double-click to edit node labels (recorded to store). `G` opens gap notes panel with textarea — notes stored alongside flag. `N` captures new steps to tray → "Place" button → click target node → Dagre relayout with edge splitting. `D`/Delete/Backspace deletes selected node (bridges edges). Dashed red border + "GAP" badge with notes below gap-flagged nodes.
 
-In-place editing of ProcessFlowMap:
-- Click canvas to add a new process node (type selector: task, gateway, subprocess)
-- Drag between nodes to create edges
-- Click a node to edit label, role, system, status
-- `G` on a node marks it as "gap" (visual: dashed border, amber accent)
-- `A` on a node opens an annotation/overlay input
-- Swimlane assignment via dropdown or drag
-- Changes tracked as "workshop capture" with before/after state
+### W5 — Agent Listening Mode (partial ✅ Session 017)
 
-### W5 — Agent Listening Mode (Session 018)
+**Done:**
+- Agent Insight panels on both requirements and process flow
+- Requirements: selecting a row with `fit_gap` data shows agentic bridge + gap remediation as clickable `+R` chips. Click to capture as new requirement. Shows rating (A0–A3), autonomy level, ERP fit summary.
+- Process flow: selecting a node with `gl_finding`/`agent_elicited` overlays shows clickable chips. Click → auto-flags gap with overlay text as notes. Leading practice nodes confirmed.
 
-The agent runs in "quiet colleague" mode during workshops:
-- **Visual:** Breathing blue pulse (subtle, non-distracting on projector)
-- **Suggestion chips:** Non-blocking, appear below the capture bar
-  - "This looks like a regulatory requirement (REG)" — auto-classification
-  - "Similar requirement exists in PA-03 (SP-03.2)" — cross-reference detection
-  - "Gap identified: no current-state equivalent for this step" — gap detection
-- `Y` accepts a suggestion, `Esc` dismisses
-- Agent observes all captures but never interrupts the flow
-- Suggestions are batched (appear every 10–15 seconds, not on every keystroke)
+**Remaining:**
+- Real-time suggestion generation (currently surfaces static mock data, not dynamic agent analysis)
+- `Y` accept / `Esc` dismiss on suggestion chips
+- Batched suggestion timing (every 10–15 seconds)
+- Cross-PA reference detection
+- `Cmd+K` command palette
 
 ### W6 — Micro-interactions (Session 018)
 
@@ -238,9 +219,11 @@ Pre-engagement phase with its own deliverables. Sits upstream of the workplan �
 ### Frontend
 - `web/src/lib/mock-data.ts` — types, workspace configs, workplan, PROCESS_AREAS
 - `web/src/lib/mock-requirements.ts` — BR data (324 requirements)
-- `web/src/lib/workshop-store.ts` — Zustand store for workshop mode + session + locks
+- `web/src/lib/workshop-store.ts` — Zustand store for workshop mode + session + capture state
 - `web/src/app/[engagementId]/deliverables/[deliverableId]/page.tsx` — workspace dispatch
 - `web/src/components/workspace/WorkspaceShell.tsx` — workshop layout wrapper + keyboard shortcut
+- `web/src/components/workspace/CaptureBar.tsx` — command input bar (R/N/G/A prefixes, agent review)
+- `web/src/hooks/useWorkshopKeyboard.ts` — global keyboard handler for workshop mode
 - `web/src/components/workspace/` — all workspace components
 
 ### Backend

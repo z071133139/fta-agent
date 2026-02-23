@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   MOCK_ENGAGEMENTS,
   MOCK_WORKSPACES,
@@ -22,6 +21,8 @@ import ActivityPanel from "@/components/workspace/ActivityPanel";
 import { ProcessInventoryGraph } from "@/components/workspace/ProcessInventoryGraph";
 import { ProcessFlowMap } from "@/components/workspace/ProcessFlowMap";
 import { BusinessRequirementsTable } from "@/components/workspace/BusinessRequirementsTable";
+import { CaptureBar, type CaptureBarHandle } from "@/components/workspace/CaptureBar";
+import { useWorkshopKeyboard } from "@/hooks/useWorkshopKeyboard";
 
 const AGENT_LABEL: Record<string, string> = {
   gl_design_coach: "GL Design Coach",
@@ -59,6 +60,10 @@ export default function DeliverablePage() {
   const workshopMode = useWorkshopStore((s) => s.workshopMode);
   const eligible = isWorkshopEligible(params.deliverableId);
   const isWorkshopActive = workshopMode && eligible;
+
+  // Workshop capture bar ref + keyboard hook
+  const captureBarRef = useRef<CaptureBarHandle>(null);
+  useWorkshopKeyboard(captureBarRef);
 
   // Run state: start from template, allow transitions
   const [runState, setRunState] = useState<AgentRunState>(
@@ -154,19 +159,25 @@ export default function DeliverablePage() {
             {/* Graph path — process flow map */}
             {hasGraph && workspaceTemplate.graph!.kind === "process_flow" && (
               <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                <ProcessFlowMap
-                  data={workspaceTemplate.graph as ProcessFlowData}
-                />
+                <div className="flex-1 min-h-0 relative">
+                  <ProcessFlowMap
+                    data={workspaceTemplate.graph as ProcessFlowData}
+                  />
+                </div>
+                {isWorkshopActive && (
+                  <div className="shrink-0">
+                    <CaptureBar ref={captureBarRef} context="flow" />
+                  </div>
+                )}
               </div>
             )}
 
             {/* Graph path — business requirements */}
             {hasGraph && workspaceTemplate.graph!.kind === "business_requirements" && (
-              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                <BusinessRequirementsTable
-                  data={workspaceTemplate.graph as BusinessRequirementsData}
-                />
-              </div>
+              <BusinessRequirementsTable
+                data={workspaceTemplate.graph as BusinessRequirementsData}
+                captureBarRef={captureBarRef}
+              />
             )}
 
             {/* Table path */}
@@ -208,31 +219,11 @@ export default function DeliverablePage() {
               </div>
             )}
 
-            {/* Chat input — always visible at bottom */}
-            <AgentChatInput runState={runState} agentName={agentName} />
+            {/* Chat input — hidden in workshop mode */}
+            {!isWorkshopActive && (
+              <AgentChatInput runState={runState} agentName={agentName} />
+            )}
 
-            {/* Workshop capture bar placeholder */}
-            <AnimatePresence>
-              {isWorkshopActive && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="shrink-0 overflow-hidden"
-                >
-                  <div className="flex items-center gap-3 px-5 py-2.5 border-t border-warning/20 bg-warning/5">
-                    <div className="h-1.5 w-1.5 rounded-full bg-warning/50" />
-                    <span className="text-[11px] font-mono text-warning/60">
-                      Capture bar — W2
-                    </span>
-                    <span className="text-[9px] text-muted/40 font-mono ml-auto">
-                      N step · R requirement · G gap · A annotate
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
         )}
       </div>

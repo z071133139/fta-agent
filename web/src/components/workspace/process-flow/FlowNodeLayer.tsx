@@ -21,6 +21,8 @@ interface LayerProps {
   editingId: string | null;
   editDraft: string;
   labels: Record<string, string>;
+  gapNodeIds?: Set<string>;
+  gapNotes?: Map<string, string>;
   onSelect: (id: string) => void;
   onDeselect: () => void;
   onDoubleClick: (id: string, currentLabel: string) => void;
@@ -93,6 +95,8 @@ interface TaskNodeProps {
   selected: boolean;
   editing: boolean;
   editDraft: string;
+  gapFlagged?: boolean;
+  gapNote?: string;
   onSelect: (id: string) => void;
   onDoubleClick: (id: string, currentLabel: string) => void;
   onEditChange: (value: string) => void;
@@ -106,15 +110,20 @@ const TaskNode = React.memo(function TaskNode({
   selected,
   editing,
   editDraft,
+  gapFlagged,
+  gapNote,
   onSelect,
   onDoubleClick,
   onEditChange,
   onEditCommit,
   onEditCancel,
 }: TaskNodeProps) {
-  const stripeColor = node.raw.status
-    ? (STATUS_STRIPE[node.raw.status] ?? undefined)
-    : undefined;
+  // Gap flag from workshop overrides status stripe
+  const stripeColor = gapFlagged
+    ? STATUS_STRIPE.gap
+    : node.raw.status
+      ? (STATUS_STRIPE[node.raw.status] ?? undefined)
+      : undefined;
   const hasOverlays = node.overlays.length > 0;
 
   // Click debounce: prevent single-click handler firing on a double-click
@@ -151,7 +160,7 @@ const TaskNode = React.memo(function TaskNode({
         width: node.w,
         height: node.h,
         backgroundColor: "#1E293B",
-        borderStyle: "solid",
+        borderStyle: gapFlagged ? "dashed" : "solid",
         borderWidth: stripeColor
           ? `${selected ? 1.5 : 1}px ${selected ? 1.5 : 1}px ${selected ? 1.5 : 1}px 3px`
           : selected ? "1.5px" : "1px",
@@ -266,6 +275,58 @@ const TaskNode = React.memo(function TaskNode({
           >
             {node.raw.system}
           </span>
+        </div>
+      )}
+
+      {/* Gap notes indicator */}
+      {gapFlagged && gapNote && !editing && (
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            top: node.h + 4,
+            width: node.w,
+            pointerEvents: "none",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 4,
+              padding: "3px 6px",
+              backgroundColor: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.2)",
+              borderRadius: 5,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 8,
+                fontFamily: "'JetBrains Mono', monospace",
+                color: "#EF4444",
+                fontWeight: 600,
+                flexShrink: 0,
+                marginTop: 1,
+              }}
+            >
+              GAP
+            </span>
+            <span
+              style={{
+                fontSize: 9,
+                fontFamily: "'DM Sans', system-ui, sans-serif",
+                color: "#94A3B8",
+                lineHeight: 1.3,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical" as const,
+                overflow: "hidden",
+              }}
+            >
+              {gapNote}
+            </span>
+          </div>
         </div>
       )}
     </div>
@@ -395,6 +456,8 @@ export const FlowNodeLayer = React.memo(function FlowNodeLayer({
   editingId,
   editDraft,
   labels,
+  gapNodeIds,
+  gapNotes,
   onSelect,
   onDeselect,
   onDoubleClick,
@@ -430,6 +493,8 @@ export const FlowNodeLayer = React.memo(function FlowNodeLayer({
               selected={selectedId === node.id}
               editing={editingId === node.id}
               editDraft={editDraft}
+              gapFlagged={gapNodeIds?.has(node.id)}
+              gapNote={gapNotes?.get(node.id)}
               onSelect={onSelect}
               onDoubleClick={onDoubleClick}
               onEditChange={onEditChange}
