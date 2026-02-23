@@ -32,6 +32,98 @@ function pa05FitGap(
   };
 }
 
+// ── Helper for PA-02 fit/gap data (GL & Multi-Basis) ─────────────────────
+
+function pa02FitGap(
+  sapRating: "F1" | "F2" | "F3",
+  sapNotes: string,
+  remediation: string,
+  effort: string,
+  agenticRating: "A0" | "A1" | "A2" | "A3",
+  agenticBridge: string,
+  agenticAutonomy: string,
+): FitGapAnalysis {
+  return {
+    erp_assessments: [
+      { platform: "SAP S/4HANA", rating: sapRating, notes: sapNotes },
+    ],
+    gap_remediation: remediation,
+    gap_effort: effort,
+    agentic_rating: agenticRating,
+    agentic_bridge: agenticBridge,
+    agentic_autonomy: agenticAutonomy,
+  };
+}
+
+// ── Helper for PA-03 fit/gap data (Premium Accounting) ───────────────────
+
+function pa03FitGap(
+  sapRating: "F1" | "F2" | "F3",
+  sapNotes: string,
+  remediation: string,
+  effort: string,
+  agenticRating: "A0" | "A1" | "A2" | "A3",
+  agenticBridge: string,
+  agenticAutonomy: string,
+): FitGapAnalysis {
+  return {
+    erp_assessments: [
+      { platform: "SAP FS-CD / S4HANA", rating: sapRating, notes: sapNotes },
+    ],
+    gap_remediation: remediation,
+    gap_effort: effort,
+    agentic_rating: agenticRating,
+    agentic_bridge: agenticBridge,
+    agentic_autonomy: agenticAutonomy,
+  };
+}
+
+// ── Helper for PA-09 fit/gap data (AP & Commission Payments) ─────────────
+
+function pa09FitGap(
+  sapRating: "F1" | "F2" | "F3",
+  sapNotes: string,
+  remediation: string,
+  effort: string,
+  agenticRating: "A0" | "A1" | "A2" | "A3",
+  agenticBridge: string,
+  agenticAutonomy: string,
+): FitGapAnalysis {
+  return {
+    erp_assessments: [
+      { platform: "SAP S/4HANA FI-AP", rating: sapRating, notes: sapNotes },
+    ],
+    gap_remediation: remediation,
+    gap_effort: effort,
+    agentic_rating: agenticRating,
+    agentic_bridge: agenticBridge,
+    agentic_autonomy: agenticAutonomy,
+  };
+}
+
+// ── Helper for PA-13 fit/gap data (Cash Management & Treasury) ───────────
+
+function pa13FitGap(
+  sapRating: "F1" | "F2" | "F3",
+  sapNotes: string,
+  remediation: string,
+  effort: string,
+  agenticRating: "A0" | "A1" | "A2" | "A3",
+  agenticBridge: string,
+  agenticAutonomy: string,
+): FitGapAnalysis {
+  return {
+    erp_assessments: [
+      { platform: "SAP TRM / S4HANA", rating: sapRating, notes: sapNotes },
+    ],
+    gap_remediation: remediation,
+    gap_effort: effort,
+    agentic_rating: agenticRating,
+    agentic_bridge: agenticBridge,
+    agentic_autonomy: agenticAutonomy,
+  };
+}
+
 // ── PA-05: Ceded Reinsurance Accounting (25 requirements — full fit/gap) ──
 
 const PA05_REQS: BusinessRequirement[] = [
@@ -343,41 +435,77 @@ const OTHER_REQS: BusinessRequirement[] = [
   { id: "BR-01.4.04", pa_id: "PA-01", sp_id: "SP-01.4", tag: "REG", segment: "All", status: "draft", text: "System must support reporting currency ledgers for FX-denominated entities with automatic translation at period-end rates" },
 
   // PA-02: General Ledger & Multi-Basis Accounting (20 reqs)
-  { id: "BR-02.1.01", pa_id: "PA-02", sp_id: "SP-02.1", tag: "OPS", segment: "All", status: "validated", text: "System must support automated journal entry creation with configurable approval workflows based on entry type, amount, and posting user" },
-  { id: "BR-02.1.02", pa_id: "PA-02", sp_id: "SP-02.1", tag: "CTL", segment: "All", status: "validated", text: "Journal entries must enforce segregation of duties between preparer and approver with configurable delegation rules" },
-  { id: "BR-02.1.03", pa_id: "PA-02", sp_id: "SP-02.1", tag: "OPS", segment: "All", status: "draft", text: "System must support recurring journal templates with automatic reversal capability for accrual entries" },
-  { id: "BR-02.1.04", pa_id: "PA-02", sp_id: "SP-02.1", tag: "CTL", segment: "All", status: "draft", text: "All journal entries must capture source document reference, business reason, and posting user with immutable audit trail" },
-  { id: "BR-02.2.01", pa_id: "PA-02", sp_id: "SP-02.2", tag: "FIN", segment: "All", status: "validated", text: "System must support automatic dual-posting to STAT and GAAP ledgers from a single source transaction based on configurable routing rules" },
+  { id: "BR-02.1.01", pa_id: "PA-02", sp_id: "SP-02.1", tag: "OPS", segment: "All", status: "validated", text: "System must support automated journal entry creation with configurable approval workflows based on entry type, amount, and posting user",
+    fit_gap: pa02FitGap("F1", "Native JE creation with workflow — standard S/4HANA",
+      "Configure approval workflows per company code and JE type", "S",
+      "A2", "JE Automation Agent pre-populates recurring entries from templates, validates completeness, routes for approval — reduces manual entry by 70%", "L2") },
+  { id: "BR-02.1.02", pa_id: "PA-02", sp_id: "SP-02.1", tag: "CTL", segment: "All", status: "validated", text: "Journal entries must enforce segregation of duties between preparer and approver with configurable delegation rules",
+    fit_gap: pa02FitGap("F1", "SoD enforced via SAP authorization objects and workflow",
+      "Map authorization roles to org structure", "S",
+      "A1", "Compliance Agent continuously monitors SoD violations across all JE postings and auto-escalates breaches — replaces quarterly manual review", "L3") },
+  { id: "BR-02.1.03", pa_id: "PA-02", sp_id: "SP-02.1", tag: "OPS", segment: "All", status: "draft", text: "System must support recurring journal templates with automatic reversal capability for accrual entries",
+    fit_gap: pa02FitGap("F1", "Recurring entry program with auto-reversal — standard functionality",
+      "Define templates per closing activity", "S",
+      "A1", "Accrual Agent manages full lifecycle — generates recurring entries, posts reversals, validates net-zero over the period with exception alerts", "L2–L3") },
+  { id: "BR-02.1.04", pa_id: "PA-02", sp_id: "SP-02.1", tag: "CTL", segment: "All", status: "draft", text: "All journal entries must capture source document reference, business reason, and posting user with immutable audit trail",
+    fit_gap: pa02FitGap("F1", "Document change log and audit trail native in S/4HANA",
+      "Configure mandatory header text and reference fields", "S",
+      "A0", "Audit trail is platform-native — no agentic bridge needed", "N/A") },
+  { id: "BR-02.2.01", pa_id: "PA-02", sp_id: "SP-02.2", tag: "FIN", segment: "All", status: "validated", text: "System must support automatic dual-posting to STAT and GAAP ledgers from a single source transaction based on configurable routing rules",
+    fit_gap: pa02FitGap("F2", "Parallel ledger with leading/non-leading configuration — requires splitting rules",
+      "Configure ledger group assignment and posting logic per document type", "M",
+      "A2", "Multi-Basis Posting Agent validates correct ledger assignment for complex entries (DAC, reserve adjustments) and flags misrouted postings before period close", "L2") },
   { id: "BR-02.2.02", pa_id: "PA-02", sp_id: "SP-02.2", tag: "FIN", segment: "All", status: "draft", text: "Adjustment entries for GAAP-only items (DAC, LDTI, goodwill) must post exclusively to the extension ledger without affecting STAT" },
   { id: "BR-02.2.03", pa_id: "PA-02", sp_id: "SP-02.2", tag: "FIN", segment: "P&C", status: "draft", text: "Loss reserve entries must support dual-basis posting where STAT and GAAP reserve amounts differ by LOB or accident year" },
   { id: "BR-02.2.04", pa_id: "PA-02", sp_id: "SP-02.2", tag: "CTL", segment: "All", status: "draft", text: "Multi-basis posting rules must be version-controlled with effective dating and audit trail of rule changes" },
-  { id: "BR-02.3.01", pa_id: "PA-02", sp_id: "SP-02.3", tag: "OPS", segment: "All", status: "draft", text: "System must support automated period-end accrual processing with configurable reversal schedules and partial reversal capability" },
-  { id: "BR-02.3.02", pa_id: "PA-02", sp_id: "SP-02.3", tag: "FIN", segment: "P&C", status: "draft", text: "Expense allocation engine must distribute costs to LOB and segment dimensions using configurable allocation keys (premium volume, loss incurred, headcount)" },
+  { id: "BR-02.3.01", pa_id: "PA-02", sp_id: "SP-02.3", tag: "OPS", segment: "All", status: "draft", text: "System must support automated period-end accrual processing with configurable reversal schedules and partial reversal capability",
+    fit_gap: pa02FitGap("F1", "Accrual engine with reversal scheduling — standard close cockpit",
+      "Configure accrual run variants per company code", "S",
+      "A1", "Period Close Agent orchestrates full accrual cycle — generates, validates, posts, and reverses with zero manual intervention for standard accruals", "L3") },
+  { id: "BR-02.3.02", pa_id: "PA-02", sp_id: "SP-02.3", tag: "FIN", segment: "P&C", status: "draft", text: "Expense allocation engine must distribute costs to LOB and segment dimensions using configurable allocation keys (premium volume, loss incurred, headcount)",
+    fit_gap: pa02FitGap("F2", "Allocation cycles available but require significant configuration for insurance dimensions",
+      "Build allocation rules per IEE methodology — multiple allocation passes", "L",
+      "A2", "Allocation Agent runs multi-step IEE expense allocation using premium and loss drivers, validates against prior period, and flags material shifts by LOB", "L2") },
   { id: "BR-02.3.03", pa_id: "PA-02", sp_id: "SP-02.3", tag: "OPS", segment: "All", status: "draft", text: "System must support multi-step allocation cascades with circular reference detection and iterative resolution" },
   { id: "BR-02.3.04", pa_id: "PA-02", sp_id: "SP-02.3", tag: "CTL", segment: "All", status: "draft", text: "All allocations must maintain full audit trail from source cost center to allocated target with allocation factor documentation" },
   { id: "BR-02.4.01", pa_id: "PA-02", sp_id: "SP-02.4", tag: "FIN", segment: "All", status: "draft", text: "System must support multi-currency posting with automatic translation at transaction date, period-end, and historical rates" },
   { id: "BR-02.4.02", pa_id: "PA-02", sp_id: "SP-02.4", tag: "FIN", segment: "All", status: "draft", text: "Foreign exchange revaluation must be processed automatically at period-end with unrealized gain/loss posting by currency and account" },
   { id: "BR-02.4.03", pa_id: "PA-02", sp_id: "SP-02.4", tag: "REG", segment: "All", status: "draft", text: "Currency translation differences must be tracked separately for STAT and GAAP reporting with AOCI disclosure support" },
   { id: "BR-02.4.04", pa_id: "PA-02", sp_id: "SP-02.4", tag: "OPS", segment: "All", status: "draft", text: "System must support hedging relationship documentation and effectiveness testing for FX hedges per ASC 815" },
-  { id: "BR-02.5.01", pa_id: "PA-02", sp_id: "SP-02.5", tag: "CTL", segment: "All", status: "validated", text: "System must support automated GL reconciliation with sub-ledger control totals and automatic break identification" },
+  { id: "BR-02.5.01", pa_id: "PA-02", sp_id: "SP-02.5", tag: "CTL", segment: "All", status: "validated", text: "System must support automated GL reconciliation with sub-ledger control totals and automatic break identification",
+    fit_gap: pa02FitGap("F2", "Account reconciliation cockpit with matching rules — requires configuration",
+      "Configure matching rules per reconciliation key account", "M",
+      "A1", "Reconciliation Agent performs continuous GL-to-subledger matching, auto-clears matched items, and escalates breaks with root cause analysis", "L3") },
   { id: "BR-02.5.02", pa_id: "PA-02", sp_id: "SP-02.5", tag: "CTL", segment: "All", status: "draft", text: "Clearing account reconciliation must identify unmatched items with aging and automatic escalation for items exceeding threshold" },
   { id: "BR-02.5.03", pa_id: "PA-02", sp_id: "SP-02.5", tag: "CTL", segment: "All", status: "draft", text: "Trial balance integrity checks must run automatically at period-end with imbalance alerts and blocking of close if unresolved" },
   { id: "BR-02.5.04", pa_id: "PA-02", sp_id: "SP-02.5", tag: "OPS", segment: "All", status: "draft", text: "Reconciliation results must be archived with electronic sign-off capability for SOX compliance documentation" },
 
   // PA-03: Premium Accounting & Revenue Recognition (20 reqs)
-  { id: "BR-03.1.01", pa_id: "PA-03", sp_id: "SP-03.1", tag: "FIN", segment: "P&C", status: "validated", text: "System must record gross written premium from PAS interface with policy-level granularity and LOB/state attribution" },
+  { id: "BR-03.1.01", pa_id: "PA-03", sp_id: "SP-03.1", tag: "FIN", segment: "P&C", status: "validated", text: "System must record gross written premium from PAS interface with policy-level granularity and LOB/state attribution",
+    fit_gap: pa03FitGap("F2", "FS-CD processes GWP from PAS interface natively — bordereau reconciliation against treaty ledger requires FS-RI or custom ABAP",
+      "Bordereau ingestion and reconciliation automation via agent bridge", "M", "A2",
+      "Bordereau Ingestion Agent — auto-reads reinsurer bordereau, reconciles against treaty ledger, proposes cession entries", "L2") },
   { id: "BR-03.1.02", pa_id: "PA-03", sp_id: "SP-03.1", tag: "INT", segment: "P&C", status: "draft", text: "GWP interface must support multiple PAS source systems with configurable mapping and validation rules per source" },
   { id: "BR-03.1.03", pa_id: "PA-03", sp_id: "SP-03.1", tag: "CTL", segment: "P&C", status: "draft", text: "Premium recording must include automated reconciliation to PAS production reports with variance reporting by LOB" },
   { id: "BR-03.1.04", pa_id: "PA-03", sp_id: "SP-03.1", tag: "FIN", segment: "P&C", status: "draft", text: "System must support premium adjustments including endorsements, cancellations, and policy rewrites with full audit trail" },
-  { id: "BR-03.2.01", pa_id: "PA-03", sp_id: "SP-03.2", tag: "FIN", segment: "P&C", status: "validated", text: "System must calculate earned premium using pro-rata, 24ths, or policy-specific earning curves with configurable methodology by LOB" },
+  { id: "BR-03.2.01", pa_id: "PA-03", sp_id: "SP-03.2", tag: "FIN", segment: "P&C", status: "validated", text: "System must calculate earned premium using pro-rata, 24ths, or policy-specific earning curves with configurable methodology by LOB",
+    fit_gap: pa03FitGap("F1", "FS-CD supports 1/365 daily pro-rata and 24ths earning methods natively with LOB-level configuration",
+      "Agent monitors for earning method inconsistencies across LOBs and flags deviations from configured methodology", "S", "A1",
+      "Earned Premium Calculation Agent — runs 1/365 daily pro-rata, flags method inconsistencies across LoB", "L3") },
   { id: "BR-03.2.02", pa_id: "PA-03", sp_id: "SP-03.2", tag: "FIN", segment: "P&C", status: "draft", text: "Unearned premium reserve must be calculated automatically at period-end with LOB and accident year granularity" },
   { id: "BR-03.2.03", pa_id: "PA-03", sp_id: "SP-03.2", tag: "REG", segment: "P&C", status: "draft", text: "UPR calculation must support STAT and GAAP differences where premium earning methodology varies by reporting basis" },
   { id: "BR-03.2.04", pa_id: "PA-03", sp_id: "SP-03.2", tag: "FIN", segment: "P&C", status: "draft", text: "Multi-year policy premiums must be earned over the policy period with deferred premium revenue recognition" },
-  { id: "BR-03.3.01", pa_id: "PA-03", sp_id: "SP-03.3", tag: "FIN", segment: "P&C", status: "draft", text: "System must process retrospective rating adjustments based on actual loss experience with accrual for expected return premiums" },
+  { id: "BR-03.3.01", pa_id: "PA-03", sp_id: "SP-03.3", tag: "FIN", segment: "P&C", status: "draft", text: "System must process retrospective rating adjustments based on actual loss experience with accrual for expected return premiums",
+    fit_gap: pa03FitGap("F2", "FS-CD supports retro rating formulas — audit premium estimation requires integration with insured payroll/revenue data outside FS-CD",
+      "Agent ingests interim payroll/revenue from insured, recalculates estimated audit premium, flags variances", "M", "A2",
+      "Audit Premium Estimation Agent — ingests interim payroll/revenue from insured, recalculates estimated audit premium, flags variances", "L2") },
   { id: "BR-03.3.02", pa_id: "PA-03", sp_id: "SP-03.3", tag: "FIN", segment: "P&C", status: "draft", text: "Audit premium calculations must be tracked from preliminary estimate through final audit with receivable/payable management" },
   { id: "BR-03.3.03", pa_id: "PA-03", sp_id: "SP-03.3", tag: "CTL", segment: "P&C", status: "draft", text: "Retrospective rating formulas must be configurable by policy type with full documentation of calculation methodology" },
   { id: "BR-03.3.04", pa_id: "PA-03", sp_id: "SP-03.3", tag: "FIN", segment: "P&C", status: "draft", text: "System must support minimum and maximum retrospective premium constraints with automatic cap/floor application" },
-  { id: "BR-03.4.01", pa_id: "PA-03", sp_id: "SP-03.4", tag: "OPS", segment: "P&C", status: "draft", text: "System must support installment billing with configurable payment schedules and automatic premium receivable aging" },
+  { id: "BR-03.4.01", pa_id: "PA-03", sp_id: "SP-03.4", tag: "OPS", segment: "P&C", status: "draft", text: "System must support installment billing with configurable payment schedules and automatic premium receivable aging",
+    fit_gap: pa03FitGap("F1", "FS-CD handles installment billing natively — subledger-to-GL reconciliation is automated at aggregate level but loses policy-level traceability",
+      "Nightly FS-CD-to-GL balance comparison agent with auto-reconciliation at segment level and ticket drafting for breaks", "S", "A1",
+      "Subledger-GL Reconciliation Agent — nightly FS-CD-to-GL balance comparison, auto-reconciles at segment level, drafts tickets for breaks", "L3") },
   { id: "BR-03.4.02", pa_id: "PA-03", sp_id: "SP-03.4", tag: "OPS", segment: "P&C", status: "draft", text: "Premium receivable must track agent vs. direct bill balances with separate aging and collection workflows" },
   { id: "BR-03.4.03", pa_id: "PA-03", sp_id: "SP-03.4", tag: "FIN", segment: "P&C", status: "draft", text: "Bad debt provision for premium receivables must be calculated using aging-based methodology with LOB-level reporting" },
   { id: "BR-03.4.04", pa_id: "PA-03", sp_id: "SP-03.4", tag: "CTL", segment: "P&C", status: "draft", text: "Cash application for premium payments must support automated matching with configurable tolerance thresholds" },
@@ -457,11 +585,23 @@ const OTHER_REQS: BusinessRequirement[] = [
   { id: "BR-08.5.03", pa_id: "PA-08", sp_id: "SP-08.5", tag: "REG", segment: "All", status: "draft", text: "STAT derivative accounting must comply with SSAP 86 with Schedule DB disclosure data preparation" },
 
   // PA-09: AP & Commission Payments (16 reqs)
-  { id: "BR-09.1.01", pa_id: "PA-09", sp_id: "SP-09.1", tag: "OPS", segment: "All", status: "validated", text: "System must support 3-way and 2-way PO matching with configurable tolerance thresholds and exception routing" },
-  { id: "BR-09.1.02", pa_id: "PA-09", sp_id: "SP-09.1", tag: "OPS", segment: "All", status: "draft", text: "Invoice processing must support OCR/AI-assisted data extraction with vendor master auto-matching" },
-  { id: "BR-09.1.03", pa_id: "PA-09", sp_id: "SP-09.1", tag: "CTL", segment: "All", status: "draft", text: "Vendor payment approval workflows must enforce SOD with configurable approval hierarchies by amount threshold" },
+  { id: "BR-09.1.01", pa_id: "PA-09", sp_id: "SP-09.1", tag: "OPS", segment: "All", status: "validated", text: "System must support 3-way and 2-way PO matching with configurable tolerance thresholds and exception routing",
+    fit_gap: pa09FitGap("F2", "SAP FI-AP supports standard 3-way match — insurance-specific matching (invoice + claim reserve + panel auth) requires custom validation logic",
+      "Claims invoice auto-validation agent matches invoice to open claim, confirms panel status and reserve adequacy", "M", "A2",
+      "Claims Invoice Auto-Validation Agent — matches invoice to open claim, confirms panel status + reserve adequacy, proposes GL coding", "L2") },
+  { id: "BR-09.1.02", pa_id: "PA-09", sp_id: "SP-09.1", tag: "OPS", segment: "All", status: "draft", text: "Invoice processing must support OCR/AI-assisted data extraction with vendor master auto-matching",
+    fit_gap: pa09FitGap("F1", "SAP IDP (Intelligent Document Processing) handles OCR and vendor matching — TPA fee schedule reconciliation requires custom extension",
+      "TPA activity report ingestion agent maps to contracted fee schedule and flags discrepancies automatically", "S", "A1",
+      "TPA Fee Reconciliation Agent — ingests TPA activity report (any format), maps to contracted fee schedule, flags discrepancies", "L3") },
+  { id: "BR-09.1.03", pa_id: "PA-09", sp_id: "SP-09.1", tag: "CTL", segment: "All", status: "draft", text: "Vendor payment approval workflows must enforce SOD with configurable approval hierarchies by amount threshold",
+    fit_gap: pa09FitGap("F1", "SAP approval workflows support SOD and amount thresholds natively — CAT event surge triage requires dynamic threshold override logic",
+      "During declared CAT, auto-approve below threshold for panel vendors; escalate only genuine exceptions", "S", "A1",
+      "CAT Surge Triage Agent — during declared CAT, auto-approves below threshold for panel vendors, escalates only genuine exceptions", "L2-L3") },
   { id: "BR-09.1.04", pa_id: "PA-09", sp_id: "SP-09.1", tag: "OPS", segment: "All", status: "draft", text: "System must support multiple payment methods (ACH, wire, check) with configurable payment run scheduling" },
-  { id: "BR-09.2.01", pa_id: "PA-09", sp_id: "SP-09.2", tag: "FIN", segment: "P&C", status: "validated", text: "Agent and broker commission calculations must support new business, renewal, and contingent commission rate structures" },
+  { id: "BR-09.2.01", pa_id: "PA-09", sp_id: "SP-09.2", tag: "FIN", segment: "P&C", status: "validated", text: "Agent and broker commission calculations must support new business, renewal, and contingent commission rate structures",
+    fit_gap: pa09FitGap("F2", "SAP supports commission rate structures — MGA profit share calculation with loss development factors requires actuarial model integration",
+      "Agent applies loss development factors from actuarial model, calculates preliminary profit share, drafts dispute/acceptance memo", "M", "A2",
+      "MGA Profit Share Estimation Agent — applies loss development factors from actuarial model, calculates preliminary profit share, drafts dispute/acceptance", "L2") },
   { id: "BR-09.2.02", pa_id: "PA-09", sp_id: "SP-09.2", tag: "OPS", segment: "P&C", status: "draft", text: "Commission payments must support offset and netting against premium balances with agent statement generation" },
   { id: "BR-09.2.03", pa_id: "PA-09", sp_id: "SP-09.2", tag: "FIN", segment: "P&C", status: "draft", text: "Contingent commission accruals must be calculated based on contractual formulas with annual true-up processing" },
   { id: "BR-09.2.04", pa_id: "PA-09", sp_id: "SP-09.2", tag: "CTL", segment: "P&C", status: "draft", text: "Commission rate validation must flag deviations from approved rate schedules with exception reporting" },
@@ -518,11 +658,23 @@ const OTHER_REQS: BusinessRequirement[] = [
   { id: "BR-12.3.03", pa_id: "PA-12", sp_id: "SP-12.3", tag: "REG", segment: "All", status: "deferred", text: "Real estate investment data must support NAIC Schedule A annual statement filing requirements" },
 
   // PA-13: Cash Management & Treasury (16 reqs)
-  { id: "BR-13.1.01", pa_id: "PA-13", sp_id: "SP-13.1", tag: "OPS", segment: "All", status: "validated", text: "System must produce daily cash position report across all bank accounts with automatic bank statement reconciliation" },
-  { id: "BR-13.1.02", pa_id: "PA-13", sp_id: "SP-13.1", tag: "OPS", segment: "All", status: "draft", text: "Bank reconciliation must support automated matching with configurable rules for checks, ACH, wires, and bank fees" },
-  { id: "BR-13.1.03", pa_id: "PA-13", sp_id: "SP-13.1", tag: "CTL", segment: "All", status: "draft", text: "Unreconciled bank items must be flagged with aging and automatic escalation for items exceeding threshold days" },
+  { id: "BR-13.1.01", pa_id: "PA-13", sp_id: "SP-13.1", tag: "OPS", segment: "All", status: "validated", text: "System must produce daily cash position report across all bank accounts with automatic bank statement reconciliation",
+    fit_gap: pa13FitGap("F2", "SAP TRM produces cash position reports — premium receipt matching with insufficient references requires fuzzy logic beyond standard bank reconciliation",
+      "Smart matching agent uses fuzzy logic to match payments with insufficient references against open receivables", "M", "A2",
+      "Smart Premium Receipt Matching Agent — matches payments with insufficient references against open receivables using fuzzy logic, presents one-click confirmation", "L2") },
+  { id: "BR-13.1.02", pa_id: "PA-13", sp_id: "SP-13.1", tag: "OPS", segment: "All", status: "draft", text: "Bank reconciliation must support automated matching with configurable rules for checks, ACH, wires, and bank fees",
+    fit_gap: pa13FitGap("F1", "SAP TRM bank reconciliation supports automated matching for all standard payment types — cash position consolidation across entities requires Kyriba or custom ABAP",
+      "Daily cash position assembly agent ingests all bank feeds, consolidates by entity/currency, loads expected flows, computes funding gap", "S", "A1",
+      "Daily Cash Position Assembly Agent — ingests all bank feeds at 07:00, consolidates by entity/currency, loads expected flows, computes funding gap", "L3") },
+  { id: "BR-13.1.03", pa_id: "PA-13", sp_id: "SP-13.1", tag: "CTL", segment: "All", status: "draft", text: "Unreconciled bank items must be flagged with aging and automatic escalation for items exceeding threshold days",
+    fit_gap: pa13FitGap("F1", "SAP TRM flags unreconciled items with aging natively — escheatment tracking by state dormancy threshold requires custom extension",
+      "Monthly scan agent identifies outstanding checks approaching dormancy threshold by state, generates due diligence letters", "S", "A1",
+      "Outstanding Check Escheatment Agent — monthly scan, identifies items approaching dormancy threshold by state, generates due diligence letters", "L3") },
   { id: "BR-13.1.04", pa_id: "PA-13", sp_id: "SP-13.1", tag: "INT", segment: "All", status: "draft", text: "Bank file integration must support BAI2 and MT940 formats with multi-bank connectivity via SWIFT or host-to-host" },
-  { id: "BR-13.2.01", pa_id: "PA-13", sp_id: "SP-13.2", tag: "OPS", segment: "P&C", status: "draft", text: "Claims payment funding must be monitored daily with automatic transfer triggers when account balances fall below threshold" },
+  { id: "BR-13.2.01", pa_id: "PA-13", sp_id: "SP-13.2", tag: "OPS", segment: "P&C", status: "draft", text: "Claims payment funding must be monitored daily with automatic transfer triggers when account balances fall below threshold",
+    fit_gap: pa13FitGap("F2", "SAP TRM supports threshold-based transfers — CAT liquidity monitoring with reserve projection requires custom analytics layer",
+      "CAT liquidity dashboard agent monitors claims payment velocity vs reserve, alerts when reserve projected below floor within 48h", "M", "A2",
+      "CAT Liquidity Dashboard Agent — monitors claims payment velocity vs reserve, alerts when reserve projected below floor within 48h", "L2") },
   { id: "BR-13.2.02", pa_id: "PA-13", sp_id: "SP-13.2", tag: "OPS", segment: "P&C", status: "draft", text: "Catastrophe event liquidity planning must support scenario modeling for large loss events with reserve impact projection" },
   { id: "BR-13.2.03", pa_id: "PA-13", sp_id: "SP-13.2", tag: "CTL", segment: "P&C", status: "draft", text: "Claims payment disbursement limits must enforce daily and per-transaction thresholds with override approval workflow" },
   { id: "BR-13.2.04", pa_id: "PA-13", sp_id: "SP-13.2", tag: "INT", segment: "P&C", status: "draft", text: "Claims payment data must integrate from claims system with payment instruction validation and bank routing verification" },

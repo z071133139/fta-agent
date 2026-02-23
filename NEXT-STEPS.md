@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-22 (Session 017)
+> Last updated: 2026-02-23 (Session 018)
 > Current phase: Phase 1 — Personal Use MVP
 > Strategy: Workshop Mode first (differentiator), then Framework Expansion + Data Slice
 
@@ -36,14 +36,15 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 | **015** | Product plan docs ✅ + 4 knowledge workspaces ✅ | A | A1, A2, A3, A9 |
 | **016** | Workshop layout toggle ✅ + brightness fix ✅ | W | W1 |
 | **017** | CaptureBar + live req/flow editing + agent insights ✅ | W | W2, W3, W4, W5 (partial) |
-| 018 | Agent listening mode + micro-interactions | W | W5 (remainder), W6 |
-| 019 | Backend persistence + workshop session continuity | W | W7, W8 |
-| 020 | Remaining knowledge workspaces (A4–A10) + platform polish | A+C | A4–A10, C1–C3 |
-| 021+ | Data slice (SSE, GL tools, end-to-end wiring) | B | B1–B5 |
+| **018** | 3 new process flows + fit/gap data + Agentic Bridges panel ✅ | A+W | A11, W5 (enhanced) |
+| 019 | Agent listening mode + micro-interactions | W | W5 (remainder), W6 |
+| 020 | Backend persistence + workshop session continuity | W | W7, W8 |
+| 021 | Remaining knowledge workspaces (A4–A10) + platform polish | A+C | A4–A10, C1–C3 |
+| 022+ | Data slice (SSE, GL tools, end-to-end wiring) | B | B1–B5 |
 
-**Milestone after Session 019:** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline.
+**Milestone after Session 020:** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline.
 
-**Milestone after Session 020:** 15/35 deliverables (43%), all 7 workstreams covered.
+**Milestone after Session 021:** 15/35 deliverables (43%), all 7 workstreams covered.
 
 ---
 
@@ -69,12 +70,16 @@ Click to select, double-click to edit text, badge click cycles tag/segment/statu
 
 Double-click to edit node labels (recorded to store). `G` opens gap notes panel with textarea — notes stored alongside flag. `N` captures new steps to tray → "Place" button → click target node → Dagre relayout with edge splitting. `D`/Delete/Backspace deletes selected node (bridges edges). Dashed red border + "GAP" badge with notes below gap-flagged nodes.
 
-### W5 — Agent Listening Mode (partial ✅ Session 017)
+### W5 — Agent Listening Mode (partial ✅ Session 017, enhanced ✅ Session 018)
 
-**Done:**
+**Done (Session 017):**
 - Agent Insight panels on both requirements and process flow
 - Requirements: selecting a row with `fit_gap` data shows agentic bridge + gap remediation as clickable `+R` chips. Click to capture as new requirement. Shows rating (A0–A3), autonomy level, ERP fit summary.
 - Process flow: selecting a node with `gl_finding`/`agent_elicited` overlays shows clickable chips. Click → auto-flags gap with overlay text as notes. Leading practice nodes confirmed.
+
+**Done (Session 018):**
+- **Agentic Bridges panel** replaces per-node agent insight chips on process flow. PA-scoped — shows all requirements with `agentic_bridge` data for the current workshop PA. Collapsible (bottom-left), shows agentic rating badge (A0–A3), autonomy level, bridge description, and underlying requirement text.
+- **Fit/gap data enrichment** across PA-02 (8 reqs), PA-03 (4 reqs), PA-09 (5 reqs), PA-13 (4 reqs) — each with SAP assessment, agentic rating, agentic bridge description, and autonomy level.
 
 **Remaining:**
 - Real-time suggestion generation (currently surfaces static mock data, not dynamic agent analysis)
@@ -128,12 +133,13 @@ Workshop changes are saved as a "workshop session" with:
 | A2 | d-002-02 Scope Definition | WS-002 Business Case | Table | ✅ Done (015) |
 | A3 | d-003-04 ERP Evaluation Summary | WS-003 ERP Selection | Table + scores | ✅ Done (015) |
 | A9 | d-001-04 Risk & Issue Log | WS-001 PM & Governance | Table | ✅ Done (015) |
-| A4 | d-005-02 Chart of Accounts Design | WS-005 COA & GL | Custom | 020 |
-| A5 | d-006-01 Reporting Inventory | WS-006 Reporting | Table | 020 |
-| A6 | d-007-04 Interface Inventory | WS-007 Data & Integration | Table | 020 |
-| A7 | d-004-06 Process Gap Analysis | WS-004 Business Process | Table + fit/gap | 020 |
-| A8 | d-005-04 ACDOCA Dimension Design | WS-005 COA & GL | Custom | 020 |
-| A10 | d-006-03 Regulatory Reporting Map | WS-006 Reporting | Table | 020 |
+| A4 | d-005-02 Chart of Accounts Design | WS-005 COA & GL | Custom | 021 |
+| A5 | d-006-01 Reporting Inventory | WS-006 Reporting | Table | 021 |
+| A6 | d-007-04 Interface Inventory | WS-007 Data & Integration | Table | 021 |
+| A7 | d-004-06 Process Gap Analysis | WS-004 Business Process | Table + fit/gap | 021 |
+| A8 | d-005-04 ACDOCA Dimension Design | WS-005 COA & GL | Custom | 021 |
+| A10 | d-006-03 Regulatory Reporting Map | WS-006 Reporting | Table | 021 |
+| A11 | d-004-03b/c/d Process Flow Maps (3) | WS-004 Business Process | ProcessFlowMap | ✅ Done (018) |
 
 **Build approach:** Most are AnnotatedTable with domain-specific mock data. No new component types needed. Define columns, write mock rows, add to MOCK_WORKSPACES.
 
@@ -172,11 +178,11 @@ Deferred until after Workshop Mode. Get d-005-01 working with real data: upload 
 | WS-001 PM & Governance | d-001-03, d-001-04 | 2/5 |
 | WS-002 Business Case | d-002-02 | 1/4 |
 | WS-003 ERP Selection | d-003-04 | 1/5 |
-| WS-004 Business Process | d-004-01, d-004-03, d-004-04 | 3/5 |
+| WS-004 Business Process | d-004-01, d-004-03, d-004-03b, d-004-03c, d-004-03d, d-004-04 | 6/5+ |
 | WS-005 COA & GL | d-005-01, d-005-03 | 2/8 |
 | WS-006 Reporting | — | 0/5 |
 | WS-007 Data & Integration | — | 0/5 |
-| **Total** | **9** | **9/35 (26%)** |
+| **Total** | **12** | **12/35 (34%)** |
 
 ---
 

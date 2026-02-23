@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
-import type { ProcessFlowData, ProcessFlowNode, ProcessFlowEdge, ProcessOverlayKind } from "@/lib/mock-data";
+import type { ProcessFlowData, ProcessFlowNode, ProcessFlowEdge, ProcessOverlayKind, BusinessRequirement, AgenticRating } from "@/lib/mock-data";
+import { BUSINESS_REQUIREMENTS } from "@/lib/mock-requirements";
 import { useFlowLayout } from "./process-flow/useFlowLayout";
 import { useFlowViewport } from "./process-flow/useFlowViewport";
 import { FlowEdgeLayer } from "./process-flow/FlowEdgeLayer";
@@ -18,6 +19,15 @@ const OV_CFG: Record<
   requirement: { label: "Requirement", cls: "bg-[#3B82F6]/15 text-[#3B82F6]" },
   exception: { label: "Exception", cls: "bg-[#A855F7]/15 text-[#A855F7]" },
   risk: { label: "Risk", cls: "bg-[#EF4444]/15 text-[#EF4444]" },
+};
+
+// ── Agentic rating config ─────────────────────────────────────────────────
+
+const AGENTIC_CFG: Record<string, { label: string; color: string; bg: string }> = {
+  A1: { label: "Full Closure",    color: "#10B981", bg: "rgba(16,185,129,0.15)" },
+  A2: { label: "Partial Closure", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
+  A3: { label: "Agent-Assisted",  color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
+  A0: { label: "Not Applicable",  color: "#64748B", bg: "rgba(100,116,139,0.15)" },
 };
 
 // ── Zoom controls ─────────────────────────────────────────────────────────────
@@ -129,6 +139,7 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
 
   // Workshop store
   const workshopMode = useWorkshopStore((s) => s.workshopMode);
+  const workshopSession = useWorkshopStore((s) => s.workshopSession);
   const recordFlowNodeEdit = useWorkshopStore((s) => s.recordFlowNodeEdit);
   const flagFlowNodeGap = useWorkshopStore((s) => s.flagFlowNodeGap);
   const flowNodeChanges = useWorkshopStore((s) => s.flowNodeChanges);
@@ -202,6 +213,15 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
     return { extraNodes, extraEdges, removeEdgeIds, removeNodeIds };
   }, [placedFlowNodes, deletedFlowNodeIds, data.edges]);
 
+  // Agentic bridge suggestions — requirements for current PA with agentic_bridge
+  const agenticBridges = useMemo(() => {
+    if (!workshopMode || !workshopSession) return [];
+    const paId = workshopSession.processAreaId;
+    return BUSINESS_REQUIREMENTS.requirements.filter(
+      (r) => r.pa_id === paId && r.fit_gap?.agentic_bridge
+    );
+  }, [workshopMode, workshopSession]);
+
   const layout = useFlowLayout(data, layoutOptions);
   const { panX, panY, zoom, fitView, zoomIn, zoomOut } = useFlowViewport(
     vpRef,
@@ -217,6 +237,7 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
   const [placingNodeId, setPlacingNodeId] = useState<string | null>(null);
   const [gapNotesNodeId, setGapNotesNodeId] = useState<string | null>(null);
   const [gapNotesDraft, setGapNotesDraft] = useState("");
+  const [agenticPanelOpen, setAgenticPanelOpen] = useState(true);
 
   const handleSelect = useCallback((id: string) => {
     // If in placing mode, this click means "insert after this node"
@@ -347,18 +368,6 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
     selectedNode.overlays.length > 0 &&
     !editingId;
 
-  // In workshop mode, also gather agentic insight for selected node
-  const selectedNodeAgentData = useMemo(() => {
-    if (!workshopMode || !selectedId) return null;
-    const node = data.nodes.find((n) => n.id === selectedId);
-    if (!node) return null;
-    // Node status tells us if it's leading practice vs client overlay
-    const overlays = (data.overlays ?? []).filter((o) => o.node_id === selectedId);
-    const agentOverlays = overlays.filter((o) => o.source === "gl_finding" || o.source === "agent_elicited");
-    if (agentOverlays.length === 0 && node.status !== "leading_practice") return null;
-    return { node, agentOverlays, isLeadingPractice: node.status === "leading_practice" };
-  }, [workshopMode, selectedId, data.nodes, data.overlays]);
-
   return (
     <div
       ref={vpRef}
@@ -398,74 +407,77 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
         />
       )}
 
-      {/* Workshop agent insight chips — positioned near selected node */}
-      {workshopMode && selectedNodeAgentData && !editingId && !gapNotesNodeId && (() => {
-        const nd = layout.nodeMap.get(selectedId!);
-        if (!nd) return null;
-        const sx = nd.x * zoom + panX;
-        const sy = (nd.y + nd.h) * zoom + panY + 12;
-        const { agentOverlays, isLeadingPractice } = selectedNodeAgentData;
-        // Don't double-show with the regular overlay panel
-        const alreadyShown = showOverlay;
-
-        return (
-          <div
-            className="absolute z-30 w-[300px]"
-            style={{ left: sx, top: alreadyShown ? sy + 160 : sy }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="bg-surface/95 border border-[#8B5CF6]/20 rounded-lg shadow-xl overflow-hidden backdrop-blur-sm">
+      {/* Agentic Bridges panel — PA-scoped requirements with agentic bridge data */}
+      {workshopMode && agenticBridges.length > 0 && (
+        <div className="absolute bottom-14 left-4 z-20" style={{ maxWidth: agenticPanelOpen ? 340 : undefined }}>
+          {agenticPanelOpen ? (
+            <div className="bg-surface/95 border border-[#8B5CF6]/25 rounded-lg shadow-xl overflow-hidden backdrop-blur-sm">
               <div className="px-3 py-2 border-b border-border/30 flex items-center gap-2">
                 <div className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6] agent-thinking" />
                 <span className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold">
-                  Agent Insight
+                  Agentic Bridges
                 </span>
-                {isLeadingPractice && (
-                  <span className="text-[8px] font-mono px-1.5 py-0.5 rounded bg-[#3B82F6]/15 text-[#3B82F6]">
-                    Leading Practice
-                  </span>
-                )}
+                <span className="text-[9px] font-mono text-muted/60">
+                  {workshopSession?.processAreaId}
+                </span>
+                <span className="text-[9px] text-muted/60 ml-auto">
+                  {agenticBridges.length} items
+                </span>
+                <button
+                  onClick={() => setAgenticPanelOpen(false)}
+                  className="text-muted/50 hover:text-foreground text-[10px] ml-1 transition-colors"
+                >
+                  ▾
+                </button>
               </div>
-              <div className="p-2.5 space-y-1.5">
-                {agentOverlays.map((ov) => {
-                  const isGapFlagged = flowNodeChanges.get(ov.node_id)?.gapFlagged;
+              <div className="max-h-[280px] overflow-y-auto p-2 space-y-1.5">
+                {agenticBridges.map((req) => {
+                  const fg = req.fit_gap!;
+                  const ac = fg.agentic_rating ? AGENTIC_CFG[fg.agentic_rating] : null;
                   return (
-                    <button
-                      key={ov.id}
-                      onClick={() => {
-                        if (!isGapFlagged) {
-                          // Use the overlay text as gap notes
-                          flagFlowNodeGap(ov.node_id, ov.text);
-                        }
-                      }}
-                      className="group flex items-start gap-2 w-full text-left px-2.5 py-2 rounded-md border border-border/30 hover:border-[#EF4444]/30 hover:bg-[#EF4444]/5 transition-colors"
+                    <div
+                      key={req.id}
+                      className="px-2.5 py-2 rounded-md border border-border/30 hover:border-[#8B5CF6]/20 transition-colors"
                     >
-                      <span className="text-[8px] font-mono mt-0.5 shrink-0" style={{
-                        color: ov.source === "gl_finding" ? "#10B981" : "#8B5CF6"
-                      }}>
-                        {ov.source === "gl_finding" ? "GL" : "AI"}
-                      </span>
-                      <span className="text-[10px] text-muted leading-relaxed flex-1">
-                        {ov.text}
-                      </span>
-                      <span className="text-[8px] shrink-0 mt-0.5 transition-colors" style={{
-                        color: isGapFlagged ? "#10B981" : "rgba(148,163,184,0.5)"
-                      }}>
-                        {isGapFlagged ? "flagged" : "→ flag gap"}
-                      </span>
-                    </button>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[8px] font-mono text-muted/60">{req.id}</span>
+                        {ac && fg.agentic_rating && (
+                          <span
+                            className="text-[8px] font-mono font-semibold px-1.5 py-0.5 rounded"
+                            style={{ backgroundColor: ac.bg, color: ac.color }}
+                          >
+                            {fg.agentic_rating}
+                          </span>
+                        )}
+                        {fg.agentic_autonomy && (
+                          <span className="text-[8px] font-mono text-muted/50">{fg.agentic_autonomy}</span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-foreground/80 leading-relaxed mb-1.5">
+                        {fg.agentic_bridge}
+                      </p>
+                      <p className="text-[9px] text-muted/50 leading-snug truncate">
+                        {req.text}
+                      </p>
+                    </div>
                   );
                 })}
-                {agentOverlays.length === 0 && isLeadingPractice && (
-                  <p className="text-[10px] text-muted/60 px-1">
-                    This step follows leading practice — no gaps identified.
-                  </p>
-                )}
               </div>
             </div>
-          </div>
-        );
-      })()}
+          ) : (
+            <button
+              onClick={() => setAgenticPanelOpen(true)}
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-surface/90 border border-[#8B5CF6]/25 shadow-lg backdrop-blur-sm hover:border-[#8B5CF6]/40 transition-colors"
+            >
+              <div className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6] agent-thinking" />
+              <span className="text-[9px] font-mono text-[#8B5CF6]">
+                Agentic Bridges ({agenticBridges.length})
+              </span>
+              <span className="text-[9px] text-muted/50">▴</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Gap notes input panel — positioned near the selected node */}
       {gapNotesNodeId && (() => {

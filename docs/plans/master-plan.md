@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 015: Workshop Mode prioritized as the differentiator. Streams A/B/C deferred until after Workshop Mode milestone.
+> Updated Session 018: 3 new process flows + fit/gap enrichment + Agentic Bridges panel. Workshop Mode W1–W5 mostly complete.
 
 ```
 Phase 1: Personal Use MVP
@@ -332,21 +332,22 @@ Phase 1: Personal Use MVP
 │   ├── Frontend — Process Visualization     ✅ Sessions 012–013
 │   └── Frontend — Business Requirements     ✅ Session 014
 │
-├── Stream A: Framework Expansion            ✅ A1–A3, A9 complete (Session 015)
+├── Stream A: Framework Expansion            ✅ A1–A3, A9, A11 complete (Sessions 015, 018)
 │
-├── WORKSHOP MODE (Sessions 016–019)         ← IN PROGRESS
-│   ├── W1 Workshop layout toggle            (Session 016) ← NEXT
-│   ├── W2 Keyboard capture system           (Session 016)
-│   ├── W3 Live requirements editing         (Session 017)
-│   ├── W4 Live process flow editing         (Session 017)
-│   ├── W5 Agent listening mode              (Session 018)
-│   ├── W6 Micro-interactions                (Session 018)
-│   ├── W7 Backend persistence               (Session 019)
-│   └── W8 Workshop session continuity       (Session 019)
+├── WORKSHOP MODE (Sessions 016–020)         ← IN PROGRESS
+│   ├── W1 Workshop layout toggle            ✅ Session 016
+│   ├── W2 Keyboard capture system           ✅ Session 017
+│   ├── W3 Live requirements editing         ✅ Session 017
+│   ├── W4 Live process flow editing         ✅ Session 017
+│   ├── W5 Agent listening mode              ✅ partial (017, 018) — Agentic Bridges panel done
+│   ├── W5 remainder (Y/Esc, Cmd+K, etc.)   (Session 019) ← NEXT
+│   ├── W6 Micro-interactions                (Session 019)
+│   ├── W7 Backend persistence               (Session 020)
+│   └── W8 Workshop session continuity       (Session 020)
 │
-├── Stream A continued: A4–A10               (Session 020)
-├── Stream C: Platform Polish                (Session 020)
-├── Stream B: Data Slice (d-005-01)          (Session 021+)
+├── Stream A continued: A4–A10               (Session 021)
+├── Stream C: Platform Polish                (Session 021)
+├── Stream B: Data Slice (d-005-01)          (Session 022+)
 │
 ├── Iteration 2: Persistence Layer           (after Stream B proves vertical)
 ├── Iteration 3–6: Deferred                  (informed by Workshop Mode + Streams)
@@ -358,9 +359,9 @@ Phase 3: Broad Rollout
 └── (not started)
 ```
 
-**Coverage:** 9 of 35 deliverables have workspaces (26%). Target after Session 020: 15/35 (43%), all 7 workstreams represented.
+**Coverage:** 12 of 35 deliverables have workspaces (34%). Target after Session 021: 18/35 (51%), all 7 workstreams represented.
 
-**Frontend state:** Full workspace UI running on mock data. Landing page, workspace shell, 4 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable). 9 deliverables with workspaces across 4 workstreams. Zero API calls.
+**Frontend state:** Full workspace UI running on mock data. Landing page, workspace shell, 4 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable). 12 deliverables with workspaces across 4 workstreams (3 new process flows added Session 018). Agentic Bridges panel in workshop mode. Fit/gap data across PA-02, PA-03, PA-09, PA-13. Zero API calls.
 
 **Backend state:** Consulting Agent keyword router, GL Design Coach domain prompts, data schemas + DuckDB engine + synthetic data generator ready. No SSE, no data tools wired, no Supabase.
 
