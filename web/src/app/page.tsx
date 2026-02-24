@@ -343,6 +343,42 @@ export default function LandingPage() {
           </p>
         </div>
 
+        {/* Pursuits section */}
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-[10px] uppercase tracking-[0.15em] text-muted font-medium">
+              Active Pursuits
+            </h2>
+            <button className="text-xs text-muted hover:text-foreground transition-colors">
+              + New Pursuit
+            </button>
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            onClick={() => router.push("/pursue/pursuit-001")}
+            className="cursor-pointer rounded-lg bg-surface border-l-4 border-l-cyan-500 p-5 transition-shadow hover:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_32px_rgba(6,182,212,0.12)]"
+          >
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <div>
+                <h3 className="text-base font-semibold text-foreground leading-tight tracking-tight">
+                  New Client Scoping
+                </h3>
+                <p className="text-xs text-muted mt-0.5">
+                  P&amp;C Carrier &middot; CFO/Controller Meeting &middot; Scoping Canvas
+                </p>
+              </div>
+              <span className="shrink-0 text-xs font-medium text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded">
+                Pursuit
+              </span>
+            </div>
+            <p className="text-xs text-muted">
+              1 context + 7 themes &middot; 76 scoping questions &middot; Ready for executive session
+            </p>
+          </motion.div>
+        </section>
+
         {/* Engagements section */}
         <section className="mb-12">
           <div className="flex items-center justify-between mb-5">

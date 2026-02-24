@@ -2,7 +2,7 @@
 
 > Status: APPROVED (Session 005, updated Sessions 006, 015)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-02-22 (Session 015)
+> Last updated: 2026-02-24 (Session 020)
 
 ## Purpose
 
@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 019: Workshop Mode complete (W1–W8). Persistence, session continuity, command palette, micro-interactions all done. 12/35 deliverables (34%).
+> Updated Session 020: Scoping Canvas polished with contextual enhancements + enterprise monochrome tone. Workshop Mode complete (W1–W8). Pursuit phase Scoping Canvas (P1) built. 12/35 deliverables (34%).
 
 ```
 Phase 1: Personal Use MVP
@@ -344,9 +344,22 @@ Phase 1: Personal Use MVP
 │   ├── W7 Browser persistence               ✅ Session 019
 │   └── W8 Workshop session continuity       ✅ Session 019
 │
-├── Stream C: Platform Polish                (Session 020) ← NEXT
+├── PURSUIT PHASE: Scoping Canvas (P1)       ✅ Sessions 019–020
+│   ├── Orbital layout + 7 themes            ✅ Session 019
+│   ├── Contextual enhancements (hub crossfade, deps, progress rings) ✅ Session 020
+│   ├── Parallax tilt, tunnel vision, glassmorphism ✅ Session 020
+│   └── Enterprise monochrome tone overhaul  ✅ Session 020
+│
+├── Stream C: Platform Polish                (Session 021) ← NEXT
 ├── Stream A continued: A4–A10               (Session 021)
 ├── Stream B: Data Slice (d-005-01)          (Session 022+)
+│
+├── STREAM E: Current State Extraction       (designed Session 019, build TBD)
+│   ├── E1+E2 Types + mock data + evidence UI
+│   ├── E3 Workshop Validation Mode
+│   ├── E4+E5 Config + behavioral extraction backend (no LLM)
+│   └── E6 Document ingestion (LLM-powered)
+│   └── Plan: docs/plans/current-state-extraction-plan.md
 │
 ├── Iteration 2: Persistence Layer           (after Stream B proves vertical)
 ├── Iteration 3–6: Deferred                  (informed by Workshop Mode + Streams)

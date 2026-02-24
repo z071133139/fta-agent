@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-23 (Session 019)
+> Last updated: 2026-02-24 (Session 020)
 > Current phase: Phase 1 — Personal Use MVP
 > Strategy: Workshop Mode first (differentiator), then Framework Expansion + Data Slice
 
@@ -38,10 +38,13 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 | **017** | CaptureBar + live req/flow editing + agent insights ✅ | W | W2, W3, W4, W5 (partial) |
 | **018** | 3 new process flows + fit/gap data + Agentic Bridges panel ✅ | A+W | A11, W5 (enhanced) |
 | **019** | Complete Workshop Mode — W5-W8 ✅ | W | W5, W6, W7, W8 |
+| **020** | Scoping Canvas polish — contextual enhancements + tone overhaul ✅ | P | P1 enhancements |
 | 021 | Remaining knowledge workspaces (A4–A10) + platform polish | A+C | A4–A10, C1–C3 |
 | 022+ | Data slice (SSE, GL tools, end-to-end wiring) | B | B1–B5 |
 
 **Milestone achieved (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
+
+**Milestone achieved (Session 020):** Scoping Canvas polished with contextual enhancements (hub crossfade, dependency highlighting, progress rings, parallax tilt, tunnel vision, glassmorphism) and full design tone overhaul to enterprise-grade monochrome aesthetic.
 
 **Next milestone (Session 021):** 15/35 deliverables (43%), all 7 workstreams covered.
 
@@ -166,6 +169,21 @@ Deferred until after Workshop Mode. Get d-005-01 working with real data: upload 
 
 ---
 
+## Stream E — Current State Extraction (designed Session 019, build TBD)
+
+Ingest client data (SAP config, transaction logs, close checklists, process documents) → structured evidence that enriches existing workspaces. **Full plan:** `docs/plans/current-state-extraction-plan.md`
+
+| Step | What | Dependencies |
+|------|------|-------------|
+| E1+E2 | Type extensions + mock extraction data + evidence UI (badges, coverage lens, detail panel) | None — mock data |
+| E3 | Workshop Validation Mode (C/D keys, validation tracking, evidence-backed suggestions) | E1+E2 |
+| E4+E5 | Config extraction backend (CSV→DuckDB) + behavioral extraction (log analysis) — no LLM | DataEngine |
+| E6 | Document ingestion (LLM-powered, Claude API) + conversational extraction flow | E4+E5, SSE |
+
+**Design principles:** No standalone CLI (agent capability inside FTA). No YAML intermediate (DuckDB via DataEngine). No parallel hierarchy (extend existing types with `evidence?` fields). Mock first, extract later. Workshop gains Validation Mode (confirm/dispute, not just capture).
+
+---
+
 ## Current Coverage
 
 | Workstream | Deliverables with Workspaces | Coverage |
@@ -181,7 +199,7 @@ Deferred until after Workshop Mode. Get d-005-01 working with real data: upload 
 
 ---
 
-## Pursuit Phase (designed Session 015, build TBD)
+## Pursuit Phase (designed Session 015, Scoping Canvas built Sessions 019–020)
 
 Pre-engagement phase with its own deliverables. Sits upstream of the workplan — same app, same login, separate navigation.
 
@@ -189,9 +207,9 @@ Pre-engagement phase with its own deliverables. Sits upstream of the workplan �
 
 **Landing page:** Pursuits above engagements (Option A — landing page split).
 
-**Scoping Canvas (P1):** Radial domain map with 7 transformation themes. Pulled up on screen during first executive meeting. Each theme captures scope signal, priority, pain points. Themes map to the 7 workstreams — scope flows into workplan on win.
+**Scoping Canvas (P1):** ✅ Built. Orbital layout with 7 themes + context tile. Hub crossfade shows executive question on hover. Dependency highlighting, progress rings, parallax tilt, tunnel vision on hover. Enterprise monochrome tone — grayscale emojis, slate palette, font-mono throughout. ThemePanel with glassmorphism, scope signals, priority, pain level, per-question capture. Keyboard-first (Tab/Enter/0-7/Esc). Export to JSON. Full Zustand store with localStorage persistence.
 
-**Pursuit deliverables:** Scoping Canvas, Executive Summary, Value Hypothesis, Proposal, RFP Response.
+**Pursuit deliverables:** Scoping Canvas ✅, Executive Summary, Value Hypothesis, Proposal, RFP Response.
 
 **Scoping questions** derived from existing `ProcessInventoryNode.scoping_questions` and `description` fields, elevated to executive language.
 
@@ -218,6 +236,11 @@ Pre-engagement phase with its own deliverables. Sits upstream of the workplan �
 ## Key Files
 
 ### Frontend
+- `web/src/lib/scoping-data.ts` — Scoping Canvas themes, questions, process area mapping
+- `web/src/lib/scoping-store.ts` — Zustand store for scoping state + persistence
+- `web/src/components/pursue/ScopingCanvas.tsx` — Orbital canvas with all visual enhancements
+- `web/src/components/pursue/ThemePanel.tsx` — Slide-out panel with glassmorphism
+- `web/src/components/pursue/ScopingExport.tsx` — JSON export
 - `web/src/lib/mock-data.ts` — types, workspace configs, workplan, PROCESS_AREAS
 - `web/src/lib/mock-requirements.ts` — BR data (324 requirements)
 - `web/src/lib/workshop-store.ts` — Zustand store for workshop mode + session + capture state + auto-save

@@ -138,3 +138,40 @@ body {
     animation: none !important;
   }
 }
+
+/* ── Scoping Canvas — orbital animations ───────────────────────────────── */
+
+@keyframes scoping-radar-sweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.scoping-radar-sweep {
+  transform-origin: center;
+  animation: scoping-radar-sweep 12s linear infinite;
+}
+
+@keyframes connection-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+.connection-active {
+  animation: connection-pulse 2s ease-in-out infinite;
+}
+
+/* Directional data-stream pulse — subtle particles flow hub → node */
+@keyframes data-stream-flow {
+  0%   { stroke-dashoffset: 20; }
+  100% { stroke-dashoffset: 0; }
+}
+.data-stream {
+  stroke-dasharray: 2 18;
+  animation: data-stream-flow 2.5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scoping-radar-sweep,
+  .connection-active,
+  .data-stream {
+    animation: none !important;
+  }
+}
