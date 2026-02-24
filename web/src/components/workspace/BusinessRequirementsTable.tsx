@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, type RefObject } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef, type RefObject } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CaptureBar, type CaptureBarHandle } from "./CaptureBar";
 import type {
@@ -301,6 +301,10 @@ function RequirementRow({
   const handleClick = (e: React.MouseEvent) => {
     if (workshopMode) {
       e.stopPropagation();
+      // Blur any focused input (e.g. CaptureBar) so keyboard shortcuts work
+      if (document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) {
+        (document.activeElement as HTMLElement).blur();
+      }
       onSelect();
     } else {
       onToggle();
@@ -366,6 +370,11 @@ function RequirementRow({
           {req.text}
         </span>
 
+        {/* Cross-PA reference chips — workshop mode only */}
+        {workshopMode && (
+          <CrossPAChips refs={detectCrossPARefs(req.text, req.pa_id)} />
+        )}
+
         {/* Fit + Agentic badges (assessed only) */}
         {fc && (
           <Badge label={primaryAssessment!.rating} color={fc.color} bg={fc.bg} border />
@@ -415,6 +424,35 @@ function RequirementRow({
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// ── Cross-PA reference detection ─────────────────────────────────────────
+
+function detectCrossPARefs(text: string, currentPaId: string): string[] {
+  const matches = text.match(/PA-\d{2}/g);
+  if (!matches) return [];
+  const unique = [...new Set(matches)];
+  return unique.filter((ref) => ref !== currentPaId);
+}
+
+function CrossPAChips({ refs }: { refs: string[] }) {
+  if (refs.length === 0) return null;
+  return (
+    <>
+      {refs.map((ref) => (
+        <span
+          key={ref}
+          className="text-[8px] font-mono px-1.5 py-0.5 rounded shrink-0"
+          style={{
+            backgroundColor: "rgba(6,182,212,0.12)",
+            color: "#06B6D4",
+          }}
+        >
+          → {ref}
+        </span>
+      ))}
+    </>
   );
 }
 
@@ -471,8 +509,11 @@ function AgentInsightPanel({
           <span className="text-[10px] text-muted leading-relaxed flex-1">
             {fg.agentic_bridge}
           </span>
-          <span className="text-[8px] text-muted/50 group-hover:text-[#8B5CF6] transition-colors shrink-0 mt-0.5">
-            click to capture
+          <span
+            className="text-[9px] font-mono font-semibold shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
+            style={{ backgroundColor: "rgba(139,92,246,0.15)", color: "#A855F7" }}
+          >
+            Y accept
           </span>
         </button>
       )}
@@ -486,6 +527,12 @@ function AgentInsightPanel({
           <span className="text-[9px] text-[#F59E0B] font-mono mt-0.5 shrink-0">+R</span>
           <span className="text-[10px] text-muted leading-relaxed flex-1">
             {fg.gap_remediation}
+          </span>
+          <span
+            className="text-[9px] font-mono font-semibold shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
+            style={{ backgroundColor: "rgba(139,92,246,0.15)", color: "#A855F7" }}
+          >
+            Y accept
           </span>
           {fg.gap_effort && (
             <Badge label={fg.gap_effort} color="#F59E0B" bg="rgba(245,158,11,0.12)" />
@@ -572,7 +619,7 @@ function InlineEditOverlay({
 
 // ── Summary Bar ───────────────────────────────────────────────────────────
 
-function SummaryBar({ requirements, hasAssessed, captureCount }: { requirements: BusinessRequirement[]; hasAssessed: boolean; captureCount: number }) {
+function SummaryBar({ requirements, hasAssessed, captureCount, captureFlip }: { requirements: BusinessRequirement[]; hasAssessed: boolean; captureCount: number; captureFlip?: boolean }) {
   const total = requirements.length;
   const assessed = requirements.filter((r) => r.fit_gap).length;
 
@@ -606,7 +653,7 @@ function SummaryBar({ requirements, hasAssessed, captureCount }: { requirements:
         <>
           <div className="w-px h-3 bg-border/40" />
           <span
-            className="font-mono font-semibold px-1.5 py-0.5 rounded"
+            className={`font-mono font-semibold px-1.5 py-0.5 rounded${captureFlip ? " workshop-animate badge-flip" : ""}`}
             style={{ backgroundColor: "rgba(16,185,129,0.15)", color: "#10B981" }}
           >
             {captureCount} captured
@@ -666,6 +713,92 @@ type FilterState = {
   assessedOnly: boolean;
 };
 
+// ── Filter Legend Strip ───────────────────────────────────────────────────
+
+const TAG_LABELS: Record<BRTag, string> = {
+  REG: "Regulatory",
+  CTL: "Control",
+  FIN: "Financial",
+  OPS: "Operational",
+  INT: "Integration",
+};
+
+const SEGMENT_LABELS: Record<BRSegment, string> = {
+  "P&C": "Property & Casualty",
+  Life: "Life Insurance",
+  Re: "Reinsurance",
+  All: "All Lines",
+};
+
+const FIT_LABELS: Record<FitRating, string> = {
+  F1: "Native Fit",
+  F2: "Configurable",
+  F3: "Extension Req'd",
+  F4: "External System",
+  F5: "Arch Gap",
+};
+
+const AGENTIC_LABELS: Record<AgenticRating, string> = {
+  A0: "Not Applicable",
+  A1: "Full Closure",
+  A2: "Partial Closure",
+  A3: "Agent-Assisted",
+};
+
+function LegendStrip({ hasAssessed }: { hasAssessed: boolean }) {
+  return (
+    <div className="px-6 py-2 border-b border-border/20 flex items-center gap-4 flex-wrap" style={{ backgroundColor: "rgba(30,41,59,0.6)" }}>
+      {/* Tags */}
+      <span className="text-[8px] uppercase tracking-[0.1em] text-muted/50 font-semibold">Type</span>
+      {(Object.keys(TAG_CFG) as BRTag[]).map((t) => (
+        <span key={t} className="flex items-center gap-1">
+          <span className="text-[9px] font-mono font-semibold" style={{ color: TAG_CFG[t].color }}>{t}</span>
+          <span className="text-[9px] text-muted/70">{TAG_LABELS[t]}</span>
+        </span>
+      ))}
+
+      <div className="w-px h-3 bg-border/20" />
+
+      {/* Segments */}
+      <span className="text-[8px] uppercase tracking-[0.1em] text-muted/50 font-semibold">Segment</span>
+      {(Object.keys(SEGMENT_CFG) as BRSegment[]).map((s) => (
+        <span key={s} className="flex items-center gap-1">
+          <span className="text-[9px] font-mono font-semibold" style={{ color: SEGMENT_CFG[s].color }}>{s}</span>
+          <span className="text-[9px] text-muted/70">{SEGMENT_LABELS[s]}</span>
+        </span>
+      ))}
+
+      {hasAssessed && (
+        <>
+          <div className="w-px h-3 bg-border/20" />
+
+          {/* Fit */}
+          <span className="text-[8px] uppercase tracking-[0.1em] text-muted/50 font-semibold">ERP Fit</span>
+          {(["F1", "F2", "F3", "F4", "F5"] as FitRating[]).map((r) => (
+            <span key={r} className="flex items-center gap-1">
+              <span className="text-[9px] font-mono font-semibold" style={{ color: FIT_CFG[r].color }}>{r}</span>
+              <span className="text-[9px] text-muted/70">{FIT_LABELS[r]}</span>
+            </span>
+          ))}
+
+          <div className="w-px h-3 bg-border/20" />
+
+          {/* Agentic */}
+          <span className="text-[8px] uppercase tracking-[0.1em] text-muted/50 font-semibold">Agentic</span>
+          {(["A0", "A1", "A2", "A3"] as AgenticRating[]).map((r) => (
+            <span key={r} className="flex items-center gap-1">
+              <span className="text-[9px] font-mono font-semibold" style={{ color: AGENTIC_CFG[r].color }}>{r}</span>
+              <span className="text-[9px] text-muted/70">{AGENTIC_LABELS[r]}</span>
+            </span>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Filter Bar ────────────────────────────────────────────────────────────
+
 function FilterBar({
   filters,
   onFiltersChange,
@@ -675,6 +808,18 @@ function FilterBar({
   onFiltersChange: (f: FilterState) => void;
   hasAssessed: boolean;
 }) {
+  const [legendVisible, setLegendVisible] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showLegend = useCallback(() => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    setLegendVisible(true);
+  }, []);
+
+  const scheduleLegendHide = useCallback(() => {
+    hideTimer.current = setTimeout(() => setLegendVisible(false), 300);
+  }, []);
+
   const toggleSet = <T extends string>(set: Set<T>, val: T): Set<T> => {
     const next = new Set(set);
     if (next.has(val)) next.delete(val);
@@ -683,125 +828,145 @@ function FilterBar({
   };
 
   return (
-    <div className="px-6 py-2.5 border-b border-border/40 flex items-center gap-3 flex-wrap">
-      {/* Search */}
-      <input
-        type="text"
-        placeholder="Search requirements…"
-        value={filters.search}
-        onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
-        className="text-[11px] bg-surface border border-border/40 rounded px-2.5 py-1 text-foreground placeholder:text-muted/40 w-48 focus:outline-none focus:border-accent/50"
-      />
+    <div
+      onMouseEnter={showLegend}
+      onMouseLeave={scheduleLegendHide}
+    >
+      <div className="px-6 py-2.5 border-b border-border/40 flex items-center gap-3 flex-wrap">
+        {/* Search */}
+        <input
+          type="text"
+          placeholder="Search requirements…"
+          value={filters.search}
+          onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
+          className="text-[11px] bg-surface border border-border/40 rounded px-2.5 py-1 text-foreground placeholder:text-muted/40 w-48 focus:outline-none focus:border-accent/50"
+        />
 
-      <div className="w-px h-4 bg-border/30" />
+        <div className="w-px h-4 bg-border/30" />
 
-      {/* Tag chips */}
-      {(Object.keys(TAG_CFG) as BRTag[]).map((t) => {
-        const active = filters.tags.has(t);
-        const cfg = TAG_CFG[t];
-        return (
-          <button
-            key={t}
-            onClick={() => onFiltersChange({ ...filters, tags: toggleSet(filters.tags, t) })}
-            className="text-[9px] px-2 py-0.5 rounded border transition-colors"
-            style={
-              active
-                ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
-                : { borderColor: "rgba(71,85,105,0.2)", color: "rgba(148,163,184,0.3)" }
-            }
-          >
-            {t}
-          </button>
-        );
-      })}
+        {/* Tag chips */}
+        {(Object.keys(TAG_CFG) as BRTag[]).map((t) => {
+          const active = filters.tags.has(t);
+          const cfg = TAG_CFG[t];
+          return (
+            <button
+              key={t}
+              onClick={() => onFiltersChange({ ...filters, tags: toggleSet(filters.tags, t) })}
+              className="text-[9px] px-2 py-0.5 rounded border transition-colors"
+              style={
+                active
+                  ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
+                  : { borderColor: "rgba(100,116,139,0.6)", color: "#94A3B8" }
+              }
+            >
+              {t}
+            </button>
+          );
+        })}
 
-      <div className="w-px h-4 bg-border/30" />
+        <div className="w-px h-4 bg-border/30" />
 
-      {/* Segment chips */}
-      {(Object.keys(SEGMENT_CFG) as BRSegment[]).map((s) => {
-        const active = filters.segments.has(s);
-        const cfg = SEGMENT_CFG[s];
-        return (
-          <button
-            key={s}
-            onClick={() => onFiltersChange({ ...filters, segments: toggleSet(filters.segments, s) })}
-            className="text-[9px] px-2 py-0.5 rounded border transition-colors"
-            style={
-              active
-                ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
-                : { borderColor: "rgba(71,85,105,0.2)", color: "rgba(148,163,184,0.3)" }
-            }
-          >
-            {s}
-          </button>
-        );
-      })}
+        {/* Segment chips */}
+        {(Object.keys(SEGMENT_CFG) as BRSegment[]).map((s) => {
+          const active = filters.segments.has(s);
+          const cfg = SEGMENT_CFG[s];
+          return (
+            <button
+              key={s}
+              onClick={() => onFiltersChange({ ...filters, segments: toggleSet(filters.segments, s) })}
+              className="text-[9px] px-2 py-0.5 rounded border transition-colors"
+              style={
+                active
+                  ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
+                  : { borderColor: "rgba(100,116,139,0.6)", color: "#94A3B8" }
+              }
+            >
+              {s}
+            </button>
+          );
+        })}
 
-      {/* Fit/Gap filters — only when assessed data exists */}
-      {hasAssessed && (
-        <>
-          <div className="w-px h-4 bg-border/30" />
+        {/* Fit/Gap filters — only when assessed data exists */}
+        {hasAssessed && (
+          <>
+            <div className="w-px h-4 bg-border/30" />
 
-          {(["F1", "F2", "F3", "F4", "F5"] as FitRating[]).map((r) => {
-            const active = filters.fitRatings.has(r);
-            const cfg = FIT_CFG[r];
-            return (
-              <button
-                key={r}
-                onClick={() => onFiltersChange({ ...filters, fitRatings: toggleSet(filters.fitRatings, r) })}
-                className="text-[9px] px-2 py-0.5 rounded border transition-colors"
-                style={
-                  active
-                    ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
-                    : { borderColor: "rgba(71,85,105,0.2)", color: "rgba(148,163,184,0.3)" }
-                }
-              >
-                {r}
-              </button>
-            );
-          })}
+            {(["F1", "F2", "F3", "F4", "F5"] as FitRating[]).map((r) => {
+              const active = filters.fitRatings.has(r);
+              const cfg = FIT_CFG[r];
+              return (
+                <button
+                  key={r}
+                  onClick={() => onFiltersChange({ ...filters, fitRatings: toggleSet(filters.fitRatings, r) })}
+                  className="text-[9px] px-2 py-0.5 rounded border transition-colors"
+                  style={
+                    active
+                      ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
+                      : { borderColor: "rgba(100,116,139,0.6)", color: "#94A3B8" }
+                  }
+                >
+                  {r}
+                </button>
+              );
+            })}
 
-          <div className="w-px h-4 bg-border/30" />
+            <div className="w-px h-4 bg-border/30" />
 
-          {(["A0", "A1", "A2", "A3"] as AgenticRating[]).map((r) => {
-            const active = filters.agenticRatings.has(r);
-            const cfg = AGENTIC_CFG[r];
-            return (
-              <button
-                key={r}
-                onClick={() => onFiltersChange({ ...filters, agenticRatings: toggleSet(filters.agenticRatings, r) })}
-                className="text-[9px] px-2 py-0.5 rounded border transition-colors"
-                style={
-                  active
-                    ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
-                    : { borderColor: "rgba(71,85,105,0.2)", color: "rgba(148,163,184,0.3)" }
-                }
-              >
-                {r}
-              </button>
-            );
-          })}
+            {(["A0", "A1", "A2", "A3"] as AgenticRating[]).map((r) => {
+              const active = filters.agenticRatings.has(r);
+              const cfg = AGENTIC_CFG[r];
+              return (
+                <button
+                  key={r}
+                  onClick={() => onFiltersChange({ ...filters, agenticRatings: toggleSet(filters.agenticRatings, r) })}
+                  className="text-[9px] px-2 py-0.5 rounded border transition-colors"
+                  style={
+                    active
+                      ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
+                      : { borderColor: "rgba(100,116,139,0.6)", color: "#94A3B8" }
+                  }
+                >
+                  {r}
+                </button>
+              );
+            })}
 
-          <div className="w-px h-4 bg-border/30" />
+            <div className="w-px h-4 bg-border/30" />
 
-          <button
-            onClick={() => onFiltersChange({ ...filters, assessedOnly: !filters.assessedOnly })}
-            className="text-[9px] px-2 py-0.5 rounded border transition-colors"
-            style={
-              filters.assessedOnly
-                ? { backgroundColor: "rgba(59,130,246,0.15)", color: "#3B82F6", borderColor: "rgba(59,130,246,0.5)" }
-                : { borderColor: "rgba(71,85,105,0.2)", color: "rgba(148,163,184,0.3)" }
-            }
-          >
-            Assessed only
-          </button>
-        </>
-      )}
+            <button
+              onClick={() => onFiltersChange({ ...filters, assessedOnly: !filters.assessedOnly })}
+              className="text-[9px] px-2 py-0.5 rounded border transition-colors"
+              style={
+                filters.assessedOnly
+                  ? { backgroundColor: "rgba(59,130,246,0.15)", color: "#3B82F6", borderColor: "rgba(59,130,246,0.5)" }
+                  : { borderColor: "rgba(100,116,139,0.6)", color: "#94A3B8" }
+              }
+            >
+              Assessed only
+            </button>
+          </>
+        )}
 
-      {/* Framework legend toggle — right-aligned */}
-      <div className="ml-auto">
-        <FrameworkLegend />
+        {/* Framework legend toggle — right-aligned */}
+        <div className="ml-auto">
+          <FrameworkLegend />
+        </div>
       </div>
+
+      {/* Legend strip — slides in on hover */}
+      <AnimatePresence>
+        {legendVisible && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <LegendStrip hasAssessed={hasAssessed} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -961,9 +1126,54 @@ export function BusinessRequirementsTable({ data, captureBarRef }: { data: Busin
 
   const newIdSet = useMemo(() => new Set(newRequirementIds), [newRequirementIds]);
 
+  // Y/Esc keyboard handling for insight panel (Task 1)
+  const selectedReq = useMemo(
+    () => (selectedRequirementId ? baseRequirements.find((r) => r.id === selectedRequirementId) : null),
+    [selectedRequirementId, baseRequirements]
+  );
+
+  useEffect(() => {
+    if (!workshopMode || !selectedReq?.fit_gap) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      if (e.key === "y" || e.key === "Y") {
+        e.preventDefault();
+        const fg = selectedReq.fit_gap;
+        if (!fg) return;
+        const text = fg.agentic_bridge ?? fg.gap_remediation;
+        if (text) {
+          addRequirement(text);
+          selectRequirement(null); // deselect to prevent duplicate captures
+        }
+      }
+
+      if (e.key === "Escape") {
+        selectRequirement(null);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [workshopMode, selectedReq, addRequirement, selectRequirement]);
+
+  // Badge flip animation for captured count
+  const prevCaptureCount = useRef(captureCount);
+  const [captureFlip, setCaptureFlip] = useState(false);
+  useEffect(() => {
+    if (captureCount > prevCaptureCount.current) {
+      setCaptureFlip(true);
+      const t = setTimeout(() => setCaptureFlip(false), 250);
+      return () => clearTimeout(t);
+    }
+    prevCaptureCount.current = captureCount;
+  }, [captureCount]);
+
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-      <SummaryBar requirements={filtered} hasAssessed={hasAssessed} captureCount={captureCount} />
+      <SummaryBar requirements={filtered} hasAssessed={hasAssessed} captureCount={captureCount} captureFlip={captureFlip} />
       <FilterBar filters={filters} onFiltersChange={setFilters} hasAssessed={hasAssessed} />
 
       {/* Workshop capture bar */}

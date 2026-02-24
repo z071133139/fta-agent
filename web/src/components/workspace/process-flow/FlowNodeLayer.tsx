@@ -97,6 +97,7 @@ interface TaskNodeProps {
   editDraft: string;
   gapFlagged?: boolean;
   gapNote?: string;
+  isWorkshopNode?: boolean;
   onSelect: (id: string) => void;
   onDoubleClick: (id: string, currentLabel: string) => void;
   onEditChange: (value: string) => void;
@@ -112,12 +113,25 @@ const TaskNode = React.memo(function TaskNode({
   editDraft,
   gapFlagged,
   gapNote,
+  isWorkshopNode,
   onSelect,
   onDoubleClick,
   onEditChange,
   onEditCommit,
   onEditCancel,
 }: TaskNodeProps) {
+  // Track gap flag transitions for pulse animation
+  const prevGapRef = useRef(gapFlagged);
+  const [gapPulse, setGapPulse] = React.useState(false);
+  React.useEffect(() => {
+    if (gapFlagged && !prevGapRef.current) {
+      setGapPulse(true);
+      const t = setTimeout(() => setGapPulse(false), 300);
+      return () => clearTimeout(t);
+    }
+    prevGapRef.current = gapFlagged;
+  }, [gapFlagged]);
+
   // Gap flag from workshop overrides status stripe
   const stripeColor = gapFlagged
     ? STATUS_STRIPE.gap
@@ -149,10 +163,16 @@ const TaskNode = React.memo(function TaskNode({
     if (e.key === "Escape") onEditCancel();
   };
 
+  const animClasses = [
+    isWorkshopNode ? "workshop-animate node-spring-in" : "",
+    gapPulse ? "workshop-animate gap-pulse" : "",
+  ].filter(Boolean).join(" ");
+
   return (
     <div
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
+      className={animClasses || undefined}
       style={{
         position: "absolute",
         left: node.x,
@@ -495,6 +515,7 @@ export const FlowNodeLayer = React.memo(function FlowNodeLayer({
               editDraft={editDraft}
               gapFlagged={gapNodeIds?.has(node.id)}
               gapNote={gapNotes?.get(node.id)}
+              isWorkshopNode={node.id.startsWith("WN-")}
               onSelect={onSelect}
               onDoubleClick={onDoubleClick}
               onEditChange={onEditChange}

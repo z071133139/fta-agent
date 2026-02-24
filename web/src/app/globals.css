@@ -100,3 +100,41 @@ body {
   stroke-dasharray: 6 4;
   animation: edge-flow 0.5s linear infinite;
 }
+
+/* ── Workshop micro-animations ──────────────────────────────────────────── */
+
+@keyframes gap-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+  50%  { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+@keyframes badge-flip {
+  0%   { transform: scaleY(1); }
+  40%  { transform: scaleY(0); }
+  100% { transform: scaleY(1); }
+}
+
+@keyframes node-spring-in {
+  0%   { transform: scale(0.85); opacity: 0; }
+  60%  { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.workshop-animate.gap-pulse {
+  animation: gap-pulse 300ms ease-out;
+}
+
+.workshop-animate.badge-flip {
+  animation: badge-flip 250ms ease-in-out;
+}
+
+.workshop-animate.node-spring-in {
+  animation: node-spring-in 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workshop-animate {
+    animation: none !important;
+  }
+}

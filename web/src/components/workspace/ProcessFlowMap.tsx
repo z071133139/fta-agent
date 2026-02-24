@@ -238,6 +238,8 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
   const [gapNotesNodeId, setGapNotesNodeId] = useState<string | null>(null);
   const [gapNotesDraft, setGapNotesDraft] = useState("");
   const [agenticPanelOpen, setAgenticPanelOpen] = useState(true);
+  const [agenticFocusIdx, setAgenticFocusIdx] = useState(0);
+  const addRequirement = useWorkshopStore((s) => s.addRequirement);
 
   const handleSelect = useCallback((id: string) => {
     // If in placing mode, this click means "insert after this node"
@@ -338,6 +340,36 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
         }
       }
 
+      // Y to accept focused agentic bridge suggestion
+      if (workshopMode && agenticPanelOpen && agenticBridges.length > 0 && (e.key === "y" || e.key === "Y")) {
+        const tag = (e.target as HTMLElement).tagName;
+        if (tag !== "INPUT" && tag !== "TEXTAREA") {
+          e.preventDefault();
+          const focused = agenticBridges[agenticFocusIdx];
+          if (focused?.fit_gap?.agentic_bridge) {
+            addRequirement(focused.fit_gap.agentic_bridge);
+          }
+          return;
+        }
+      }
+
+      // Arrow keys to navigate agentic bridges panel
+      if (workshopMode && agenticPanelOpen && agenticBridges.length > 0) {
+        const tag = (e.target as HTMLElement).tagName;
+        if (tag !== "INPUT" && tag !== "TEXTAREA") {
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setAgenticFocusIdx((i) => Math.min(i + 1, agenticBridges.length - 1));
+            return;
+          }
+          if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setAgenticFocusIdx((i) => Math.max(i - 1, 0));
+            return;
+          }
+        }
+      }
+
       // Delete/Backspace/D to delete selected node in workshop mode
       if (workshopMode && selectedId && (e.key === "Delete" || e.key === "Backspace" || e.key === "d" || e.key === "D")) {
         const tag = (e.target as HTMLElement).tagName;
@@ -350,7 +382,7 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [editingId, fitView, zoomIn, zoomOut, workshopMode, selectedId, flagFlowNodeGap, deleteFlowNode, flowNodeChanges, gapNotesNodeId]);
+  }, [editingId, fitView, zoomIn, zoomOut, workshopMode, selectedId, flagFlowNodeGap, deleteFlowNode, flowNodeChanges, gapNotesNodeId, agenticPanelOpen, agenticBridges, agenticFocusIdx, addRequirement]);
 
   const canvasStyle: React.CSSProperties = {
     position: "absolute",
@@ -431,13 +463,23 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
                 </button>
               </div>
               <div className="max-h-[280px] overflow-y-auto p-2 space-y-1.5">
-                {agenticBridges.map((req) => {
+                {agenticBridges.map((req, idx) => {
                   const fg = req.fit_gap!;
                   const ac = fg.agentic_rating ? AGENTIC_CFG[fg.agentic_rating] : null;
+                  const isFocused = idx === agenticFocusIdx;
                   return (
                     <div
                       key={req.id}
-                      className="px-2.5 py-2 rounded-md border border-border/30 hover:border-[#8B5CF6]/20 transition-colors"
+                      className={[
+                        "px-2.5 py-2 rounded-md border transition-colors cursor-pointer",
+                        isFocused
+                          ? "border-[#8B5CF6]/50 ring-1 ring-[#8B5CF6]/30 bg-[#8B5CF6]/5"
+                          : "border-border/30 hover:border-[#8B5CF6]/20",
+                      ].join(" ")}
+                      onClick={() => {
+                        setAgenticFocusIdx(idx);
+                        if (fg.agentic_bridge) addRequirement(fg.agentic_bridge);
+                      }}
                     >
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="text-[8px] font-mono text-muted/60">{req.id}</span>
@@ -456,9 +498,16 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
                       <p className="text-[10px] text-foreground/80 leading-relaxed mb-1.5">
                         {fg.agentic_bridge}
                       </p>
-                      <p className="text-[9px] text-muted/50 leading-snug truncate">
-                        {req.text}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[9px] text-muted/50 leading-snug truncate flex-1">
+                          {req.text}
+                        </p>
+                        {isFocused && (
+                          <span className="text-[8px] font-mono text-[#8B5CF6]/70 shrink-0">
+                            Y accept
+                          </span>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

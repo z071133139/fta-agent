@@ -23,6 +23,7 @@ import { ProcessFlowMap } from "@/components/workspace/ProcessFlowMap";
 import { BusinessRequirementsTable } from "@/components/workspace/BusinessRequirementsTable";
 import { CaptureBar, type CaptureBarHandle } from "@/components/workspace/CaptureBar";
 import { useWorkshopKeyboard } from "@/hooks/useWorkshopKeyboard";
+import { CommandPalette } from "@/components/workspace/CommandPalette";
 
 const AGENT_LABEL: Record<string, string> = {
   gl_design_coach: "GL Design Coach",
@@ -119,6 +120,11 @@ export default function DeliverablePage() {
 
   return (
     <div className="flex flex-1 overflow-hidden">
+      {/* Command palette — workshop mode only */}
+      {isWorkshopActive && (
+        <CommandPalette captureBarRef={captureBarRef} />
+      )}
+
       {/* Main content area */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Preflight */}

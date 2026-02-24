@@ -1,11 +1,18 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Engagement } from "@/lib/mock-data";
 import { isWorkshopEligible, PROCESS_AREAS, MOCK_WORKSPACES } from "@/lib/mock-data";
 import { useWorkshopStore } from "@/lib/workshop-store";
+import {
+  hasPreviousSession,
+  getSessionTimestamp,
+  getSessionStats,
+  clearWorkshopState,
+} from "@/lib/workshop-persistence";
+import { WorkshopHistory } from "./WorkshopHistory";
 
 const AGENT_LABEL: Record<string, string> = {
   gl_design_coach: "GL Design Coach",
@@ -22,6 +29,17 @@ const PA_GROUPS = PROCESS_AREAS.reduce<Record<string, typeof PROCESS_AREAS>>(
   {}
 );
 
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
 export default function WorkspaceTopBar({
   engagement,
 }: {
@@ -37,6 +55,8 @@ export default function WorkspaceTopBar({
   const [pickerOpen, setPickerOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
 
+  const engagementId = params.engagementId ?? "default";
+
   const eligible = params.deliverableId
     ? isWorkshopEligible(params.deliverableId)
     : false;
@@ -50,6 +70,23 @@ export default function WorkspaceTopBar({
   const directPAName = directPA
     ? PROCESS_AREAS.find((p) => p.pa_id === directPA)?.name ?? directPA
     : undefined;
+
+  // Check for previous sessions when picker opens
+  const paSessionInfo = useMemo(() => {
+    if (!pickerOpen) return new Map<string, { timestamp: string; stats: ReturnType<typeof getSessionStats> }>();
+    const info = new Map<string, { timestamp: string; stats: ReturnType<typeof getSessionStats> }>();
+    for (const pa of PROCESS_AREAS) {
+      if (hasPreviousSession(engagementId, pa.pa_id)) {
+        const ts = getSessionTimestamp(engagementId, pa.pa_id);
+        const stats = getSessionStats(engagementId, pa.pa_id);
+        if (ts) info.set(pa.pa_id, { timestamp: ts, stats });
+      }
+    }
+    return info;
+  }, [pickerOpen, engagementId]);
+
+  // Check for direct PA previous session
+  const directPAHasSession = directPA ? hasPreviousSession(engagementId, directPA) : false;
 
   // Close picker on outside click
   useEffect(() => {
@@ -81,14 +118,21 @@ export default function WorkspaceTopBar({
     }
   }
 
-  const handleSelectPA = (paId: string, paName: string) => {
-    startWorkshop(paId, paName);
+  const handleSelectPA = (paId: string, paName: string, resume: boolean) => {
+    if (!resume) {
+      // Archive old session if exists
+      clearWorkshopState(engagementId, paId);
+    }
+    startWorkshop(paId, paName, { resume, engagementId });
     setPickerOpen(false);
   };
 
-  const handleDirectStart = () => {
+  const handleDirectStart = (resume: boolean) => {
     if (directPA && directPAName) {
-      startWorkshop(directPA, directPAName);
+      if (!resume) {
+        clearWorkshopState(engagementId, directPA);
+      }
+      startWorkshop(directPA, directPAName, { resume, engagementId });
     }
   };
 
@@ -118,7 +162,7 @@ export default function WorkspaceTopBar({
         )}
       </div>
 
-      {/* Right side: agent status + workshop toggle */}
+      {/* Right side: agent status + workshop toggle + history */}
       <div className="flex items-center gap-3 shrink-0">
         {/* Agent status */}
         {agentName && !isWorkshopActive && (
@@ -131,13 +175,16 @@ export default function WorkspaceTopBar({
           </div>
         )}
 
+        {/* Workshop history toggle */}
+        {isWorkshopActive && <WorkshopHistory />}
+
         {/* Workshop toggle — visible when workspace is eligible */}
         {eligible && (
           <div className="relative" ref={pickerRef}>
             {isWorkshopActive ? (
               /* Active state — shows PA, click to end */
               <button
-                onClick={endWorkshop}
+                onClick={() => endWorkshop(engagementId)}
                 className="flex items-center gap-2 px-2.5 py-1 rounded bg-warning/15 border border-warning/30 hover:bg-warning/25 transition-colors cursor-pointer"
               >
                 <div className="h-1.5 w-1.5 rounded-full bg-warning" />
@@ -151,15 +198,37 @@ export default function WorkspaceTopBar({
               </button>
             ) : directPA ? (
               /* Direct start — workspace already scoped to a PA */
-              <button
-                onClick={handleDirectStart}
-                className="flex items-center gap-2 px-2.5 py-1 rounded border border-border/40 hover:border-warning/30 hover:bg-warning/5 transition-colors cursor-pointer"
-              >
-                <div className="h-1.5 w-1.5 rounded-full bg-muted/40" />
-                <span className="text-[10px] font-mono font-medium text-muted tracking-wide">
-                  Workshop
-                </span>
-              </button>
+              directPAHasSession ? (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => handleDirectStart(true)}
+                    className="flex items-center gap-2 px-2.5 py-1 rounded border border-[#10B981]/30 hover:bg-[#10B981]/5 transition-colors cursor-pointer"
+                  >
+                    <div className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
+                    <span className="text-[10px] font-mono text-[#10B981]">
+                      Resume
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => handleDirectStart(false)}
+                    className="flex items-center gap-2 px-2.5 py-1 rounded border border-border/40 hover:border-warning/30 hover:bg-warning/5 transition-colors cursor-pointer"
+                  >
+                    <span className="text-[10px] font-mono text-muted">
+                      New
+                    </span>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => handleDirectStart(false)}
+                  className="flex items-center gap-2 px-2.5 py-1 rounded border border-border/40 hover:border-warning/30 hover:bg-warning/5 transition-colors cursor-pointer"
+                >
+                  <div className="h-1.5 w-1.5 rounded-full bg-muted/40" />
+                  <span className="text-[10px] font-mono font-medium text-muted tracking-wide">
+                    Workshop
+                  </span>
+                </button>
+              )
             ) : (
               /* Picker start — need to select a PA */
               <button
@@ -182,7 +251,7 @@ export default function WorkspaceTopBar({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.97 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-1.5 w-[340px] max-h-[420px] overflow-y-auto rounded-lg border border-border/60 bg-surface shadow-xl z-50"
+                    className="absolute right-0 top-full mt-1.5 w-[380px] max-h-[420px] overflow-y-auto rounded-lg border border-border/60 bg-surface shadow-xl z-50"
                   >
                     <div className="px-3 py-2 border-b border-border/30">
                       <span className="text-[10px] uppercase tracking-[0.1em] font-medium text-muted">
@@ -196,20 +265,53 @@ export default function WorkspaceTopBar({
                             {group}
                           </span>
                         </div>
-                        {pas.map((pa) => (
-                          <button
-                            key={pa.pa_id}
-                            onClick={() => handleSelectPA(pa.pa_id, pa.name)}
-                            className="flex items-center gap-2.5 w-full px-3 py-1.5 text-left hover:bg-warning/5 transition-colors"
-                          >
-                            <span className="text-[10px] font-mono text-muted w-[36px] shrink-0">
-                              {pa.pa_id}
-                            </span>
-                            <span className="text-xs text-foreground/90 truncate">
-                              {pa.name}
-                            </span>
-                          </button>
-                        ))}
+                        {pas.map((pa) => {
+                          const sessionInfo = paSessionInfo.get(pa.pa_id);
+                          return (
+                            <div
+                              key={pa.pa_id}
+                              className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-warning/5 transition-colors"
+                            >
+                              <span className="text-[10px] font-mono text-muted w-[36px] shrink-0">
+                                {pa.pa_id}
+                              </span>
+                              <span className="text-xs text-foreground/90 truncate flex-1">
+                                {pa.name}
+                              </span>
+                              {sessionInfo ? (
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <span className="text-[8px] font-mono text-muted/50">
+                                    {relativeTime(sessionInfo.timestamp)}
+                                  </span>
+                                  {sessionInfo.stats && (
+                                    <span className="text-[8px] font-mono text-[#10B981]/60">
+                                      {sessionInfo.stats.newRequirements + sessionInfo.stats.modifiedRequirements} changes
+                                    </span>
+                                  )}
+                                  <button
+                                    onClick={() => handleSelectPA(pa.pa_id, pa.name, true)}
+                                    className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#10B981]/10 text-[#10B981] hover:bg-[#10B981]/20 transition-colors"
+                                  >
+                                    Resume
+                                  </button>
+                                  <button
+                                    onClick={() => handleSelectPA(pa.pa_id, pa.name, false)}
+                                    className="text-[9px] font-mono px-1.5 py-0.5 rounded text-muted/50 hover:text-muted transition-colors"
+                                  >
+                                    New
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => handleSelectPA(pa.pa_id, pa.name, false)}
+                                  className="text-[9px] font-mono px-1.5 py-0.5 rounded text-muted/40 hover:text-muted hover:bg-warning/5 transition-colors shrink-0"
+                                >
+                                  Start
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     ))}
                   </motion.div>

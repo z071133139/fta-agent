@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-23 (Session 018)
+> Last updated: 2026-02-23 (Session 019)
 > Current phase: Phase 1 — Personal Use MVP
 > Strategy: Workshop Mode first (differentiator), then Framework Expansion + Data Slice
 
@@ -37,14 +37,13 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 | **016** | Workshop layout toggle ✅ + brightness fix ✅ | W | W1 |
 | **017** | CaptureBar + live req/flow editing + agent insights ✅ | W | W2, W3, W4, W5 (partial) |
 | **018** | 3 new process flows + fit/gap data + Agentic Bridges panel ✅ | A+W | A11, W5 (enhanced) |
-| 019 | Agent listening mode + micro-interactions | W | W5 (remainder), W6 |
-| 020 | Backend persistence + workshop session continuity | W | W7, W8 |
+| **019** | Complete Workshop Mode — W5-W8 ✅ | W | W5, W6, W7, W8 |
 | 021 | Remaining knowledge workspaces (A4–A10) + platform polish | A+C | A4–A10, C1–C3 |
 | 022+ | Data slice (SSE, GL tools, end-to-end wiring) | B | B1–B5 |
 
-**Milestone after Session 020:** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline.
+**Milestone achieved (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
 
-**Milestone after Session 021:** 15/35 deliverables (43%), all 7 workstreams covered.
+**Next milestone (Session 021):** 15/35 deliverables (43%), all 7 workstreams covered.
 
 ---
 
@@ -81,45 +80,41 @@ Double-click to edit node labels (recorded to store). `G` opens gap notes panel 
 - **Agentic Bridges panel** replaces per-node agent insight chips on process flow. PA-scoped — shows all requirements with `agentic_bridge` data for the current workshop PA. Collapsible (bottom-left), shows agentic rating badge (A0–A3), autonomy level, bridge description, and underlying requirement text.
 - **Fit/gap data enrichment** across PA-02 (8 reqs), PA-03 (4 reqs), PA-09 (5 reqs), PA-13 (4 reqs) — each with SAP assessment, agentic rating, agentic bridge description, and autonomy level.
 
-**Remaining:**
+**Done (Session 019):**
+- `Y` accept / `Esc` dismiss on both requirements insight panel and Agentic Bridges panel
+- Arrow key navigation in Agentic Bridges panel with focused item purple ring highlight
+- Cross-PA reference detection: cyan chips (`→ PA-05`) shown in workshop mode
+- `Cmd+K` command palette: centered modal, fuzzy search, arrow nav, Enter execute, Esc close. Commands: New Requirement, New Step, Flag Gap, Annotate, End Workshop, Export Summary, Fit to View
+- Hint labels on suggestion chips (`Y accept · click to capture`)
+
+**Remaining for later:**
 - Real-time suggestion generation (currently surfaces static mock data, not dynamic agent analysis)
-- `Y` accept / `Esc` dismiss on suggestion chips
 - Batched suggestion timing (every 10–15 seconds)
-- Cross-PA reference detection
-- `Cmd+K` command palette
 
-### W6 — Micro-interactions (Session 018)
+### W6 — Micro-interactions ✅ (Session 019)
 
-Workshop-specific animations that make the capture experience feel responsive:
-- Node creation: spring animation (200ms) — node appears with slight bounce
-- Connector draw: edge animates from source to target (250ms)
-- Requirement capture: new row "ejects" into the requirements panel (350ms slide)
-- Count badges: flip animation on increment (requirements count, gap count)
-- Gap flag: amber pulse on flagged item (300ms)
+- CSS keyframes: `gap-pulse` (red box-shadow 300ms), `badge-flip` (Y-scale flip 250ms), `node-spring-in` (scale bounce 200ms)
+- `@media (prefers-reduced-motion: reduce)` nullifies `.workshop-animate` class
+- Node creation: workshop-placed nodes (ID `WN-*`) get spring animation via CSS
+- Count badges: flip animation on increment in both CaptureBar and SummaryBar
+- Gap flag: red box-shadow pulse on newly flagged nodes
 
-All animations respect `prefers-reduced-motion`. Projector-friendly — no subtle gradients or low-contrast effects.
+### W7 — Browser Persistence ✅ (Session 019)
 
-### W7 — Backend Persistence (Session 019)
+localStorage-based persistence (migrates to Supabase when Stream B forces API wiring):
+- Key `fta-workshop-{engagementId}-{paId}` → full serialized session state
+- Key `fta-workshop-sessions-index` → array of session summaries
+- Serialize: Map→entries, Set→array. Deserialize: reverse.
+- Auto-save: Zustand `subscribe` with 500ms debounce
+- `startWorkshop` accepts `{ resume: true }` → hydrates from localStorage
+- `endWorkshop` saves final state + session summary, then clears memory
+- `reqSeq`/`nodeSeq` counters persisted and restored on resume
 
-API endpoints to save workshop state:
-- `POST /api/v1/workshops/{engagement_id}/captures` — batch save all workshop changes
-- `PATCH /api/v1/requirements/{requirement_id}` — update single requirement
-- `POST /api/v1/requirements` — create new requirement
-- `PATCH /api/v1/process-flows/{flow_id}/nodes` — update process nodes
-- `POST /api/v1/process-flows/{flow_id}/nodes` — add new process node
+### W8 — Workshop Session Continuity ✅ (Session 019)
 
-Workshop changes are saved as a "workshop session" with:
-- Timestamp, facilitator, attendees
-- Before/after state for all modified items
-- New items created during the session
-- Agent suggestions accepted/dismissed
-
-### W8 — Workshop Session Continuity (Session 019)
-
-- Load previous workshop state when re-entering a workspace
-- "Workshop history" panel showing past sessions with change summaries
-- Agent context carries across workshops — knows what was discussed before
-- Export workshop summary (what changed, new items, open gaps) as a leave-behind
+- **Session resume UX**: PA picker shows previous sessions with relative time, quick stats, Resume/New buttons. Direct-PA workspaces show Resume/New when previous session exists.
+- **Workshop history panel**: Right slide-out (360px), reads from session index. Each card: PA name, date range, stats (new reqs, modified, nodes, gaps, deleted). Amber left border on most recent. Export button per session.
+- **Export workshop summary**: JSON download (`workshop-{paId}-{date}.json`) with metadata, all changes, and statistics. Triggered from history panel and Cmd+K palette.
 
 ---
 
@@ -225,11 +220,14 @@ Pre-engagement phase with its own deliverables. Sits upstream of the workplan �
 ### Frontend
 - `web/src/lib/mock-data.ts` — types, workspace configs, workplan, PROCESS_AREAS
 - `web/src/lib/mock-requirements.ts` — BR data (324 requirements)
-- `web/src/lib/workshop-store.ts` — Zustand store for workshop mode + session + capture state
+- `web/src/lib/workshop-store.ts` — Zustand store for workshop mode + session + capture state + auto-save
+- `web/src/lib/workshop-persistence.ts` — localStorage persistence layer + export JSON
 - `web/src/app/[engagementId]/deliverables/[deliverableId]/page.tsx` — workspace dispatch
 - `web/src/components/workspace/WorkspaceShell.tsx` — workshop layout wrapper + keyboard shortcut
 - `web/src/components/workspace/CaptureBar.tsx` — command input bar (R/N/G/A prefixes, agent review)
-- `web/src/hooks/useWorkshopKeyboard.ts` — global keyboard handler for workshop mode
+- `web/src/components/workspace/CommandPalette.tsx` — Cmd+K command palette
+- `web/src/components/workspace/WorkshopHistory.tsx` — session history slide-out panel
+- `web/src/hooks/useWorkshopKeyboard.ts` — global keyboard handler for workshop mode (+ Cmd+K)
 - `web/src/components/workspace/` — all workspace components
 
 ### Backend

@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 018: 3 new process flows + fit/gap enrichment + Agentic Bridges panel. Workshop Mode W1–W5 mostly complete.
+> Updated Session 019: Workshop Mode complete (W1–W8). Persistence, session continuity, command palette, micro-interactions all done. 12/35 deliverables (34%).
 
 ```
 Phase 1: Personal Use MVP
@@ -334,19 +334,18 @@ Phase 1: Personal Use MVP
 │
 ├── Stream A: Framework Expansion            ✅ A1–A3, A9, A11 complete (Sessions 015, 018)
 │
-├── WORKSHOP MODE (Sessions 016–020)         ← IN PROGRESS
+├── WORKSHOP MODE (Sessions 016–019)         ✅ COMPLETE
 │   ├── W1 Workshop layout toggle            ✅ Session 016
 │   ├── W2 Keyboard capture system           ✅ Session 017
 │   ├── W3 Live requirements editing         ✅ Session 017
 │   ├── W4 Live process flow editing         ✅ Session 017
-│   ├── W5 Agent listening mode              ✅ partial (017, 018) — Agentic Bridges panel done
-│   ├── W5 remainder (Y/Esc, Cmd+K, etc.)   (Session 019) ← NEXT
-│   ├── W6 Micro-interactions                (Session 019)
-│   ├── W7 Backend persistence               (Session 020)
-│   └── W8 Workshop session continuity       (Session 020)
+│   ├── W5 Agent listening mode              ✅ Sessions 017, 018, 019
+│   ├── W6 Micro-interactions                ✅ Session 019
+│   ├── W7 Browser persistence               ✅ Session 019
+│   └── W8 Workshop session continuity       ✅ Session 019
 │
+├── Stream C: Platform Polish                (Session 020) ← NEXT
 ├── Stream A continued: A4–A10               (Session 021)
-├── Stream C: Platform Polish                (Session 021)
 ├── Stream B: Data Slice (d-005-01)          (Session 022+)
 │
 ├── Iteration 2: Persistence Layer           (after Stream B proves vertical)

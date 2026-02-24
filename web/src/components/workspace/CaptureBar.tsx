@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useImperativeHandle, forwardRef } from "react";
+import { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
 import { useWorkshopStore } from "@/lib/workshop-store";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -204,6 +204,18 @@ export const CaptureBar = forwardRef<CaptureBarHandle, { context?: CaptureContex
     }, [pending, acceptPending, editPending, dismissPending]);
 
     const count = getCaptureCount();
+    const prevCount = useRef(count);
+    const [countFlip, setCountFlip] = useState(false);
+
+    useEffect(() => {
+      if (count > prevCount.current) {
+        setCountFlip(true);
+        const t = setTimeout(() => setCountFlip(false), 250);
+        return () => clearTimeout(t);
+      }
+      prevCount.current = count;
+    }, [count]);
+
     const shortcuts = context === "requirements" ? ["R", "N"] : ["R", "N", "G", "A"];
     const placeholder = context === "requirements"
       ? "Type to capture — R requirement, N step"
@@ -307,7 +319,7 @@ export const CaptureBar = forwardRef<CaptureBarHandle, { context?: CaptureContex
         {/* Capture count */}
         {count > 0 && (
           <span
-            className="flex-shrink-0 text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded"
+            className={`flex-shrink-0 text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded${countFlip ? " workshop-animate badge-flip" : ""}`}
             style={{
               backgroundColor: "rgba(16,185,129,0.15)",
               color: "#10B981",
