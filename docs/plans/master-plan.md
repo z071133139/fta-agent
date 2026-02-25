@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 020: Scoping Canvas polished with contextual enhancements + enterprise monochrome tone. Workshop Mode complete (W1–W8). Pursuit phase Scoping Canvas (P1) built. 12/35 deliverables (34%).
+> Updated Session 020: Scoping Canvas polished with contextual enhancements + enterprise monochrome tone + Rapid 12/Deep Dive scoping mode with auto-computed hypothesis panel. Workshop Mode complete (W1–W8). Pursuit phase Scoping Canvas (P1) built. 12/35 deliverables (34%).
 
 ```
 Phase 1: Personal Use MVP
@@ -348,7 +348,8 @@ Phase 1: Personal Use MVP
 │   ├── Orbital layout + 7 themes            ✅ Session 019
 │   ├── Contextual enhancements (hub crossfade, deps, progress rings) ✅ Session 020
 │   ├── Parallax tilt, tunnel vision, glassmorphism ✅ Session 020
-│   └── Enterprise monochrome tone overhaul  ✅ Session 020
+│   ├── Enterprise monochrome tone overhaul  ✅ Session 020
+│   └── Rapid 12 / Deep Dive scoping mode + hypothesis panel ✅ Session 020
 │
 ├── Stream C: Platform Polish                (Session 021) ← NEXT
 ├── Stream A continued: A4–A10               (Session 021)

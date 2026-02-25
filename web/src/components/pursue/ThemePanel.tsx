@@ -9,7 +9,7 @@ import {
   type PainLevel,
 } from "@/lib/scoping-store";
 import type { ScopingTheme } from "@/lib/scoping-data";
-import { getQuestionSections } from "@/lib/scoping-data";
+import { getQuestionSections, getQuestionsForMode } from "@/lib/scoping-data";
 
 // ── Signal Pills ─────────────────────────────────────────────────────────────
 
@@ -188,6 +188,8 @@ export function ThemePanel({ theme }: { theme: ScopingTheme }) {
   const themeNotes = useScopingStore((s) => s.themes[theme.id]?.notes ?? "");
   const setThemeNotes = useScopingStore((s) => s.setThemeNotes);
   const setDeferred = useScopingStore((s) => s.setThemeStatus);
+  const scopingMode = useScopingStore((s) => s.scopingMode);
+  const questions = getQuestionsForMode(theme, scopingMode);
 
   return (
     <motion.div
@@ -274,19 +276,22 @@ export function ThemePanel({ theme }: { theme: ScopingTheme }) {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-[10px] uppercase tracking-wider text-muted/40 font-mono">
-              Scoping Questions
+              {scopingMode === "rapid" ? "Rapid Scope Questions" : "Scoping Questions"}
             </h3>
             <span className="text-[10px] text-muted/40 font-mono">
-              {activeQ + 1} / {theme.questions.length}
+              {questions.length === 0 ? 0 : Math.min(activeQ + 1, questions.length)} / {questions.length}
             </span>
           </div>
           <div className="space-y-3">
-            {theme.questions.map((q, i) => {
-              const sections = getQuestionSections(theme);
+            {questions.map((q, i) => {
+              const sections = getQuestionSections({
+                ...theme,
+                questions,
+              });
               const showSectionHeader =
                 q.section &&
                 sections.length > 0 &&
-                (i === 0 || theme.questions[i - 1]?.section !== q.section);
+                (i === 0 || questions[i - 1]?.section !== q.section);
               return (
                 <div key={q.id}>
                   {showSectionHeader && (

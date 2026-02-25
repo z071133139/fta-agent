@@ -1,5 +1,11 @@
 import { create } from "zustand";
-import { getScopingThemes, getContextTile, type ScopingTheme } from "./scoping-data";
+import {
+  getScopingThemes,
+  getContextTile,
+  getQuestionsForMode,
+  type ScopingTheme,
+  type ScopingMode,
+} from "./scoping-data";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,9 +50,11 @@ interface ScopingState {
   expandedThemeId: string | null;
   focusedThemeIndex: number; // 0-6 for keyboard nav
   activeQuestionIndex: number; // within expanded theme
+  scopingMode: ScopingMode;
 
   // Actions
   setClientName: (name: string) => void;
+  setScopingMode: (mode: ScopingMode) => void;
   expandTheme: (themeId: string) => void;
   collapseTheme: () => void;
   setFocusedTheme: (index: number) => void;
@@ -85,8 +93,10 @@ export const useScopingStore = create<ScopingState>((set, get) => {
     expandedThemeId: null,
     focusedThemeIndex: 0,
     activeQuestionIndex: 0,
+    scopingMode: "rapid",
 
     setClientName: (name) => set({ clientName: name }),
+    setScopingMode: (mode) => set({ scopingMode: mode, activeQuestionIndex: 0 }),
 
     expandTheme: (themeId) => {
       const state = get();
@@ -227,7 +237,7 @@ export const useScopingStore = create<ScopingState>((set, get) => {
         if (!tid) return s;
         const tile = allTiles.find((t) => t.id === tid);
         if (!tile) return s;
-        const max = tile.questions.length - 1;
+        const max = getQuestionsForMode(tile, s.scopingMode).length - 1;
         return { activeQuestionIndex: Math.min(max, s.activeQuestionIndex + 1) };
       }),
 
@@ -243,6 +253,7 @@ export const useScopingStore = create<ScopingState>((set, get) => {
         pursuitId: s.pursuitId,
         clientName: s.clientName,
         sessionDate: s.sessionDate,
+        scopingMode: s.scopingMode,
         exportedAt: new Date().toISOString(),
         themes: allExportTiles.map((theme) => {
           const capture = s.themes[theme.id] ?? emptyThemeCapture();

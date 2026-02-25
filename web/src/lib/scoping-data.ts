@@ -30,6 +30,8 @@ export interface ScopingTheme {
   processAreas: { paId: string; name: string; subFlowCount: number }[];
 }
 
+export type ScopingMode = "rapid" | "deep";
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Pull all ProcessInventoryNodes from the d-004-01 workspace graph */
@@ -143,6 +145,93 @@ export function getQuestionSections(theme: ScopingTheme): string[] {
     }
   }
   return sections;
+}
+
+const RAPID_QUESTIONS_BY_THEME: Record<string, ScopingQuestion[]> = {
+  context: [
+    {
+      id: "rq-ctx-1",
+      section: "Rapid Scope",
+      text: "What is the primary trigger for this transformation right now?",
+    },
+    {
+      id: "rq-ctx-2",
+      section: "Rapid Scope",
+      text: "What business outcomes must be true in 12-18 months?",
+    },
+  ],
+  "theme-1": [
+    {
+      id: "rq-t1-1",
+      section: "Rapid Scope",
+      text: "How is your chart of accounts structured today, and where does it break?",
+    },
+    {
+      id: "rq-t1-2",
+      section: "Rapid Scope",
+      text: "Do you run STAT and GAAP in parallel today, and what is painful?",
+    },
+  ],
+  "theme-2": [
+    {
+      id: "rq-t2-1",
+      section: "Rapid Scope",
+      text: "Where are the biggest pain points in premium, claims, or reinsurance accounting?",
+    },
+    {
+      id: "rq-t2-2",
+      section: "Rapid Scope",
+      text: "What is the current state of actuarial-to-accounting reconciliation?",
+    },
+  ],
+  "theme-3": [
+    {
+      id: "rq-t3-1",
+      section: "Rapid Scope",
+      text: "What causes the most manual effort in AP, AR, treasury, or intercompany?",
+    },
+  ],
+  "theme-4": [
+    {
+      id: "rq-t4-1",
+      section: "Rapid Scope",
+      text: "What is your close duration today, and what target has leadership set?",
+    },
+  ],
+  "theme-5": [
+    {
+      id: "rq-t5-1",
+      section: "Rapid Scope",
+      text: "Where are your highest compliance/reporting risks (NAIC, LDTI, IFRS 17, SEC)?",
+    },
+    {
+      id: "rq-t5-2",
+      section: "Rapid Scope",
+      text: "How traceable is your reporting lineage from GL to disclosures today?",
+    },
+  ],
+  "theme-6": [
+    {
+      id: "rq-t6-1",
+      section: "Rapid Scope",
+      text: "Which executive analytics are missing or too slow for decisions today?",
+    },
+  ],
+  "theme-7": [
+    {
+      id: "rq-t7-1",
+      section: "Rapid Scope",
+      text: "Which source systems and interfaces create the biggest reliability issues?",
+    },
+  ],
+};
+
+export function getQuestionsForMode(
+  theme: ScopingTheme,
+  mode: ScopingMode,
+): ScopingQuestion[] {
+  if (mode === "deep") return theme.questions;
+  return RAPID_QUESTIONS_BY_THEME[theme.id] ?? theme.questions.slice(0, 1);
 }
 
 // ── Theme Definitions ────────────────────────────────────────────────────────

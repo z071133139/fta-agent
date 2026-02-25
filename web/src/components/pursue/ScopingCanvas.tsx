@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   getScopingThemes,
   getContextTile,
+  getQuestionsForMode,
   type ScopingTheme,
 } from "@/lib/scoping-data";
 import { useScopingStore, type ThemeStatus } from "@/lib/scoping-store";
@@ -651,11 +652,13 @@ function CompactFallback({
   allTiles,
   themes,
   expandedId,
+  scopingMode,
   onExpand,
 }: {
   allTiles: ScopingTheme[];
   themes: ScopingTheme[];
   expandedId: string | null;
+  scopingMode: "rapid" | "deep";
   onExpand: (id: string, index?: number) => void;
 }) {
   const captures = useScopingStore((s) => s.themes);
@@ -665,9 +668,11 @@ function CompactFallback({
       {allTiles.map((tile) => {
         const capture = captures[tile.id];
         const status = capture?.status ?? "untouched";
+        const modeQuestions = getQuestionsForMode(tile, scopingMode);
         const answeredCount = capture
-          ? Object.values(capture.questionResponses).filter((r) => r.answered)
-              .length
+          ? modeQuestions.filter(
+              (q) => capture.questionResponses[q.id]?.answered === true,
+            ).length
           : 0;
         const isContext = tile.id === "context";
         const themeIndex = isContext
@@ -704,8 +709,8 @@ function CompactFallback({
               </span>
               <span className="text-[9px] font-mono text-muted/50">
                 {answeredCount > 0
-                  ? `${answeredCount}/${tile.questions.length} captured`
-                  : `${tile.questions.length} questions`}
+                  ? `${answeredCount}/${modeQuestions.length} captured`
+                  : `${modeQuestions.length} questions`}
               </span>
             </div>
             {status === "captured" && (
@@ -732,6 +737,7 @@ export function ScopingCanvas() {
   const focusedIndex = useScopingStore((s) => s.focusedThemeIndex);
   const clientName = useScopingStore((s) => s.clientName);
   const allCaptures = useScopingStore((s) => s.themes);
+  const scopingMode = useScopingStore((s) => s.scopingMode);
 
   const expand = useScopingStore((s) => s.expandTheme);
   const collapse = useScopingStore((s) => s.collapseTheme);
@@ -742,6 +748,7 @@ export function ScopingCanvas() {
   const prevQuestion = useScopingStore((s) => s.prevQuestion);
   const setScopeSignal = useScopingStore((s) => s.setScopeSignal);
   const setClientName = useScopingStore((s) => s.setClientName);
+  const setScopingMode = useScopingStore((s) => s.setScopingMode);
 
   const fieldRef = useRef<HTMLDivElement>(null);
   const { width: containerWidth, height: containerHeight } =
@@ -749,6 +756,77 @@ export function ScopingCanvas() {
   const tilt = useParallaxTilt(fieldRef);
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  const getAnsweredCount = useCallback(
+    (theme: ScopingTheme): number => {
+      const capture = allCaptures[theme.id];
+      if (!capture) return 0;
+      return getQuestionsForMode(theme, scopingMode).filter(
+        (q) => capture.questionResponses[q.id]?.answered === true,
+      ).length;
+    },
+    [allCaptures, scopingMode],
+  );
+
+  const rapidHypothesis = useMemo(() => {
+    if (scopingMode !== "rapid") return null;
+    const topThemes = themes
+      .map((theme) => {
+        const capture = allCaptures[theme.id];
+        if (!capture) return null;
+        const score =
+          (capture.priority === "high" ? 3 : capture.priority === "medium" ? 2 : capture.priority === "low" ? 1 : 0) +
+          (capture.painLevel === "critical" ? 3 : capture.painLevel === "significant" ? 2 : capture.painLevel === "moderate" ? 1 : 0) +
+          (capture.scopeSignal === "in" ? 1 : 0);
+        return { theme, capture, score };
+      })
+      .filter((x): x is NonNullable<typeof x> => x !== null)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((x) => x.theme.name);
+
+    const inScopeCount = Object.values(allCaptures).filter(
+      (c) => c.scopeSignal === "in",
+    ).length;
+    const highPainCount = Object.values(allCaptures).filter(
+      (c) => c.painLevel === "critical" || c.painLevel === "significant",
+    ).length;
+    const answered = allTiles.reduce(
+      (sum, tile) => sum + getAnsweredCount(tile),
+      0,
+    );
+    const total = allTiles.reduce(
+      (sum, tile) => sum + getQuestionsForMode(tile, "rapid").length,
+      0,
+    );
+    const meeting2Agenda = themes
+      .map((theme) => {
+        const capture = allCaptures[theme.id];
+        const unansweredDeep = getQuestionsForMode(theme, "deep").filter(
+          (q) => capture?.questionResponses[q.id]?.answered !== true,
+        );
+        const score =
+          (capture?.scopeSignal === "in" ? 3 : 0) +
+          (capture?.painLevel === "critical" || capture?.painLevel === "significant" ? 2 : 0) +
+          (capture?.priority === "high" ? 2 : capture?.priority === "medium" ? 1 : 0);
+        return {
+          theme,
+          score,
+          unanswered: unansweredDeep.length,
+        };
+      })
+      .sort((a, b) => b.score - a.score)
+      .filter((x) => x.unanswered > 0)
+      .slice(0, 4);
+    return {
+      topThemes,
+      inScopeCount,
+      highPainCount,
+      answered,
+      total,
+      meeting2Agenda,
+    };
+  }, [scopingMode, themes, allCaptures, allTiles, getAnsweredCount]);
 
   // Coverage stats
   const captured = Object.values(allCaptures).filter(
@@ -927,6 +1005,28 @@ export function ScopingCanvas() {
             </span>
           </div>
           <div className="flex items-center gap-4">
+            <div className="flex items-center rounded border border-border/70 bg-surface-alt/30 p-0.5">
+              <button
+                onClick={() => setScopingMode("rapid")}
+                className={`px-2.5 py-1 text-[10px] font-mono rounded transition-colors ${
+                  scopingMode === "rapid"
+                    ? "bg-surface text-foreground"
+                    : "text-muted hover:text-foreground"
+                }`}
+              >
+                Rapid 12
+              </button>
+              <button
+                onClick={() => setScopingMode("deep")}
+                className={`px-2.5 py-1 text-[10px] font-mono rounded transition-colors ${
+                  scopingMode === "deep"
+                    ? "bg-surface text-foreground"
+                    : "text-muted hover:text-foreground"
+                }`}
+              >
+                Deep Dive
+              </button>
+            </div>
             <span className="text-[10px] font-mono text-muted">
               {captured}/7 captured
               {exploring > 0 && ` \u00b7 ${exploring} exploring`}
@@ -949,6 +1049,7 @@ export function ScopingCanvas() {
             allTiles={allTiles}
             themes={themes}
             expandedId={expandedId}
+            scopingMode={scopingMode}
             onExpand={(id, index) => {
               if (index !== undefined) setFocused(index);
               expand(id);
@@ -1001,11 +1102,7 @@ export function ScopingCanvas() {
               status={allCaptures[contextTile.id]?.status ?? "untouched"}
               painLevel={allCaptures[contextTile.id]?.painLevel ?? null}
               answeredCount={
-                allCaptures[contextTile.id]
-                  ? Object.values(
-                      allCaptures[contextTile.id].questionResponses,
-                    ).filter((r) => r.answered).length
-                  : 0
+                getAnsweredCount(contextTile)
               }
               onExpand={() => expand(contextTile.id)}
               onHover={() => setHoveredId(contextTile.id)}
@@ -1027,11 +1124,7 @@ export function ScopingCanvas() {
                 status={allCaptures[theme.id]?.status ?? "untouched"}
                 painLevel={allCaptures[theme.id]?.painLevel ?? null}
                 answeredCount={
-                  allCaptures[theme.id]
-                    ? Object.values(
-                        allCaptures[theme.id].questionResponses,
-                      ).filter((r) => r.answered).length
-                    : 0
+                  getAnsweredCount(theme)
                 }
                 onExpand={() => {
                   setFocused(i);
@@ -1087,6 +1180,41 @@ export function ScopingCanvas() {
               close
             </span>
           </motion.div>
+        )}
+
+        {rapidHypothesis && !expandedTheme && (
+          <div className="absolute left-4 top-4 z-20 w-[320px] rounded-lg border border-border/80 bg-background/85 p-3 backdrop-blur-sm">
+            <div className="mb-2 text-[10px] font-mono uppercase tracking-wider text-muted/50">
+              Initial Scope Hypothesis
+            </div>
+            <p className="text-[11px] font-mono text-muted/80 mb-2">
+              {rapidHypothesis.answered}/{rapidHypothesis.total} rapid questions captured.
+            </p>
+            <p className="text-[11px] font-mono text-foreground/90 mb-2">
+              Priority themes: {rapidHypothesis.topThemes.length > 0 ? rapidHypothesis.topThemes.join(", ") : "TBD"}.
+            </p>
+            <p className="text-[11px] font-mono text-muted/80">
+              Scope signal: {rapidHypothesis.inScopeCount} in-scope themes, {rapidHypothesis.highPainCount} high-pain areas.
+            </p>
+            <div className="mt-2 border-t border-border/70 pt-2">
+              <p className="mb-1 text-[10px] font-mono uppercase tracking-wider text-muted/50">
+                Meeting 2 Agenda
+              </p>
+              {rapidHypothesis.meeting2Agenda.length > 0 ? (
+                <div className="space-y-1">
+                  {rapidHypothesis.meeting2Agenda.map((item) => (
+                    <p key={item.theme.id} className="text-[11px] font-mono text-muted/80">
+                      {item.theme.name} ({item.unanswered} deep questions)
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] font-mono text-muted/70">
+                  Deep-dive coverage is already complete for priority themes.
+                </p>
+              )}
+            </div>
+          </div>
         )}
       </div>
 

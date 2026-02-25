@@ -38,13 +38,13 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 | **017** | CaptureBar + live req/flow editing + agent insights ✅ | W | W2, W3, W4, W5 (partial) |
 | **018** | 3 new process flows + fit/gap data + Agentic Bridges panel ✅ | A+W | A11, W5 (enhanced) |
 | **019** | Complete Workshop Mode — W5-W8 ✅ | W | W5, W6, W7, W8 |
-| **020** | Scoping Canvas polish — contextual enhancements + tone overhaul ✅ | P | P1 enhancements |
+| **020** | Scoping Canvas polish — contextual enhancements + tone overhaul + Rapid/Deep mode ✅ | P | P1 enhancements |
 | 021 | Remaining knowledge workspaces (A4–A10) + platform polish | A+C | A4–A10, C1–C3 |
 | 022+ | Data slice (SSE, GL tools, end-to-end wiring) | B | B1–B5 |
 
 **Milestone achieved (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
 
-**Milestone achieved (Session 020):** Scoping Canvas polished with contextual enhancements (hub crossfade, dependency highlighting, progress rings, parallax tilt, tunnel vision, glassmorphism) and full design tone overhaul to enterprise-grade monochrome aesthetic.
+**Milestone achieved (Session 020):** Scoping Canvas polished with contextual enhancements (hub crossfade, dependency highlighting, progress rings, parallax tilt, tunnel vision, glassmorphism), full design tone overhaul to enterprise-grade monochrome aesthetic, and Rapid 12 / Deep Dive scoping mode with auto-computed hypothesis panel.
 
 **Next milestone (Session 021):** 15/35 deliverables (43%), all 7 workstreams covered.
 
@@ -207,7 +207,7 @@ Pre-engagement phase with its own deliverables. Sits upstream of the workplan �
 
 **Landing page:** Pursuits above engagements (Option A — landing page split).
 
-**Scoping Canvas (P1):** ✅ Built. Orbital layout with 7 themes + context tile. Hub crossfade shows executive question on hover. Dependency highlighting, progress rings, parallax tilt, tunnel vision on hover. Enterprise monochrome tone — grayscale emojis, slate palette, font-mono throughout. ThemePanel with glassmorphism, scope signals, priority, pain level, per-question capture. Keyboard-first (Tab/Enter/0-7/Esc). Export to JSON. Full Zustand store with localStorage persistence.
+**Scoping Canvas (P1):** ✅ Built. Orbital layout with 7 themes + context tile. Hub crossfade shows executive question on hover. Dependency highlighting, progress rings, parallax tilt, tunnel vision on hover. Enterprise monochrome tone — grayscale emojis, slate palette, font-mono throughout. ThemePanel with glassmorphism, scope signals, priority, pain level, per-question capture. Keyboard-first (Tab/Enter/0-7/Esc). Export to JSON. Full Zustand store with localStorage persistence. **Rapid 12 / Deep Dive mode** — two-mode question system: rapid surfaces 12 curated executive questions for first meetings, deep dive shows full 80+ set. Auto-computed rapid hypothesis panel with theme scoring and Meeting 2 Agenda generation.
 
 **Pursuit deliverables:** Scoping Canvas ✅, Executive Summary, Value Hypothesis, Proposal, RFP Response.
 

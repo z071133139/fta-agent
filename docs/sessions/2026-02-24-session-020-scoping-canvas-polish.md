@@ -96,3 +96,46 @@ Initial implementation felt "too playful" — colorful emojis, rainbow node name
 - Parallax tilt subtle on mouse move
 - Panel opens with glassmorphism effect
 - Monochrome tone consistent across canvas + panel
+
+---
+
+## Post-Session Additions (external, same day)
+
+### Scoping Mode Toggle — Rapid 12 / Deep Dive
+
+Two-mode question system added to the Scoping Canvas. Rapid mode surfaces ~12 curated high-signal questions across all themes for a first executive meeting. Deep Dive mode shows the full 80+ question set for detailed scoping sessions.
+
+**New type:** `ScopingMode = "rapid" | "deep"` (exported from `scoping-data.ts`)
+
+**scoping-data.ts:**
+- `RAPID_QUESTIONS_BY_THEME` constant — 12 curated questions mapped by theme ID, hand-picked for first-meeting executive conversations
+- `getQuestionsForMode(theme, mode)` — returns rapid subset or full question list based on mode. Fallback: first question if theme has no rapid mapping.
+
+**scoping-store.ts:**
+- `scopingMode: ScopingMode` state (default `"rapid"`)
+- `setScopingMode(mode)` action — resets `activeQuestionIndex` to 0 on mode switch
+- `nextQuestion()` now uses `getQuestionsForMode` for bounds checking
+
+**ScopingCanvas.tsx:**
+- Top bar toggle: `Rapid 12` / `Deep Dive` buttons with active state styling
+- `getAnsweredCount` callback now mode-aware — counts answers against the filtered question set
+- `rapidHypothesis` useMemo — auto-computes from captured data when in rapid mode:
+  - Scores themes by priority (high=3, medium=2, low=1) + pain (critical=4…none=0) + scope signal (in=2, explore=1)
+  - Identifies priority themes, scope signals, high-pain areas
+  - Generates "Meeting 2 Agenda" — lists unanswered deep-dive questions for themes scored as priorities
+- Hypothesis panel renders as overlay (top-left) when rapid mode is active and any theme has been captured
+- `CompactFallback` now accepts `scopingMode` prop
+
+**ThemePanel.tsx:**
+- Questions filtered via `getQuestionsForMode(theme, scopingMode)`
+- Heading changes dynamically: "Rapid Scope Questions" vs "Scoping Questions"
+- Section headers computed from filtered question set
+
+### Files Modified (post-session)
+
+| File | Changes |
+|------|---------|
+| `web/src/lib/scoping-data.ts` | `ScopingMode` type, `RAPID_QUESTIONS_BY_THEME`, `getQuestionsForMode()` |
+| `web/src/lib/scoping-store.ts` | `scopingMode` state, `setScopingMode` action, mode-aware `nextQuestion` |
+| `web/src/components/pursue/ScopingCanvas.tsx` | Mode toggle UI, mode-aware answer counting, rapid hypothesis panel |
+| `web/src/components/pursue/ThemePanel.tsx` | Mode-aware question filtering, dynamic heading |
