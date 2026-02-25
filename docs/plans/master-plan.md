@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 020: Scoping Canvas polished with contextual enhancements + enterprise monochrome tone + Rapid 12/Deep Dive scoping mode with auto-computed hypothesis panel. Workshop Mode complete (W1–W8). Pursuit phase Scoping Canvas (P1) built. 12/35 deliverables (34%).
+> Updated Session 021: **Pivot** — Shifting from frontend mock expansion to backend agentic capabilities. Two fully working agent flows for pitch demo: GL Account Analysis (d-005-01) + GAAP Income Statement (d-006-06). Iteration 3 (data pipeline + MJE analysis) now being built as B1-B4. Workshop Mode complete (W1–W8). Pursuit phase Scoping Canvas (P1) built. 13/35 deliverables (37%).
 
 ```
 Phase 1: Personal Use MVP
@@ -351,9 +351,18 @@ Phase 1: Personal Use MVP
 │   ├── Enterprise monochrome tone overhaul  ✅ Session 020
 │   └── Rapid 12 / Deep Dive scoping mode + hypothesis panel ✅ Session 020
 │
-├── Stream C: Platform Polish                (Session 021) ← NEXT
-├── Stream A continued: A4–A10               (Session 021)
-├── Stream B: Data Slice (d-005-01)          (Session 022+)
+├── STREAM B: Agentic Capabilities           (Session 021+) ← NOW
+│   ├── B1 Data fixture + startup loader
+│   ├── B2 Analysis tools (deterministic)
+│   ├── B3 SSE streaming endpoint
+│   ├── B4 Wire GL Design Coach with tools
+│   ├── B5 Frontend SSE consumer
+│   ├── B6 Cap 1: Account Analysis e2e
+│   ├── B7 Cap 2: GAAP Income Statement
+│   └── B8 Demo polish
+│
+├── Stream A continued: A4–A10               (after B)
+├── Stream C: Platform Polish                (after B)
 │
 ├── STREAM E: Current State Extraction       (designed Session 019, build TBD)
 │   ├── E1+E2 Types + mock data + evidence UI
@@ -372,13 +381,13 @@ Phase 3: Broad Rollout
 └── (not started)
 ```
 
-**Coverage:** 12 of 35 deliverables have workspaces (34%). Target after Session 021: 18/35 (51%), all 7 workstreams represented.
+**Coverage:** 13 of 35 deliverables have workspaces (37%). Stream B focus: two agentic capabilities end-to-end.
 
 **Frontend state:** Full workspace UI running on mock data. Landing page, workspace shell, 4 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable). 12 deliverables with workspaces across 4 workstreams (3 new process flows added Session 018). Agentic Bridges panel in workshop mode. Fit/gap data across PA-02, PA-03, PA-09, PA-13. Zero API calls.
 
 **Backend state:** Consulting Agent keyword router, GL Design Coach domain prompts, data schemas + DuckDB engine + synthetic data generator ready. No SSE, no data tools wired, no Supabase.
 
-**Next priority:** Workshop Mode — the differentiator. Live capture against leading practice baseline during client workshops.
+**Next priority:** Stream B — Two agentic capabilities for pitch demo. Prove the agent can analyze real data and generate real financial statements.
 
 ---
 

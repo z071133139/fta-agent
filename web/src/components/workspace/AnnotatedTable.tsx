@@ -99,9 +99,11 @@ export default function AnnotatedTable({
                         /* Status column — colored badge */
                         <span
                           className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                            value === "Mapped"
+                            value === "Mapped" || value === "Confirmed"
                               ? "bg-success/10 text-success"
-                              : value === "Needs input"
+                              : value === "Gap Identified"
+                              ? "bg-error/15 text-error"
+                              : value === "Needs input" || value === "Needs Input"
                               ? "bg-warning/20 text-warning"
                               : "bg-surface-alt text-muted"
                           }`}

@@ -152,12 +152,32 @@ const RAPID_QUESTIONS_BY_THEME: Record<string, ScopingQuestion[]> = {
     {
       id: "rq-ctx-1",
       section: "Rapid Scope",
-      text: "What is the primary trigger for this transformation right now?",
+      text: "What is the primary trigger for this transformation — regulatory, system, or business event?",
     },
     {
       id: "rq-ctx-2",
       section: "Rapid Scope",
-      text: "What business outcomes must be true in 12-18 months?",
+      text: "What business outcomes must be true in 12–18 months for this to be a success?",
+    },
+    {
+      id: "rq-ctx-3",
+      section: "Rapid Scope",
+      text: "If you could fix one thing about your finance operation tomorrow, what would it be?",
+    },
+    {
+      id: "rq-ctx-4",
+      section: "Rapid Scope",
+      text: "Who is the executive sponsor, and how is the go/no-go decision made?",
+    },
+    {
+      id: "rq-ctx-5",
+      section: "Rapid Scope",
+      text: "What is your target go-live date, and what is driving that date?",
+    },
+    {
+      id: "rq-ctx-6",
+      section: "Rapid Scope",
+      text: "Have you attempted this transformation before? What happened?",
     },
   ],
   "theme-1": [
@@ -169,7 +189,7 @@ const RAPID_QUESTIONS_BY_THEME: Record<string, ScopingQuestion[]> = {
     {
       id: "rq-t1-2",
       section: "Rapid Scope",
-      text: "Do you run STAT and GAAP in parallel today, and what is painful?",
+      text: "Do you run STAT and GAAP in parallel today, and what is painful about that?",
     },
   ],
   "theme-2": [
@@ -190,12 +210,22 @@ const RAPID_QUESTIONS_BY_THEME: Record<string, ScopingQuestion[]> = {
       section: "Rapid Scope",
       text: "What causes the most manual effort in AP, AR, treasury, or intercompany?",
     },
+    {
+      id: "rq-t3-2",
+      section: "Rapid Scope",
+      text: "How many legal entities do you consolidate, and where does intercompany break down?",
+    },
   ],
   "theme-4": [
     {
       id: "rq-t4-1",
       section: "Rapid Scope",
       text: "What is your close duration today, and what target has leadership set?",
+    },
+    {
+      id: "rq-t4-2",
+      section: "Rapid Scope",
+      text: "How many manual journal entries per close cycle, and which ones worry you most?",
     },
   ],
   "theme-5": [
@@ -216,12 +246,22 @@ const RAPID_QUESTIONS_BY_THEME: Record<string, ScopingQuestion[]> = {
       section: "Rapid Scope",
       text: "Which executive analytics are missing or too slow for decisions today?",
     },
+    {
+      id: "rq-t6-2",
+      section: "Rapid Scope",
+      text: "How much time does your team spend building ad-hoc reports vs. using standard ones?",
+    },
   ],
   "theme-7": [
     {
       id: "rq-t7-1",
       section: "Rapid Scope",
       text: "Which source systems and interfaces create the biggest reliability issues?",
+    },
+    {
+      id: "rq-t7-2",
+      section: "Rapid Scope",
+      text: "How many systems feed the general ledger today, and do you trust the data on day one of close?",
     },
   ],
 };

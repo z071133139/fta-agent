@@ -335,20 +335,31 @@ No `any`. No `as Type` without an explanatory comment. Discriminated unions over
 
 ## Session Workflow
 
+### Planning docs (three files, distinct purposes)
+
+| File | Purpose | Read at session start? | Update at session end? |
+|------|---------|----------------------|----------------------|
+| `NEXT-STEPS.md` | Active work: strategy, current stream backlog, coverage, key files | Always | Always (backlog status, coverage) |
+| `docs/reference/feature-specs.md` | Living reference: how existing features work, session history | When modifying existing features | When new features are built |
+| `docs/plans/master-plan.md` | Product roadmap: phases, iterations, architecture | Rarely | Current Position section each session |
+
 ### Before building anything
 
-1. **Explain how it relates to the plan** — reference the specific stream (A/B/C), deliverable ID, and session from `NEXT-STEPS.md`
-2. **Ask for approval to proceed** — do not start coding until the user confirms
+1. **Check `NEXT-STEPS.md`** — understand current priorities and active stream
+2. **Explain how it relates to the plan** — reference the specific stream, step ID, and deliverable
+3. **Ask for approval to proceed** — do not start coding until the user confirms
 
 ### After completing a task
 
 1. **Mark the task as complete** in the task list
-2. **Update documentation** — update `NEXT-STEPS.md` (coverage table, session progress) and `docs/plans/master-plan.md` (Current Position) to reflect what was built
+2. **Update documentation:**
+   - `NEXT-STEPS.md` — backlog status, coverage table
+   - `docs/plans/master-plan.md` — Current Position section
+   - `docs/reference/feature-specs.md` — add specs for any new features built, update session index
 3. **List the next 5 items** from `NEXT-STEPS.md` that are up next, so the user can choose what to work on
 
 ### General
 
-- Always check `NEXT-STEPS.md` at the start of a session to understand current priorities
 - Build check (`pnpm --filter web build`) before any commit
 - Session docs go to `docs/sessions/YYYY-MM-DD-session-NNN-title.md`
 - Commit message format: `Session NNN: [short description]`

@@ -2,8 +2,8 @@
 
 > An interactive consulting framework for insurance finance transformations, with AI agents embedded as capabilities.
 
-**Status: Phase 1 — Personal Use MVP · Three-stream build in progress (Session 015+)**
-Full workspace UI complete. 5 of 35 deliverables have workspaces. Building toward 15/35 (all 7 workstreams) + one agent-powered vertical.
+**Status: Phase 1 — Personal Use MVP · Stream B — Agentic Capabilities (Session 021+)**
+13 of 35 deliverable workspaces built. Workshop Mode complete. Now wiring end-to-end agent flows: GL Account Analysis + GAAP Income Statement generation.
 
 ---
 
@@ -78,12 +78,13 @@ Every deliverable has a dedicated workspace where content is produced — either
 
 | Component | Deliverables |
 |-----------|-------------|
-| `AnnotatedTable` | d-005-01 Account Analysis, d-005-03 Account Mapping |
+| `AnnotatedTable` | d-005-01 Account Analysis, d-005-03 Account Mapping, d-001-03 RACI, d-001-04 Risk Log, d-002-02 Scope, d-003-04 ERP Evaluation, d-006-01 Reporting Inventory |
 | `ProcessInventoryGraph` | d-004-01 Process Inventory (20 PAs, scope/status, AI framework) |
-| `ProcessFlowMap` | d-004-03 Future State Process Maps (custom SVG/HTML renderer) |
-| `BusinessRequirementsTable` | d-004-04 Business Requirements (324 reqs, PA-05 Fit/Gap pilot) |
+| `ProcessFlowMap` | d-004-03, d-004-03b, d-004-03c, d-004-03d Future State Process Maps |
+| `BusinessRequirementsTable` | d-004-04 Business Requirements (324 reqs, fit/gap across 4 PAs) |
+| `ScopingCanvas` | Pursuit — orbital scoping with Rapid 12 / Deep Dive modes |
 
-5 of 35 deliverables. Target: 15/35 with all 7 workstreams represented.
+13 of 35 deliverables across 6/7 workstreams.
 
 ---
 
@@ -131,20 +132,25 @@ Structured requirements extraction. Process flow documentation. Works from a lea
 ```
 fta-agent/
 ├── src/fta_agent/          # Python backend
-│   ├── agent/              # LangGraph graphs, nodes, state
-│   ├── api/v1/             # FastAPI routes
-│   ├── data/               # DuckDB engine, Pydantic models
-│   └── prompts/            # All prompts as markdown files
+│   ├── agents/             # LangGraph graphs, nodes, state, prompts
+│   ├── api/                # FastAPI routes (REST + SSE)
+│   ├── data/               # DataEngine, schemas, synthetic data, loader
+│   └── llm/                # Model routing (Claude, GPT-4o)
 ├── web/                    # Next.js 15 frontend
 │   ├── src/app/
 │   │   ├── page.tsx                              # Landing screen
+│   │   ├── pursue/[pursuitId]/                   # Pursuit phase
 │   │   └── [engagementId]/
 │   │       └── deliverables/[deliverableId]/
 │   │           └── page.tsx                      # Workspace dispatch
-│   └── src/components/workspace/                 # All workspace components
+│   └── src/components/
+│       ├── workspace/                            # Deliverable workspace components
+│       └── pursue/                               # Scoping Canvas, ThemePanel
 ├── tests/                  # pytest, synthetic data fixtures
-├── docs/                   # Plans, vision, session notes, design docs
-└── NEXT-STEPS.md           # Active build plan + session schedule
+├── docs/
+│   ├── plans/              # master-plan.md, v1-build-plan.md
+│   └── reference/          # feature-specs.md (how things work)
+└── NEXT-STEPS.md           # Active backlog + current priorities
 ```
 
 ---
@@ -154,8 +160,10 @@ fta-agent/
 **Backend:**
 ```bash
 uv sync
-uv run uvicorn fta_agent.api.app:app --reload
+cp .env.example .env      # add ANTHROPIC_API_KEY
+uv run uvicorn fta_agent.api.app:create_app --factory --reload
 ```
+Generates synthetic P&C GL data on first start (~3,000 accounts, 12 months of postings, 7 embedded MJE patterns) and loads into DuckDB.
 
 **Frontend:**
 ```bash
@@ -171,17 +179,19 @@ pnpm --filter web build   # TypeScript check
 
 ---
 
-## Build Strategy (Session 015+)
+## Build Strategy
 
-Three streams, interleaved:
+**Current focus (Session 021+):** Stream B — two fully agentic capabilities end-to-end. Prove the system can analyze real data and generate real financial deliverables.
 
-| Stream | Focus | Dependency |
-|--------|-------|------------|
-| **A — Framework Expansion** | Knowledge-powered workspaces across all 7 workstreams | None — mock data |
-| **B — Data Slice** | d-005-01 Account Analysis end-to-end with real data | Backend SSE + data tools |
-| **C — Platform Polish** | Navigation, layout, breadcrumbs, WorkplanSpine wiring | Existing components |
+| Stream | Focus | Status |
+|--------|-------|--------|
+| **W — Workshop Mode** | Keyboard-first live capture during client workshops | Complete (Sessions 016–019) |
+| **P — Pursuit** | Scoping Canvas for executive meetings | Scoping Canvas complete (Sessions 019–020) |
+| **A — Framework Expansion** | Knowledge-powered workspaces across all 7 workstreams | 13/35 built, paused |
+| **B — Agentic Capabilities** | GL Account Analysis + GAAP Income Statement end-to-end | Active |
+| **C — Platform Polish** | Navigation, layout, breadcrumbs | Paused |
 
-See [NEXT-STEPS.md](NEXT-STEPS.md) for the active session plan.
+See [NEXT-STEPS.md](NEXT-STEPS.md) for the active backlog.
 
 ---
 
@@ -189,14 +199,15 @@ See [NEXT-STEPS.md](NEXT-STEPS.md) for the active session plan.
 
 | Document | What it covers |
 |----------|---------------|
-| **[NEXT-STEPS.md](NEXT-STEPS.md)** | **Active build plan + session schedule** |
+| **[NEXT-STEPS.md](NEXT-STEPS.md)** | **Active backlog + current priorities** |
+| [Feature Specs](docs/reference/feature-specs.md) | How existing features work (Workshop Mode, Scoping Canvas, etc.) |
 | [Master Plan](docs/plans/master-plan.md) | Full three-phase product roadmap |
 | [V1 Build Plan](docs/plans/v1-build-plan.md) | Phase 1 iteration detail |
 | [Product Vision](docs/vision/product-vision.md) | Problem, vision, value proposition |
 | [Architecture Overview](docs/vision/architecture-overview.md) | System architecture, routing, frontend |
 | [Design Principles](docs/vision/design-principles.md) | Six non-negotiable product principles |
 | [Decision Log](docs/decisions/decision-log.md) | All decisions with rationale |
-| [Session Log](docs/sessions/) | Build history, session by session |
+| [CLAUDE.md](CLAUDE.md) | AI coding standards, architecture rules, anti-patterns |
 
 ---
 
