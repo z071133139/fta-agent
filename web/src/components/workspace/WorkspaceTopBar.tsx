@@ -144,7 +144,14 @@ export default function WorkspaceTopBar({
           onClick={() => router.push("/")}
           className="hover:text-foreground transition-colors whitespace-nowrap"
         >
-          ← {engagement.client_name}
+          ← Engagements
+        </button>
+        <span className="opacity-30">/</span>
+        <button
+          onClick={() => router.push(`/${engagementId}`)}
+          className="hover:text-foreground transition-colors whitespace-nowrap"
+        >
+          {engagement.client_name}
         </button>
         {workstreamName && (
           <>

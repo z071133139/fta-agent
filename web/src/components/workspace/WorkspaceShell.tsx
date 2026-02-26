@@ -24,6 +24,7 @@ export default function WorkspaceShell({
     : false;
 
   const isWorkshopActive = workshopMode && eligible;
+  const isDashboard = !params.deliverableId;
 
   // Cmd+E exits workshop mode (entering requires PA selection via TopBar)
   const handleKeyDown = useCallback(
@@ -51,14 +52,14 @@ export default function WorkspaceShell({
   return (
     <div className="flex flex-1 overflow-hidden">
       <AnimatePresence initial={false}>
-        {!isWorkshopActive && (
+        {!isWorkshopActive && !isDashboard && (
           <motion.div
             key="workplan-spine"
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: 240, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="shrink-0 overflow-hidden"
+            className="shrink-0 overflow-x-hidden h-full"
           >
             <WorkplanSpine engagement={engagement} />
           </motion.div>

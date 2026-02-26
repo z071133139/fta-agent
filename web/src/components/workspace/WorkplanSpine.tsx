@@ -80,9 +80,20 @@ export default function WorkplanSpine({
     <div className="flex flex-col w-60 shrink-0 border-r border-border/40 bg-surface/30 overflow-y-auto">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 shrink-0">
-        <span className="text-[10px] uppercase tracking-[0.12em] text-muted font-medium">
-          Workplan
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => router.push(`/${params.engagementId}`)}
+            title="Engagement dashboard"
+            className="text-muted hover:text-foreground transition-colors"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>
+          </button>
+          <span className="text-[10px] uppercase tracking-[0.12em] text-muted font-medium">
+            Workplan
+          </span>
+        </div>
         <button
           onClick={() => setCollapsed(true)}
           className="text-muted hover:text-foreground transition-colors text-xs"

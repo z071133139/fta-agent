@@ -115,7 +115,13 @@ function EngagementCard({
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div>
-          <h3 className="text-base font-semibold text-foreground leading-tight tracking-tight">
+          <h3
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/${engagement.engagement_id}`);
+            }}
+            className="text-base font-semibold text-foreground leading-tight tracking-tight hover:text-accent transition-colors cursor-pointer"
+          >
             {engagement.client_name}
           </h3>
           <p className="text-xs text-muted mt-0.5">
