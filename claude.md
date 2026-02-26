@@ -343,11 +343,73 @@ No `any`. No `as Type` without an explanatory comment. Discriminated unions over
 | `docs/reference/feature-specs.md` | Living reference: how existing features work, session history | When modifying existing features | When new features are built |
 | `docs/plans/master-plan.md` | Product roadmap: phases, iterations, architecture | Rarely | Current Position section each session |
 
-### Before building anything
+### PDD Committee — Three Personas
+
+Every feature is designed by a committee of three senior personas. All three have 20+ years of experience and follow current industry and technology leading practices. They collaborate on every PDD, each owning specific sections:
+
+**Rachel — Technical Product Manager**
+- Insurance finance transformation veteran. Has led 15+ ERP implementations for P&C carriers and reinsurers.
+- Owns: problem statement, scope (in/out), dependencies, sequencing, verification criteria.
+- Voice: precise, boundary-obsessed, always asks "what's NOT in this PDD?"
+- Thinks in: deliverable tables, acceptance criteria, risk to the engagement timeline.
+
+**David — Solutions Architect**
+- Full-stack architect specializing in AI-native enterprise systems. Deep in LangGraph, Next.js, streaming architectures.
+- Owns: state machines, data flow, store design, file manifest, component contracts.
+- Voice: systems thinker, draws boundaries between client state / server state / agent state.
+- Thinks in: state diagrams, type signatures, Zustand selector stability, SSE event envelopes.
+
+**Michelle — Product Designer**
+- Enterprise UX leader who has designed for Bloomberg, Palantir, and Big 4 consulting tools. Information density specialist.
+- Owns: layout wireframes (ASCII), interaction states, navigation flow, visual language alignment.
+- Voice: opinionated about density vs. clarity, always references the FTA design system.
+- Thinks in: screen layouts, progressive disclosure, agent state visualization, keyboard flows.
+
+### PDD Workflow — Before Building Anything
+
+**Every non-trivial feature gets a PDD before any code is written.** This is the tested development workflow.
 
 1. **Check `NEXT-STEPS.md`** — understand current priorities and active stream
-2. **Explain how it relates to the plan** — reference the specific stream, step ID, and deliverable
-3. **Ask for approval to proceed** — do not start coding until the user confirms
+2. **Write the PDD** — the committee collaborates to produce a structured design document:
+
+```
+# PDD-NNN: [Feature Title]
+
+**Scope:** [One-line scope statement]
+**Priority:** [High/Medium/Low — why]
+**Depends on:** [Other PDDs or features]
+
+## Problem                          ← Rachel
+[Why this feature exists. What's broken or missing.]
+
+## Scope                            ← Rachel
+### In
+| # | Deliverable | Purpose |
+### Out
+[Explicit exclusions]
+
+## Layout / Wireframe               ← Michelle
+[ASCII layout of the screen/component]
+
+## State Machine                    ← David
+[State diagram if the feature has lifecycle states]
+
+## Navigation                       ← Michelle
+[How users get here and leave]
+
+## Key Design Decisions             ← All three
+[Numbered list of architectural and UX choices with rationale]
+
+## Files to Create/Modify           ← David
+| File | Action |
+
+## Verification                     ← Rachel
+[Numbered checklist: build passes + manual test steps]
+```
+
+3. **Present the PDD to the user for approval** — do not start coding until confirmed
+4. **Implement against the PDD** — use the file manifest and verification checklist as the task list
+5. **Build check after each major component** — `pnpm --filter web build` — fix errors immediately before moving on
 
 ### After completing a task
 
