@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-24 (Session 021)
+> Last updated: 2026-02-25 (Session 022)
 > Current phase: Phase 1 — Personal Use MVP
 
 ---
@@ -13,18 +13,30 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 
 ---
 
+## Session 023 Pickup
+
+1. **End-to-end smoke test** — start backend + frontend, navigate to d-005-01, click Run Analysis, confirm agent streams through PDD-002 flow (needs_data → ready → running → complete → cached on revisit)
+2. **PDD-003: COA Design (d-005-02)** — Chart of Accounts Design workspace. Data-grounded live agent, references engagement data, persisted analysis flow. Code block structure, dimension hierarchy, NAIC alignment.
+3. **PDD-004: Account Mapping (d-005-03)** — Legacy → New COA mapping workspace. Currently has mock table + interrupt — upgrade to live agent with data reference and persisted results.
+4. **PDD-005: Dimension Design (d-005-04)** — ACDOCA Dimension Design workspace. Profit center, segment, functional area configuration spec. Data-grounded live agent.
+5. **Agentic Functional Consultant** — start stream for 6 capabilities (gap→req, coverage, to-be flows, cross-PA, session prep, deliverable drafting)
+6. **Stream A resume** — remaining knowledge workspaces
+7. **Stream C** — platform polish (WorkplanSpine, breadcrumbs, loading states)
+
+---
+
 ## Active Stream: B — Agentic Capabilities
 
 | Step | What | Deps | Status |
 |------|------|------|--------|
-| B1 | Data fixture + startup loader (Parquet, DuckDB auto-load, upload) | — | In Progress |
-| B2 | Analysis tools — profile_accounts, detect_mje, compute_tb, generate_is, assess_dims | B1 | Todo |
-| B3 | SSE streaming endpoint — astream_events, event envelope, StreamingResponse | — | Todo |
-| B4 | Wire GL Design Coach graph with tool nodes + LLM interpret | B2, B3 | Todo |
-| B5 | Frontend SSE consumer — fetch-event-source, agent Zustand store, ts-pattern match | B3 | Todo |
-| B6 | Capability 1 — Account Analysis end-to-end (d-005-01 live) | B4, B5 | Todo |
-| B7 | Capability 2 — GAAP Income Statement generation (d-006-06) | B4, B5 | Todo |
-| B8 | Demo polish — fallback, transitions, timing, status bar | B6, B7 | Todo |
+| B1 | Data fixture + startup loader (Parquet, DuckDB auto-load, upload) | — | Done |
+| B2 | Analysis tools — profile_accounts, detect_mje, compute_tb, generate_is, assess_dims | B1 | Done |
+| B3 | SSE streaming endpoint — astream_events, event envelope, StreamingResponse | — | Done |
+| B4 | Wire GL Design Coach graph with tool nodes + LLM interpret | B2, B3 | Done |
+| B5 | Frontend SSE consumer — fetch-event-source, agent Zustand store, ts-pattern match | B3 | Done |
+| B6 | Capability 1 — Account Analysis end-to-end (d-005-01 live) | B4, B5 | Done |
+| B7 | Capability 2 — GAAP Income Statement generation (d-006-06) | B4, B5 | Done |
+| B8 | Demo polish — fallback, transitions, timing, status bar | B6, B7 | Done |
 
 **End state:** Two capabilities working end-to-end. Real data in, real agent processing, real streamed results.
 
@@ -51,9 +63,9 @@ Six capabilities: gap→requirement pipeline, coverage analysis, to-be flow gene
 | WS-003 ERP Selection | d-003-04 | 1/5 |
 | WS-004 Business Process | d-004-01, d-004-03, d-004-03b, d-004-03c, d-004-03d, d-004-04 | 6/5+ |
 | WS-005 COA & GL | d-005-01, d-005-03 | 2/8 |
-| WS-006 Reporting | d-006-01 | 1/5 |
+| WS-006 Reporting | d-006-01, d-006-06 | 2/6 |
 | WS-007 Data & Integration | — | 0/5 |
-| **Total** | **13** | **13/35 (37%)** |
+| **Total** | **14** | **14/36 (39%)** |
 
 ---
 
@@ -76,6 +88,8 @@ Six capabilities: gap→requirement pipeline, coverage analysis, to-be flow gene
 - `src/fta_agent/data/outcomes.py` — outcome models
 - `src/fta_agent/data/synthetic.py` — test data generator
 - `src/fta_agent/data/loader.py` — fixture loading + file upload ingestion
+- `src/fta_agent/tools/gl_analysis.py` — 5 analysis tools (profile, MJE, TB, IS, dims)
+- `src/fta_agent/api/routes/stream.py` — SSE streaming endpoint (`/api/v1/stream`)
 
 ---
 
