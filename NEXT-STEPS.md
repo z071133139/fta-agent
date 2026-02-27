@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-02-25 (Session 022)
+> Last updated: 2026-02-27 (Session 024)
 > Current phase: Phase 1 — Personal Use MVP
 
 ---
@@ -13,15 +13,14 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 
 ---
 
-## Session 023 Pickup
+## Session 025 Pickup
 
-1. **End-to-end smoke test** — start backend + frontend, navigate to d-005-01, click Run Analysis, confirm agent streams through PDD-002 flow (needs_data → ready → running → complete → cached on revisit)
-2. **PDD-003: COA Design (d-005-02)** — Chart of Accounts Design workspace. Data-grounded live agent, references engagement data, persisted analysis flow. Code block structure, dimension hierarchy, NAIC alignment.
-3. **PDD-004: Account Mapping (d-005-03)** — Legacy → New COA mapping workspace. Currently has mock table + interrupt — upgrade to live agent with data reference and persisted results.
-4. **PDD-005: Dimension Design (d-005-04)** — ACDOCA Dimension Design workspace. Profit center, segment, functional area configuration spec. Data-grounded live agent.
-5. **Agentic Functional Consultant** — start stream for 6 capabilities (gap→req, coverage, to-be flows, cross-PA, session prep, deliverable drafting)
-6. **Stream A resume** — remaining knowledge workspaces
-7. **Stream C** — platform polish (WorkplanSpine, breadcrumbs, loading states)
+1. **Clear localStorage + test COA Workbench** — clear `fta-analysis-store` and `fta-coa-store` from browser localStorage, restart backend with `FTA_MOCK_AGENT=true`, navigate to d-005-02, run analysis → confirm workbench appears with 4 tabs, inline editing, decision cards
+2. **Hydration error verification** — confirm the SSR hydration mismatch fix works (storesHydrated guard in page.tsx)
+3. **Live LLM testing** — set `FTA_MOCK_AGENT=false`, re-run d-005-02 → confirm agent produces `<coa_design>` JSON → workbench seeds correctly
+4. **Agentic Functional Consultant** — start stream for 6 capabilities (gap→req, coverage, to-be flows, cross-PA, session prep, deliverable drafting)
+5. **Stream A resume** — remaining knowledge workspaces
+6. **Stream C** — platform polish (WorkplanSpine, breadcrumbs, loading states)
 
 ---
 
@@ -62,10 +61,10 @@ Six capabilities: gap→requirement pipeline, coverage analysis, to-be flow gene
 | WS-002 Business Case | d-002-02 | 1/4 |
 | WS-003 ERP Selection | d-003-04 | 1/5 |
 | WS-004 Business Process | d-004-01, d-004-03, d-004-03b, d-004-03c, d-004-03d, d-004-04 | 6/5+ |
-| WS-005 COA & GL | d-005-01, d-005-03 | 2/8 |
+| WS-005 COA & GL | d-005-01, d-005-02, d-005-03, d-005-04 | 4/8 |
 | WS-006 Reporting | d-006-01, d-006-06 | 2/6 |
 | WS-007 Data & Integration | — | 0/5 |
-| **Total** | **14** | **14/36 (39%)** |
+| **Total** | **16** | **16/36 (44%)** |
 
 ---
 
@@ -75,9 +74,12 @@ Six capabilities: gap→requirement pipeline, coverage analysis, to-be flow gene
 - `web/src/lib/mock-data.ts` — types, workspace configs, workplan, PROCESS_AREAS
 - `web/src/lib/mock-requirements.ts` — BR data (324 requirements)
 - `web/src/lib/workshop-store.ts` — Zustand store for workshop mode
+- `web/src/lib/analysis-store.ts` — Zustand store for cached analysis results
+- `web/src/lib/coa-store.ts` — Zustand store for COA Design Workbench (PDD-006)
 - `web/src/lib/scoping-data.ts` — Scoping Canvas themes, questions
 - `web/src/app/[engagementId]/deliverables/[deliverableId]/page.tsx` — workspace dispatch
 - `web/src/components/workspace/` — all workspace components
+- `web/src/components/workspace/COADesignWorkbench.tsx` — editable tabbed workbench for d-005-02
 
 ### Backend
 - `src/fta_agent/agents/consulting_agent.py` — router agent
@@ -96,6 +98,7 @@ Six capabilities: gap→requirement pipeline, coverage analysis, to-be flow gene
 ## Parked Items
 
 - **d-004-03 index view:** Future State Process Maps needs a list/index of all sub-flows across all PAs (currently hardcoded to SP-02.1).
+- **Trust-building layer for live agent workspaces:** Current CompletedAnalysisView is a single-column markdown dump. Missing: source attribution per recommendation, confidence indicators per finding, inline edit/reject on individual outputs, OutputReview split view (output left / evidence right), InterruptCard in live agent flow, audit trail linking output to tool calls, one-click export (PDF/Excel/clipboard), dynamic agent name in AgentStatusBar. Needs a dedicated PDD before building more GL Design Coach workspaces at production quality. See Session 023 audit for full gap table.
 
 ---
 

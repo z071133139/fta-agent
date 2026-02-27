@@ -120,10 +120,7 @@ const ACME_WORKPLAN: Workplan = {
       owner_agent: "functional_consultant",
       deliverables: [
         { deliverable_id: "d-004-01", name: "Process Inventory (R2R, P2P, FP&A, Financial Close, Treasury, Fixed Assets, Reinsurance Accounting, Claims Finance, Regulatory/Statutory Reporting, Tax)", status: "in_progress", owner_agent: "functional_consultant", agent_summary: "R2R, P2P, and Financial Close complete · Claims Finance and Reinsurance in progress" },
-        { deliverable_id: "d-004-03", name: "SP-02.1 Journal Entry Processing", status: "not_started", owner_agent: "functional_consultant", agent_summary: "Future State Process Map · PA-02 GL & Multi-Basis" },
-        { deliverable_id: "d-004-03b", name: "SP-03.1 Gross Written Premium Recording", status: "not_started", owner_agent: "functional_consultant", agent_summary: "Future State Process Map · PA-03 Premium Accounting" },
-        { deliverable_id: "d-004-03c", name: "SP-09.1 Vendor Invoice Processing", status: "not_started", owner_agent: "functional_consultant", agent_summary: "Future State Process Map · PA-09 Accounts Payable" },
-        { deliverable_id: "d-004-03d", name: "SP-13.1 Cash Positioning & Bank Recon", status: "not_started", owner_agent: "functional_consultant", agent_summary: "Future State Process Map · PA-13 Cash Management" },
+        { deliverable_id: "d-004-03", name: "Future State Process Maps", status: "not_started", owner_agent: "functional_consultant", agent_summary: "Future state swimlane designs across all process areas" },
         { deliverable_id: "d-004-04", name: "Business Requirements by Process", status: "in_progress", owner_agent: "functional_consultant", agent_summary: "314 requirements · 25 assessed with ERP Fit/Gap (PA-05 pilot) · Awaiting validation" },
         { deliverable_id: "d-004-05", name: "User Stories Backlog", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-004-06", name: "Process Gap Analysis", status: "not_started", owner_agent: "functional_consultant" },
@@ -154,6 +151,7 @@ const ACME_WORKPLAN: Workplan = {
         { deliverable_id: "d-006-03", name: "Regulatory/Statutory Reporting Map (NAIC Annual Statement)", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-006-04", name: "Analytics & Dashboard Requirements", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-006-05", name: "SAP Datasphere / BW4HANA Architecture (if in scope)", status: "not_started", owner_agent: "functional_consultant" },
+        { deliverable_id: "d-006-06", name: "GAAP Income Statement (from GL posting data)", status: "not_started", owner_agent: "gl_design_coach", agent_summary: "Generate P&L from posting data with LOB breakdown" },
       ],
     },
     {
@@ -527,7 +525,12 @@ export interface BusinessRequirementsData {
   requirements: BusinessRequirement[];
 }
 
-export type ProcessGraphData = ProcessFlowData | ProcessInventoryData | BusinessRequirementsData;
+export interface ProcessFlowIndexData {
+  kind: "process_flow_index";
+  flow_ids: string[];
+}
+
+export type ProcessGraphData = ProcessFlowData | ProcessInventoryData | BusinessRequirementsData | ProcessFlowIndexData;
 
 // ── Workspace types ────────────────────────────────────────────────────────
 
@@ -546,13 +549,29 @@ export interface DeliverableWorkspace {
   graph?: ProcessGraphData;
   /** When set, workshop mode starts directly for this PA (no picker needed) */
   workshop_pa?: string;
+  /** When true, workspace uses live agent streaming instead of mock data */
+  agent_live?: boolean;
+  /** Initial prompt sent to the agent when started in live mode */
+  agent_prompt?: string;
 }
 
 export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
   "d-005-01": {
     deliverable_id: "d-005-01",
     agent_kind: "data_grounded",
-    run_state: "complete",
+    run_state: "preflight",
+    agent_live: true,
+    agent_prompt: `Run these three tools in sequence, each exactly once:
+1. profile_accounts(top_n=25) — get account usage profiles
+2. detect_mje(min_occurrences=3, include_details=true) — find manual journal entry patterns
+3. assess_dimensions() — check dimensional usage quality
+
+After all three tools complete, synthesize a single Account Analysis Report with:
+- Table of top accounts by posting volume (account, name, postings, MJE%, dimensions used)
+- Key person risk flags (any user posting >80% of entries to an account)
+- Document splitting candidates
+- NAIC compliance status
+Keep the report under 800 words. Use tables, not prose.`,
     preflight_title: "Account Analysis Report",
     preflight_bullets: [
       "68 GL accounts loaded from trial balance extract",
@@ -597,49 +616,152 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
     ],
   },
 
+  "d-005-02": {
+    deliverable_id: "d-005-02",
+    agent_kind: "data_grounded",
+    run_state: "preflight",
+    agent_live: true,
+    agent_prompt: `Do not narrate what you will do. Execute the tools, then produce output.
+
+Run these tools in sequence, each exactly once:
+1. profile_accounts(top_n=25) — get current account structure
+2. compute_trial_balance() — get balances for code block sizing
+3. assess_dimensions() — check current dimensional usage
+
+After all three tools complete, produce TWO things:
+
+1. A brief narrative summary (under 200 words) covering key findings, gaps, and critical issues.
+
+2. Structured JSON inside <coa_design> tags with this exact schema:
+
+<coa_design>
+{
+  "summary": "Your narrative summary here",
+  "code_blocks": [
+    { "range": "1XXX", "account_type": "Assets", "naic_alignment": "Balance Sheet Schedule", "count": 0 }
+  ],
+  "account_groups": [
+    { "group_code": "CASH", "name": "Cash & Equivalents", "naic_schedule_line": "Assets Line 1", "account_count": 0, "notes": "" }
+  ],
+  "dimensions": [
+    { "dimension": "Profit Center", "fill_rate": 100, "unique_values": 14, "mandatory": true, "key_values": "PC1000-PC4200", "reporting_purpose": "LOB + Region segmentation", "issues": "" }
+  ],
+  "decisions": [
+    { "title": "Leading Ledger Basis", "context": "...", "recommendation": "...", "alternative": "...", "impact": "..." }
+  ]
+}
+</coa_design>
+
+Cover these 5 code block ranges: 1XXX (Assets), 2XXX (Liabilities), 3XXX (Equity), 4XXX (Revenue), 5XXX (Expenses).
+Include account groups with NAIC schedule line mapping and gap flags.
+Include dimensions: Profit Center, Segment, Functional Area, LOB, State.
+Include 4 decisions: (1) leading ledger basis, (2) extension ledger strategy, (3) document splitting scope, (4) profit center hierarchy.
+
+Ground every recommendation in the actual data.`,
+    preflight_title: "Chart of Accounts Design",
+    preflight_bullets: [
+      "S/4HANA code block range design aligned to NAIC annual statement",
+      "Account group taxonomy with regulatory schedule mapping",
+      "ACDOCA dimension assignments (profit center, segment, functional area)",
+      "Design decisions requiring consultant sign-off with alternatives and impact",
+      "Grounded in Account Analysis findings — MJE patterns, doc splitting, key person flags",
+    ],
+    preflight_data_source: "Acme_TB_FY2025.xlsx · 512K posting lines",
+    columns: [],
+    rows: [],
+    activity: [
+      { step: 1, label: "Loaded GL extract", detail: "512,041 posting lines · 68 accounts", status: "complete", duration_ms: 1240 },
+      { step: 2, label: "Analyzed account structure", detail: "Code block ranges, NAIC alignment check", status: "complete", duration_ms: 4200 },
+      { step: 3, label: "Assessed dimensions", detail: "Profit center, segment, functional area usage", status: "complete", duration_ms: 3800 },
+      { step: 4, label: "Evaluated ledger architecture", detail: "Leading/extension ledger options, doc splitting scope", status: "complete", duration_ms: 5100 },
+      { step: 5, label: "Generated design recommendations", detail: "4 decisions requiring consultant approval", status: "complete", duration_ms: 2400 },
+    ],
+  },
+
   "d-005-03": {
     deliverable_id: "d-005-03",
     agent_kind: "data_grounded",
-    run_state: "awaiting_input",
+    run_state: "preflight",
+    agent_live: true,
+    agent_prompt: `Run these tools in sequence, each exactly once:
+1. profile_accounts(top_n=50) — get all account profiles for mapping
+2. compute_trial_balance() — get balances to assess account activity
+3. assess_dimensions() — check dimensional attributes for mapping context
+
+After all three tools complete, produce an Account Mapping report:
+
+## Mapping Summary
+Total accounts, auto-mapped count, needs-review count, obsolete count.
+
+## Account Mapping Table
+| Legacy # | Legacy Name | New # | New Name | Status | Confidence | Notes |
+One row per account. Status: Mapped / Needs Review / Obsolete.
+
+## Accounts Requiring Decision
+For each needs-review account: issue, Option A, Option B, recommendation.
+
+## Consolidation Opportunities
+Legacy accounts that should merge in new COA.
+
+## Obsolete Accounts
+Zero-activity accounts — candidates for removal.
+
+Keep under 1200 words. Use tables, not prose.`,
     preflight_title: "Account Mapping: Legacy → New COA",
     preflight_bullets: [
-      "Map 68 legacy accounts to new S/4HANA COA structure",
-      "Apply NAIC account group taxonomy",
-      "Detect consolidation and split opportunities",
-      "Flag reinsurance flow accounts for posting key design",
+      "Map all legacy accounts to S/4HANA COA structure",
+      "Apply NAIC account group taxonomy for insurance alignment",
+      "Flag accounts requiring split, consolidation, or manual decision",
+      "Identify obsolete accounts with zero posting activity",
     ],
-    preflight_data_source: "Account Analysis Report (d-005-01) · COA Draft v1.2",
-    columns: [
-      { key: "legacy_account", label: "Legacy", width: "80px" },
-      { key: "legacy_name", label: "Legacy Name", width: "190px" },
-      { key: "new_account", label: "New COA", width: "100px" },
-      { key: "new_name", label: "New Name", width: "200px" },
-      { key: "status", label: "Status", width: "110px" },
+    preflight_data_source: "DuckDB · ACME P&C GL · 68 accounts",
+    columns: [],
+    rows: [],
+    activity: [],
+  },
+
+  "d-005-04": {
+    deliverable_id: "d-005-04",
+    agent_kind: "data_grounded",
+    run_state: "preflight",
+    agent_live: true,
+    agent_prompt: `Run these tools in sequence, each exactly once:
+1. assess_dimensions() — get current dimensional usage and quality
+2. profile_accounts(top_n=50) — get account-level dimension fill rates
+
+After both tools complete, produce an ACDOCA Dimension Design:
+
+## Current Dimension Assessment
+| Dimension | Fill Rate % | Unique Values | Quality Rating |
+Assess each dimension present in the data.
+
+## Profit Center Design
+Proposed hierarchy with levels. Table: PC code, name, LOB alignment, NAIC schedule.
+Rationale for structure.
+
+## Segment Structure
+IFRS 8 operating segments. Table: segment code, name, reporting use.
+
+## Functional Area Configuration
+Recommendation: nature-of-expense vs. cost-of-sales vs. hybrid.
+Table: FA code, name, usage. Impact on P&L presentation.
+
+## Design Decisions Requiring Approval
+For each decision: context, recommendation, alternative, downstream impact.
+
+Keep under 1000 words. Use tables, not prose.`,
+    preflight_title: "ACDOCA Dimension Design",
+    preflight_bullets: [
+      "Assess current dimensional usage across all GL accounts",
+      "Design profit center hierarchy aligned to insurance LOBs",
+      "Propose segment structure for IFRS 8 reporting",
+      "Configure functional area for P&L presentation method",
+      "Identify dimension data quality gaps requiring remediation",
     ],
-    rows: [
-      { row_id: "m1", cells: { legacy_account: "1000", legacy_name: "Cash & Equivalents", new_account: "10000000", new_name: "Cash and Cash Equivalents", status: "Mapped" }, provenance: "Direct 1:1 mapping · confidence 0.99" },
-      { row_id: "m2", cells: { legacy_account: "1100", legacy_name: "AR — Premium", new_account: "12000100", new_name: "Premiums Receivable", status: "Mapped" }, needs_attention: true, provenance: "Document splitting required · see DOC_SPLIT flag in analysis" },
-      { row_id: "m3", cells: { legacy_account: "1200", legacy_name: "Reinsurance Recoverables", new_account: "12500000", new_name: "Reinsurance Assets", status: "Mapped" }, provenance: "IFRS 17 grouping applied · confidence 0.95" },
-      { row_id: "m4", cells: { legacy_account: "2000", legacy_name: "Loss & LAE Reserve", new_account: "21000000", new_name: "Insurance Contract Liabilities", status: "Mapped" }, provenance: "IFRS 17 PAA model applied · confidence 0.97" },
-      { row_id: "m5", cells: { legacy_account: "2100", legacy_name: "Unearned Premium Reserve", new_account: "21100000", new_name: "Liabilities for Remaining Coverage", status: "Mapped" }, provenance: "IFRS 17 LRC classification · confidence 0.96" },
-      { row_id: "m6", cells: { legacy_account: "2200", legacy_name: "Ceded Reinsurance Payable", new_account: "22000000", new_name: "Reinsurance Payables", status: "Mapped" }, provenance: "Ceded flows confirmed · confidence 0.94" },
-      { row_id: "m7", cells: { legacy_account: "4000", legacy_name: "Net Premiums Earned", new_account: "40000000", new_name: "Insurance Revenue", status: "Mapped" }, provenance: "IFRS 17 revenue recognition model · confidence 0.98" },
-      { row_id: "m8", cells: { legacy_account: "2340", legacy_name: "Reinsurance Settlement Acct", new_account: "—", new_name: "Pending decision", status: "Needs input" }, needs_attention: true, provenance: "Account carries both ceded and assumed flows — split decision required" },
-    ],
-    interrupt: {
-      question: "How should account 2340 be handled in the new COA?",
-      context: "Account 2340 currently carries both ceded and assumed reinsurance settlement flows. In S/4HANA, these should be separated for clear reporting. Two options: split into two accounts, or use a single account with posting key differentiation.",
-      options: [
-        { label: "Split into two accounts", description: "Create 22001000 (Ceded Settlement) and 22002000 (Assumed Settlement) — cleaner reporting, aligns with NAIC schedule requirements." },
-        { label: "Use posting key differentiation", description: "Single account 22000100 with debit/credit convention — simpler design, but reduces transparency in balance sheet line items." },
-      ],
-      insert_after_row_id: "m8",
-    },
-    activity: [
-      { step: 1, label: "Loaded source data", detail: "Account Analysis Report + COA Draft v1.2", status: "complete", duration_ms: 890 },
-      { step: 2, label: "Auto-mapped 34 accounts", detail: "Direct and semantic matching · avg confidence 0.96", status: "complete", duration_ms: 5640 },
-      { step: 3, label: "Flagging complex accounts", detail: "Reinsurance flows, clearing, multi-use accounts", status: "active" },
-    ],
+    preflight_data_source: "DuckDB · ACME P&C GL · 68 accounts · dimensional attributes",
+    columns: [],
+    rows: [],
+    activity: [],
   },
 
   "d-004-01": {
@@ -699,7 +821,7 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
             workday: "Single-ledger architecture — not recommended as primary GL for complex insurance multi-basis. Often used as holding company GL with insurance sub-ledgers feeding in.",
           },
           sub_flows: [
-            { id: "SP-02.1", name: "Journal Entry Processing", deliverable_id: "d-004-03" },
+            { id: "SP-02.1", name: "Journal Entry Processing", deliverable_id: "d-004-03a" },
             { id: "SP-02.2", name: "Multi-Basis Posting & Adjustment Logic" },
             { id: "SP-02.3", name: "Period-End Accrual & Allocation Processing" },
             { id: "SP-02.4", name: "Currency & Foreign Exchange Processing" },
@@ -1123,6 +1245,21 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
   "d-004-03": {
     deliverable_id: "d-004-03",
     agent_kind: "knowledge_grounded",
+    run_state: "running",
+    preflight_title: "Future State Process Maps",
+    preflight_bullets: [],
+    columns: [],
+    rows: [],
+    graph: {
+      kind: "process_flow_index",
+      flow_ids: ["d-004-03a", "d-004-03b", "d-004-03c", "d-004-03d"],
+    } satisfies ProcessFlowIndexData,
+    activity: [],
+  },
+
+  "d-004-03a": {
+    deliverable_id: "d-004-03a",
+    agent_kind: "knowledge_grounded",
     run_state: "preflight",
     workshop_pa: "PA-02",
     preflight_title: "SP-02.1 · Journal Entry Processing",
@@ -1159,7 +1296,7 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
       ],
       overlays: [
         { id: "ov-1", node_id: "fc-review", kind: "risk", text: "JSMITH currently approves 91% of actuarial JEs — key person concentration risk identified in account analysis", source: "gl_finding" },
-                { id: "ov-2", node_id: "post-acdoca", kind: "constraint", text: "Document splitting required for 4 accounts — GL posting workflow must handle splitting configuration", source: "gl_finding" },
+        { id: "ov-2", node_id: "post-acdoca", kind: "constraint", text: "Document splitting required for 4 accounts — GL posting workflow must handle splitting configuration", source: "gl_finding" },
       ],
     } satisfies ProcessFlowData,
     activity: [],
@@ -1588,6 +1725,27 @@ export const MOCK_WORKSPACES: Record<string, DeliverableWorkspace> = {
       { step: 3, label: "Mapped dimension requirements", detail: "Cross-referenced against 42 COA dimensions · 7 hierarchies", status: "complete", duration_ms: 1840 },
       { step: 4, label: "Assessed transformation risk", detail: "5 AT RISK reports identified · 3 COA dimension gaps flagged", status: "complete", duration_ms: 960 },
     ],
+  },
+
+  "d-006-06": {
+    deliverable_id: "d-006-06",
+    agent_kind: "data_grounded",
+    run_state: "preflight",
+    agent_live: true,
+    agent_prompt: "Generate a GAAP income statement from the GL posting data for the full fiscal year (periods 1-12). Break it down by line of business. Show total revenue, total expenses, and net income. Then analyze the loss ratio by LOB and highlight any unusual patterns or areas of concern for the finance transformation.",
+    preflight_title: "GAAP Income Statement",
+    preflight_bullets: [
+      "Generate P&L from 1M+ GL posting lines across 12 fiscal periods",
+      "Revenue and expense classification by account group",
+      "Line of business breakdown (AUTO, HOME, COMML, WC)",
+      "Loss ratio analysis and pattern detection",
+      "Dimensional quality assessment for reporting readiness",
+    ],
+    preflight_data_source: "DuckDB · 1,064,838 posting lines · FY2025",
+    columns: [],
+    rows: [],
+    insight_cards: [],
+    activity: [],
   },
 };
 

@@ -14,6 +14,7 @@ import {
 import { useWorkshopStore } from "@/lib/workshop-store";
 import { useAnalysisStore, type AnalysisEntry } from "@/lib/analysis-store";
 import { useAgentStore } from "@/lib/agent-store";
+import { useCOAStore, coaStoreKey, parseCOAOutput } from "@/lib/coa-store";
 import PreflightScreen from "@/components/workspace/PreflightScreen";
 import { DataAnalysisPreflight } from "@/components/workspace/DataAnalysisPreflight";
 import { CompletedAnalysisView } from "@/components/workspace/CompletedAnalysisView";
@@ -30,6 +31,7 @@ import { BusinessRequirementsTable } from "@/components/workspace/BusinessRequir
 import { CaptureBar, type CaptureBarHandle } from "@/components/workspace/CaptureBar";
 import { useWorkshopKeyboard } from "@/hooks/useWorkshopKeyboard";
 import { CommandPalette } from "@/components/workspace/CommandPalette";
+import { COADesignWorkbench } from "@/components/workspace/COADesignWorkbench";
 
 const AGENT_LABEL: Record<string, string> = {
   gl_design_coach: "GL Design Coach",
@@ -83,10 +85,24 @@ export default function DeliverablePage() {
   const appendFollowUp = useAnalysisStore((s) => s.appendFollowUp);
   const clearAnalysis = useAnalysisStore((s) => s.clearAnalysis);
 
+  // ── COA store (PDD-006) ──────────────────────────────────────────────
+  const isCOAWorkspace = params.deliverableId === "d-005-02";
+  const coaKey = coaStoreKey(params.engagementId, params.deliverableId);
+  const coaSeeded = useCOAStore((s) => s.isSeeded(coaKey));
+  const seedFromAgent = useCOAStore((s) => s.seedFromAgent);
+
   // Track whether we're in the "running" phase for data-grounded live
   const [analysisRunning, setAnalysisRunning] = useState(false);
   // Track follow-up running state
   const [followUpRunning, setFollowUpRunning] = useState(false);
+
+  // ── Hydration guard for persisted stores ────────────────────────────
+  // Zustand persist stores hydrate async from localStorage after mount.
+  // Until hydrated, render the preflight (matches SSR output) to avoid mismatch.
+  const [storesHydrated, setStoresHydrated] = useState(false);
+  useEffect(() => {
+    setStoresHydrated(true);
+  }, []);
 
   // ── Standard run state (non-analysis workspaces) ──────────────────────
   // Process flows skip preflight — content is knowledge-grounded and renders instantly
@@ -117,14 +133,116 @@ export default function DeliverablePage() {
   }
 
   // ── Data-grounded live workspace (PDD-002 flow) ───────────────────────
+  // Guard persisted store values behind hydration to prevent SSR mismatch
+  const effectiveCachedAnalysis = storesHydrated ? cachedAnalysis : null;
+  const effectiveCoaSeeded = storesHydrated && coaSeeded;
+
   if (isDataGroundedLive) {
+    // ── d-005-02: COA Design Workbench (PDD-006) ────────────────────────
+    if (isCOAWorkspace) {
+      // Workbench: seeded and not currently running → show editable workbench
+      if (effectiveCoaSeeded && !analysisRunning) {
+        return (
+          <div className="flex flex-1 overflow-hidden">
+            <COADesignWorkbench
+              engagementId={params.engagementId}
+              deliverableId={params.deliverableId}
+              onReseed={() => setAnalysisRunning(true)}
+            />
+          </div>
+        );
+      }
+
+      // Running: stream agent output, parse JSON on complete → seed COA store
+      if (analysisRunning) {
+        return (
+          <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+              <LiveAgentWorkspace
+                initialPrompt={workspaceTemplate.agent_prompt ?? "Analyze the GL accounts."}
+                agent="gl_design_coach"
+                agentName={agentName}
+                autoStart
+                onComplete={(output, tools) => {
+                  const parsed = parseCOAOutput(output);
+                  if (parsed) {
+                    seedFromAgent(coaKey, parsed);
+                  }
+                  // Always save markdown as a record (fallback if parse fails)
+                  savePrimary(params.engagementId, params.deliverableId, {
+                    output,
+                    toolBadges: tools,
+                    completedAt: new Date().toISOString(),
+                  });
+                  setAnalysisRunning(false);
+                }}
+              />
+            </div>
+            {!isWorkshopActive && (
+              <ActivityPanel activity={workspaceTemplate.activity} />
+            )}
+          </div>
+        );
+      }
+
+      // Fallback: cached markdown analysis but no COA seed (JSON parse failed)
+      if (effectiveCachedAnalysis?.primary && !analysisRunning) {
+        return (
+          <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+              <CompletedAnalysisView
+                analysis={effectiveCachedAnalysis}
+                agentName={agentName}
+                onRerun={() => {
+                  clearAnalysis(params.engagementId, params.deliverableId);
+                  setAnalysisRunning(true);
+                }}
+                onFollowUp={() => {
+                  setFollowUpRunning(true);
+                  setTimeout(() => {
+                    appendFollowUp(params.engagementId, params.deliverableId, {
+                      output: "Follow-up analysis would appear here with live agent streaming.",
+                      toolBadges: [],
+                      completedAt: new Date().toISOString(),
+                    });
+                    setFollowUpRunning(false);
+                  }, 1000);
+                }}
+              />
+            </div>
+            {!isWorkshopActive && (
+              <ActivityPanel activity={workspaceTemplate.activity} />
+            )}
+          </div>
+        );
+      }
+
+      // Preflight: first visit
+      return (
+        <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+            <DataAnalysisPreflight
+              deliverableName={deliverableName}
+              agentName={agentName}
+              bullets={workspaceTemplate.preflight_bullets}
+              onStart={() => setAnalysisRunning(true)}
+            />
+          </div>
+          {!isWorkshopActive && (
+            <ActivityPanel activity={workspaceTemplate.activity} />
+          )}
+        </div>
+      );
+    }
+
+    // ── Other data-grounded live workspaces (d-005-01, d-005-03, d-005-04) ──
     // If we have cached results and not currently running, show completed view
-    if (cachedAnalysis?.primary && !analysisRunning && !followUpRunning) {
+    if (effectiveCachedAnalysis?.primary && !analysisRunning && !followUpRunning) {
       return (
         <div className="flex flex-1 overflow-hidden">
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
             <CompletedAnalysisView
-              analysis={cachedAnalysis}
+              analysis={effectiveCachedAnalysis}
               agentName={agentName}
               onRerun={() => {
                 clearAnalysis(params.engagementId, params.deliverableId);

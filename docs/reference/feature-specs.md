@@ -16,6 +16,7 @@
 | **019** | Complete Workshop Mode — W5-W8 | W | W5, W6, W7, W8 |
 | **020** | Scoping Canvas polish — contextual enhancements + tone overhaul + Rapid/Deep mode | P | P1 enhancements |
 | **021** | Stream B pivot — agentic capabilities (B1–B8) | B | B1+ |
+| **024** | PDD-006: COA Design Workbench (d-005-02) | B | COA workbench, mock backend COA response |
 
 **Milestone (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
 
@@ -144,7 +145,7 @@ Ingest client data (SAP config, transaction logs, close checklists, process docu
 | A3 | d-003-04 ERP Evaluation Summary | WS-003 ERP Selection | Table + scores | Done (015) |
 | A9 | d-001-04 Risk & Issue Log | WS-001 PM & Governance | Table | Done (015) |
 | A11 | d-004-03b/c/d Process Flow Maps (3) | WS-004 Business Process | ProcessFlowMap | Done (018) |
-| A4 | d-005-02 Chart of Accounts Design | WS-005 COA & GL | Custom | Deferred |
+| A4 | d-005-02 Chart of Accounts Design | WS-005 COA & GL | COADesignWorkbench | Done (024) |
 | A5 | d-006-01 Reporting Inventory | WS-006 Reporting | Table | Done (020) |
 | A6 | d-007-04 Interface Inventory | WS-007 Data & Integration | Table | Deferred |
 | A7 | d-004-06 Process Gap Analysis | WS-004 Business Process | Table + fit/gap | Deferred |
@@ -152,3 +153,45 @@ Ingest client data (SAP config, transaction logs, close checklists, process docu
 | A10 | d-006-03 Regulatory Reporting Map | WS-006 Reporting | Table | Deferred |
 
 **Build approach:** Most are AnnotatedTable with domain-specific mock data. No new component types needed. Define columns, write mock rows, add to MOCK_WORKSPACES.
+
+---
+
+## PDD-006 — COA Design Workbench (Session 024)
+
+Replaces the markdown report for d-005-02 with a persistent, editable tabbed workbench seeded by structured agent output. Establishes the "living document" pattern for GL Design Coach deliverables.
+
+### Agent Output Contract
+
+Agent produces narrative summary + structured JSON in `<coa_design>` XML tags. Parser: `parseCOAOutput()` in `coa-store.ts` — regex extracts JSON, validates 4 required arrays. Fallback: if parse fails, shows CompletedAnalysisView with raw markdown.
+
+### Store: `coa-store.ts`
+
+Zustand + localStorage (`fta-coa-store`). 4 domain types: `COACodeBlock`, `COAAccountGroup`, `COADimension`, `COADecision`. Map-based CRUD for all domains. `seedFromAgent(key, data)` hydrates from parsed JSON. Per-tab chat history. `seededAt`/`modifiedAt` timestamps. Key format: `{engagementId}:{deliverableId}`.
+
+### Component: `COADesignWorkbench.tsx`
+
+- **4 tabs:** Code Blocks, Account Groups, Dimensions, Decisions
+- **Inline editing:** Click cell → input replaces content, Enter saves, Esc cancels
+- **Decision cards:** Card layout (not table) with amber/emerald/red status borders, approve/reject buttons, consultant notes textarea, reset to pending
+- **Decisions badge:** Amber count badge on tab when decisions are pending
+- **Agent summary banner:** Collapsible, shows narrative summary + seeded/modified dates
+- **Chat panel:** Collapsible right sidebar (40px rail → 280px), per-tab message history, mock responses (backend wiring for future)
+- **Re-seed:** Confirmation dialog, clears store, re-runs agent
+- **Add Row:** Available on Code Blocks, Account Groups, Dimensions tabs
+
+### Routing (page.tsx, d-005-02 only)
+
+```
+coaSeeded → COADesignWorkbench (persistent, editable)
+analysisRunning → LiveAgentWorkspace (streams, onComplete seeds COA store)
+cachedAnalysis → CompletedAnalysisView (fallback if JSON parse failed)
+else → DataAnalysisPreflight (first visit)
+```
+
+### Hydration Fix
+
+Zustand persist stores hydrate async from localStorage. Added `storesHydrated` flag (false during SSR, true after useEffect mount). All persisted store conditionals use guarded values (`effectiveCachedAnalysis`, `effectiveCoaSeeded`) to prevent SSR/client mismatch.
+
+### Mock Backend
+
+`stream.py` updated with d-005-02 specific mock response (`_MOCK_RESPONSE_COA_DESIGN`) containing full `<coa_design>` JSON block. Variant detection based on prompt content keywords. Set `FTA_MOCK_AGENT=true` in `.env` to use.

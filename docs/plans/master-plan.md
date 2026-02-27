@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 021: **Pivot** — Shifting from frontend mock expansion to backend agentic capabilities. Two fully working agent flows for pitch demo: GL Account Analysis (d-005-01) + GAAP Income Statement (d-006-06). Iteration 3 (data pipeline + MJE analysis) now being built as B1-B4. Workshop Mode complete (W1–W8). Pursuit phase Scoping Canvas (P1) built. 13/35 deliverables (37%).
+> Updated Session 024: PDD-006 COA Design Workbench (d-005-02) — first "living document" pattern. Agent seeds structured JSON, consultant edits in tabbed workbench with inline editing, decision cards, chat panel. Hydration fix for Zustand persist + SSR. Mock backend updated with COA-specific response. 16/36 deliverables (44%).
 
 ```
 Phase 1: Personal Use MVP
@@ -351,15 +351,16 @@ Phase 1: Personal Use MVP
 │   ├── Enterprise monochrome tone overhaul  ✅ Session 020
 │   └── Rapid 12 / Deep Dive scoping mode + hypothesis panel ✅ Session 020
 │
-├── STREAM B: Agentic Capabilities           (Session 021+) ← NOW
-│   ├── B1 Data fixture + startup loader
-│   ├── B2 Analysis tools (deterministic)
-│   ├── B3 SSE streaming endpoint
-│   ├── B4 Wire GL Design Coach with tools
-│   ├── B5 Frontend SSE consumer
-│   ├── B6 Cap 1: Account Analysis e2e
-│   ├── B7 Cap 2: GAAP Income Statement
-│   └── B8 Demo polish
+├── STREAM B: Agentic Capabilities           (Session 021+)
+│   ├── B1 Data fixture + startup loader     ✅
+│   ├── B2 Analysis tools (deterministic)    ✅
+│   ├── B3 SSE streaming endpoint            ✅
+│   ├── B4 Wire GL Design Coach with tools   ✅
+│   ├── B5 Frontend SSE consumer             ✅
+│   ├── B6 Cap 1: Account Analysis e2e       ✅
+│   ├── B7 Cap 2: GAAP Income Statement      ✅
+│   ├── B8 Demo polish                       ✅
+│   └── PDD-006 COA Design Workbench         ✅ Session 024 ← NOW
 │
 ├── Stream A continued: A4–A10               (after B)
 ├── Stream C: Platform Polish                (after B)
@@ -381,13 +382,13 @@ Phase 3: Broad Rollout
 └── (not started)
 ```
 
-**Coverage:** 13 of 35 deliverables have workspaces (37%). Stream B focus: two agentic capabilities end-to-end.
+**Coverage:** 16 of 36 deliverables have workspaces (44%). Stream B complete with B1–B8 + PDD-006.
 
-**Frontend state:** Full workspace UI running on mock data. Landing page, workspace shell, 4 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable). 12 deliverables with workspaces across 4 workstreams (3 new process flows added Session 018). Agentic Bridges panel in workshop mode. Fit/gap data across PA-02, PA-03, PA-09, PA-13. Zero API calls.
+**Frontend state:** Full workspace UI. 5 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable, COADesignWorkbench). 16 deliverables with workspaces. COADesignWorkbench establishes "living document" pattern — agent seeds structured data, consultant edits inline. Hydration guard for Zustand persist + SSR.
 
-**Backend state:** Consulting Agent keyword router, GL Design Coach domain prompts, data schemas + DuckDB engine + synthetic data generator ready. No SSE, no data tools wired, no Supabase.
+**Backend state:** GL Design Coach graph with 5 analysis tools, SSE streaming endpoint, mock mode with variant responses (account analysis + COA design). DataEngine + DuckDB + Polars pipeline. Consulting Agent keyword router.
 
-**Next priority:** Stream B — Two agentic capabilities for pitch demo. Prove the agent can analyze real data and generate real financial statements.
+**Next priority:** Verify COA workbench end-to-end (mock + live LLM). Then Agentic Functional Consultant or Stream A resume.
 
 ---
 
