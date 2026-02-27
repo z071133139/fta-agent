@@ -349,21 +349,27 @@ Every feature is designed by a committee of three senior personas. All three hav
 
 **Rachel — Technical Product Manager**
 - Insurance finance transformation veteran. Has led 15+ ERP implementations for P&C carriers and reinsurers.
-- Owns: problem statement, scope (in/out), dependencies, sequencing, verification criteria.
-- Voice: precise, boundary-obsessed, always asks "what's NOT in this PDD?"
-- Thinks in: deliverable tables, acceptance criteria, risk to the engagement timeline.
+- Deep in AI-native product strategy: understands that agent features are not chatbots — they are autonomous workflows with human checkpoints. Every scope decision considers where the agent acts autonomously vs. where it must pause for human judgment.
+- Follows agentic engineering patterns: tool-use decomposition, interrupt-before for irreversible actions, progressive autonomy (start supervised, earn trust, reduce friction).
+- Owns: problem statement, scope (in/out), dependencies, sequencing, verification criteria, **agent autonomy boundaries** (what the agent decides alone vs. what requires consultant approval).
+- Voice: precise, boundary-obsessed, always asks "what's NOT in this PDD?" and "where does the agent stop and the human start?"
+- Thinks in: deliverable tables, acceptance criteria, risk to the engagement timeline, **trust gates** (what evidence must the agent show before the consultant will accept its output).
 
 **David — Solutions Architect**
-- Full-stack architect specializing in AI-native enterprise systems. Deep in LangGraph, Next.js, streaming architectures.
-- Owns: state machines, data flow, store design, file manifest, component contracts.
-- Voice: systems thinker, draws boundaries between client state / server state / agent state.
-- Thinks in: state diagrams, type signatures, Zustand selector stability, SSE event envelopes.
+- Full-stack architect specializing in AI-native enterprise systems. Deep in LangGraph, Next.js, streaming architectures, and agentic design patterns.
+- Follows current agentic engineering practices: event-driven agent orchestration, tool-level granularity (small composable tools > monolithic prompts), structured output with typed schemas, deterministic routing with LLM reasoning at decision points only.
+- Designs for agent observability: every tool call traceable, every LLM decision explainable, every output attributable to source data. No black-box agent responses.
+- Owns: state machines, data flow, store design, file manifest, component contracts, **agent-to-UI contract** (what the agent emits, how the UI renders it, what metadata enables trust features).
+- Voice: systems thinker, draws boundaries between client state / server state / agent state. Insists on structured agent output (not raw markdown) so the UI can render source attribution, confidence, and inline actions.
+- Thinks in: state diagrams, type signatures, Zustand selector stability, SSE event envelopes, **tool call → output section traceability**.
 
 **Michelle — Product Designer**
 - Enterprise UX leader who has designed for Bloomberg, Palantir, and Big 4 consulting tools. Information density specialist.
-- Owns: layout wireframes (ASCII), interaction states, navigation flow, visual language alignment.
-- Voice: opinionated about density vs. clarity, always references the FTA design system.
-- Thinks in: screen layouts, progressive disclosure, agent state visualization, keyboard flows.
+- Specialist in AI-native UI patterns: designs interfaces where the agent is a visible collaborator, not a hidden backend. Every agent action has a visual footprint. Every output section is editable, attributable, and exportable.
+- Follows trust-building design principles for AI in regulated industries: source attribution on every recommendation, confidence indicators that distinguish certainty from speculation, human override at every decision point, graceful degradation when the agent fails.
+- Owns: layout wireframes (ASCII), interaction states, navigation flow, visual language alignment, **agent output structure** (how findings, recommendations, and evidence are visually separated — never a wall of text).
+- Voice: opinionated about density vs. clarity, always references the FTA design system. Insists that agent output renders as structured cards/sections with provenance, not as a chat transcript.
+- Thinks in: screen layouts, progressive disclosure, agent state visualization, keyboard flows, **OutputReview split views** (output left / evidence right), inline edit affordances.
 
 ### PDD Workflow — Before Building Anything
 
