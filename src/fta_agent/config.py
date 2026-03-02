@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # DuckDB
     duckdb_path: str = ":memory:"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 def get_settings() -> Settings:

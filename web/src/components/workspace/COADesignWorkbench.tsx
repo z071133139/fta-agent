@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Fragment } from "react";
 import {
   useCOAStore,
   coaStoreKey,
@@ -9,6 +10,8 @@ import {
   type COAAccountGroup,
   type COADimension,
   type COADecision,
+  type COAIssue,
+  type IssueStatus,
   type DecisionStatus,
 } from "@/lib/coa-store";
 
@@ -280,6 +283,217 @@ function AccountGroupsTab({
   );
 }
 
+// ── Issue Status Styles ──────────────────────────────────────────────────────
+
+const ISSUE_STATUS_STYLES: Record<IssueStatus, { border: string; badge: string; label: string }> = {
+  open: {
+    border: "border-l-amber-500",
+    badge: "bg-amber-500/20 text-amber-400",
+    label: "OPEN",
+  },
+  in_progress: {
+    border: "border-l-blue-500",
+    badge: "bg-blue-500/20 text-blue-400",
+    label: "IN PROGRESS",
+  },
+  resolved: {
+    border: "border-l-emerald-500",
+    badge: "bg-emerald-500/20 text-emerald-400",
+    label: "RESOLVED",
+  },
+  deferred: {
+    border: "border-l-slate-500",
+    badge: "bg-slate-500/20 text-slate-400",
+    label: "DEFERRED",
+  },
+};
+
+// ── Issue Summary Badge ─────────────────────────────────────────────────────
+
+function IssueSummaryBadge({
+  issues,
+  expanded,
+  onToggle,
+}: {
+  issues: COAIssue[];
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  if (issues.length === 0) {
+    return <span className="text-slate-500">&mdash;</span>;
+  }
+
+  const openCount = issues.filter((i) => i.status === "open" || i.status === "in_progress").length;
+  const allResolved = openCount === 0;
+
+  return (
+    <button
+      onClick={onToggle}
+      className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider transition-colors ${
+        allResolved
+          ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+          : "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
+      }`}
+    >
+      <svg
+        className={`w-3 h-3 transition-transform ${expanded ? "rotate-90" : ""}`}
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+      </svg>
+      {allResolved
+        ? `${issues.length} resolved`
+        : `${openCount} open`}
+    </button>
+  );
+}
+
+// ── Issue Card ──────────────────────────────────────────────────────────────
+
+function IssueCard({
+  issue,
+  storeKey,
+  dimId,
+}: {
+  issue: COAIssue;
+  storeKey: string;
+  dimId: string;
+}) {
+  const updateIssue = useCOAStore((s) => s.updateIssue);
+  const deleteIssue = useCOAStore((s) => s.deleteIssue);
+  const style = ISSUE_STATUS_STYLES[issue.status];
+  const [editing, setEditing] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(issue.title);
+  const titleRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) {
+      titleRef.current?.focus();
+      titleRef.current?.select();
+    }
+  }, [editing]);
+
+  const handleStatusChange = (newStatus: IssueStatus) => {
+    const updates: Partial<COAIssue> = { status: newStatus };
+    if (newStatus === "resolved") {
+      updates.resolved_at = new Date().toISOString();
+    } else {
+      updates.resolved_at = null;
+    }
+    updateIssue(storeKey, dimId, issue.id, updates);
+  };
+
+  return (
+    <div className={`border-l-4 ${style.border} rounded-r-lg bg-slate-800/80 p-3 space-y-2`}>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          {editing ? (
+            <input
+              ref={titleRef}
+              value={titleDraft}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  updateIssue(storeKey, dimId, issue.id, { title: titleDraft });
+                  setEditing(false);
+                }
+                if (e.key === "Escape") setEditing(false);
+              }}
+              onBlur={() => {
+                updateIssue(storeKey, dimId, issue.id, { title: titleDraft });
+                setEditing(false);
+              }}
+              className="w-full bg-slate-700 border border-slate-500 rounded px-2 py-1 text-sm text-slate-200 font-mono focus:border-blue-500 focus:outline-none"
+            />
+          ) : (
+            <span
+              className="text-sm text-slate-200 cursor-pointer hover:text-white transition-colors"
+              onClick={() => {
+                setTitleDraft(issue.title);
+                setEditing(true);
+              }}
+            >
+              {issue.title || <span className="text-slate-500 italic">Click to add title...</span>}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider ${style.badge}`}>
+            {style.label}
+          </span>
+          <button
+            onClick={() => deleteIssue(storeKey, dimId, issue.id)}
+            className="text-slate-600 hover:text-red-400 transition-colors"
+            title="Delete issue"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Consultant notes */}
+      <div>
+        <span className="text-[10px] uppercase tracking-[0.1em] text-slate-500">
+          Resolution Notes
+        </span>
+        <textarea
+          value={issue.consultant_notes}
+          onChange={(e) =>
+            updateIssue(storeKey, dimId, issue.id, {
+              consultant_notes: e.target.value,
+            })
+          }
+          placeholder="Add resolution notes, action items..."
+          rows={2}
+          className="mt-1 w-full rounded border border-slate-600 bg-slate-700/50 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none resize-none"
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2">
+        {issue.status !== "in_progress" && (
+          <button
+            onClick={() => handleStatusChange("in_progress")}
+            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-blue-600/20 text-blue-400 hover:bg-blue-600/30"
+          >
+            Start Working
+          </button>
+        )}
+        {issue.status !== "resolved" && (
+          <button
+            onClick={() => handleStatusChange("resolved")}
+            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30"
+          >
+            &#10003; Resolve
+          </button>
+        )}
+        {issue.status !== "deferred" && (
+          <button
+            onClick={() => handleStatusChange("deferred")}
+            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-slate-600/20 text-slate-400 hover:bg-slate-600/30"
+          >
+            Defer
+          </button>
+        )}
+        {issue.status !== "open" && (
+          <button
+            onClick={() => handleStatusChange("open")}
+            className="rounded px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+          >
+            Reopen
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Dimensions Tab ───────────────────────────────────────────────────────────
 
 function DimensionsTab({
@@ -291,6 +505,20 @@ function DimensionsTab({
 }) {
   const update = useCOAStore((s) => s.updateDimension);
   const add = useCOAStore((s) => s.addDimension);
+  const addIssue = useCOAStore((s) => s.addIssue);
+  const [expandedDims, setExpandedDims] = useState<Set<string>>(new Set());
+
+  const toggleExpand = useCallback((dimId: string) => {
+    setExpandedDims((prev) => {
+      const next = new Set(prev);
+      if (next.has(dimId)) {
+        next.delete(dimId);
+      } else {
+        next.add(dimId);
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <div>
@@ -303,81 +531,91 @@ function DimensionsTab({
             <th className="px-3 py-2 w-[80px] text-center">Required</th>
             <th className="px-3 py-2 w-[180px]">Key Values</th>
             <th className="px-3 py-2">Reporting Purpose</th>
-            <th className="px-3 py-2 w-[180px]">Issues</th>
+            <th className="px-3 py-2 w-[130px]">Issues</th>
           </tr>
         </thead>
         <tbody>
           {dimensions.map((dim) => (
-            <tr
-              key={dim.id}
-              className="border-b border-slate-800 hover:bg-slate-700/30 transition-colors"
-            >
-              <td className="px-3 py-2 font-mono text-slate-200">
-                <EditableCell
-                  value={dim.dimension}
-                  onSave={(v) =>
-                    update(storeKey, dim.id, { dimension: v })
-                  }
-                />
-              </td>
-              <td className="px-3 py-2 text-right font-mono text-slate-300">
-                <EditableCell
-                  value={dim.fill_rate}
-                  numeric
-                  onSave={(v) =>
-                    update(storeKey, dim.id, {
-                      fill_rate: parseFloat(v) || 0,
-                    })
-                  }
-                />
-                <span className="text-slate-500">%</span>
-              </td>
-              <td className="px-3 py-2 text-right font-mono text-slate-300">
-                <EditableCell
-                  value={dim.unique_values}
-                  numeric
-                  onSave={(v) =>
-                    update(storeKey, dim.id, {
-                      unique_values: parseInt(v) || 0,
-                    })
-                  }
-                />
-              </td>
-              <td className="px-3 py-2 text-center">
-                <MandatoryToggle
-                  value={dim.mandatory}
-                  onToggle={() =>
-                    update(storeKey, dim.id, { mandatory: !dim.mandatory })
-                  }
-                />
-              </td>
-              <td className="px-3 py-2 text-slate-300 font-mono text-xs">
-                <EditableCell
-                  value={dim.key_values}
-                  onSave={(v) =>
-                    update(storeKey, dim.id, { key_values: v })
-                  }
-                />
-              </td>
-              <td className="px-3 py-2 text-slate-300">
-                <EditableCell
-                  value={dim.reporting_purpose}
-                  wide
-                  onSave={(v) =>
-                    update(storeKey, dim.id, { reporting_purpose: v })
-                  }
-                />
-              </td>
-              <td className="px-3 py-2 text-slate-400">
-                <EditableCell
-                  value={dim.issues}
-                  wide
-                  onSave={(v) =>
-                    update(storeKey, dim.id, { issues: v })
-                  }
-                />
-              </td>
-            </tr>
+            <Fragment key={dim.id}>
+              <tr className="border-b border-slate-800 hover:bg-slate-700/30 transition-colors">
+                <td className="px-3 py-2 font-mono text-slate-200">
+                  <EditableCell
+                    value={dim.dimension}
+                    onSave={(v) => update(storeKey, dim.id, { dimension: v })}
+                  />
+                </td>
+                <td className="px-3 py-2 text-right font-mono text-slate-300">
+                  <EditableCell
+                    value={dim.fill_rate}
+                    numeric
+                    onSave={(v) =>
+                      update(storeKey, dim.id, { fill_rate: parseFloat(v) || 0 })
+                    }
+                  />
+                  <span className="text-slate-500">%</span>
+                </td>
+                <td className="px-3 py-2 text-right font-mono text-slate-300">
+                  <EditableCell
+                    value={dim.unique_values}
+                    numeric
+                    onSave={(v) =>
+                      update(storeKey, dim.id, { unique_values: parseInt(v) || 0 })
+                    }
+                  />
+                </td>
+                <td className="px-3 py-2 text-center">
+                  <MandatoryToggle
+                    value={dim.mandatory}
+                    onToggle={() =>
+                      update(storeKey, dim.id, { mandatory: !dim.mandatory })
+                    }
+                  />
+                </td>
+                <td className="px-3 py-2 text-slate-300 font-mono text-xs">
+                  <EditableCell
+                    value={dim.key_values}
+                    onSave={(v) => update(storeKey, dim.id, { key_values: v })}
+                  />
+                </td>
+                <td className="px-3 py-2 text-slate-300">
+                  <EditableCell
+                    value={dim.reporting_purpose}
+                    wide
+                    onSave={(v) => update(storeKey, dim.id, { reporting_purpose: v })}
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <IssueSummaryBadge
+                    issues={dim.issues}
+                    expanded={expandedDims.has(dim.id)}
+                    onToggle={() => toggleExpand(dim.id)}
+                  />
+                </td>
+              </tr>
+              {/* Expandable issue sub-row */}
+              {expandedDims.has(dim.id) && (
+                <tr className="bg-slate-800/30">
+                  <td colSpan={7} className="px-4 py-3">
+                    <div className="space-y-3">
+                      {dim.issues.map((issue) => (
+                        <IssueCard
+                          key={issue.id}
+                          issue={issue}
+                          storeKey={storeKey}
+                          dimId={dim.id}
+                        />
+                      ))}
+                      <button
+                        onClick={() => addIssue(storeKey, dim.id)}
+                        className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 border border-dashed border-slate-600 hover:border-slate-400 rounded transition-colors"
+                      >
+                        + Add Issue
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </Fragment>
           ))}
         </tbody>
       </table>
@@ -701,10 +939,19 @@ export function COADesignWorkbench({
     (d) => d.status === "pending"
   ).length;
 
+  const openIssueCount = store.dimensions.reduce(
+    (sum, d) => sum + d.issues.filter((i) => i.status === "open" || i.status === "in_progress").length,
+    0
+  );
+
   const tabs: Tab[] = [
     { id: "code_blocks", label: "Code Blocks" },
     { id: "account_groups", label: "Account Groups" },
-    { id: "dimensions", label: "Dimensions" },
+    {
+      id: "dimensions",
+      label: "Dimensions",
+      badge: openIssueCount > 0 ? openIssueCount : undefined,
+    },
     {
       id: "decisions",
       label: "Decisions",

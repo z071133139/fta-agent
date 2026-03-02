@@ -42,12 +42,14 @@ def create_app() -> FastAPI:
     from fta_agent.api.routes.chat import router as chat_router
     from fta_agent.api.routes.health import router as health_router
     from fta_agent.api.routes.outcomes import router as outcomes_router
+    from fta_agent.api.routes.stream import router as stream_router
     from fta_agent.api.routes.upload import router as upload_router
 
     app.include_router(health_router)
     app.include_router(chat_router)
     app.include_router(outcomes_router)
     app.include_router(upload_router)
+    app.include_router(stream_router)
     return app
 
 

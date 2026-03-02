@@ -2,7 +2,7 @@
 
 > Status: APPROVED (Session 005, updated Sessions 006, 015)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-02-24 (Session 020)
+> Last updated: 2026-03-02 (Session 025)
 
 ## Purpose
 
@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 024: PDD-006 COA Design Workbench (d-005-02) — first "living document" pattern. Agent seeds structured JSON, consultant edits in tabbed workbench with inline editing, decision cards, chat panel. Hydration fix for Zustand persist + SSR. Mock backend updated with COA-specific response. 16/36 deliverables (44%).
+> Updated Session 025: PDD-007 Custom Process Flow Builder — NLP-driven flow creation via Functional Consultant agent. Split-view workspace (chat + live preview), `emit_process_flow` tool, multi-turn conversation, accept/discard lifecycle, Mock/Live toggle. Third agent capability end-to-end. 16/36 deliverables (44%) + custom flows.
 
 ```
 Phase 1: Personal Use MVP
@@ -360,7 +360,8 @@ Phase 1: Personal Use MVP
 │   ├── B6 Cap 1: Account Analysis e2e       ✅
 │   ├── B7 Cap 2: GAAP Income Statement      ✅
 │   ├── B8 Demo polish                       ✅
-│   └── PDD-006 COA Design Workbench         ✅ Session 024 ← NOW
+│   ├── PDD-006 COA Design Workbench         ✅ Session 024
+│   └── PDD-007 Custom Process Flow Builder  ✅ Session 025 ← NOW
 │
 ├── Stream A continued: A4–A10               (after B)
 ├── Stream C: Platform Polish                (after B)
@@ -382,13 +383,13 @@ Phase 3: Broad Rollout
 └── (not started)
 ```
 
-**Coverage:** 16 of 36 deliverables have workspaces (44%). Stream B complete with B1–B8 + PDD-006.
+**Coverage:** 16 of 36 deliverables have workspaces (44%) + custom process flows via builder.
 
-**Frontend state:** Full workspace UI. 5 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable, COADesignWorkbench). 16 deliverables with workspaces. COADesignWorkbench establishes "living document" pattern — agent seeds structured data, consultant edits inline. Hydration guard for Zustand persist + SSR.
+**Frontend state:** Full workspace UI. 5 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable, COADesignWorkbench) + ProcessFlowBuilder split-view. 16 deliverables with workspaces. Two "living document" patterns: COADesignWorkbench (agent seeds structured data, consultant edits inline) and ProcessFlowBuilder (agent builds structured flows through conversation).
 
-**Backend state:** GL Design Coach graph with 5 analysis tools, SSE streaming endpoint, mock mode with variant responses (account analysis + COA design). DataEngine + DuckDB + Polars pipeline. Consulting Agent keyword router.
+**Backend state:** Two agent graphs: GL Design Coach (5 analysis tools) + Functional Consultant (emit_process_flow tool). SSE streaming with multi-turn history support, per-request mock mode. DataEngine + DuckDB + Polars pipeline.
 
-**Next priority:** Verify COA workbench end-to-end (mock + live LLM). Then Agentic Functional Consultant or Stream A resume.
+**Next priority:** End-to-end testing of Process Flow Builder + COA Workbench. Then Agentic FC expansion (5 more capabilities) or Stream A resume.
 
 ---
 

@@ -17,6 +17,7 @@
 | **020** | Scoping Canvas polish — contextual enhancements + tone overhaul + Rapid/Deep mode | P | P1 enhancements |
 | **021** | Stream B pivot — agentic capabilities (B1–B8) | B | B1+ |
 | **024** | PDD-006: COA Design Workbench (d-005-02) | B | COA workbench, mock backend COA response |
+| **025** | PDD-007: Custom Process Flow Builder | B | FC agent, emit_process_flow tool, split-view builder, flow-builder-store |
 
 **Milestone (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
 
@@ -195,3 +196,73 @@ Zustand persist stores hydrate async from localStorage. Added `storesHydrated` f
 ### Mock Backend
 
 `stream.py` updated with d-005-02 specific mock response (`_MOCK_RESPONSE_COA_DESIGN`) containing full `<coa_design>` JSON block. Variant detection based on prompt content keywords. Set `FTA_MOCK_AGENT=true` in `.env` to use.
+
+---
+
+## PDD-007 — Custom Process Flow Builder (Session 025)
+
+NLP-driven process flow creation from the Process Flow Index. Split-view workspace: chat with the Functional Consultant agent on the left, live ProcessFlowMap preview on the right. The agent asks about PA, roles, steps, gateways; progressively builds structured swimlane flows via `emit_process_flow` tool calls.
+
+### Entry Point
+
+"+ New Process Flow" button on ProcessFlowIndex (d-004-03). Opens ProcessFlowBuilder as overlay replacing the index. "Continue Building Flow" label when an active session exists.
+
+### Split-View Layout
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  ← Process Flow Index    New Process Flow  [Mock/Live] [Accept] [Discard]  │
+├──────────────────────────┬─────────────────────────────────────────┤
+│  CHAT (w-[440px])        │  PREVIEW (flex-1)                      │
+│  Agent/user messages     │  ProcessFlowMap (read-only)             │
+│  "Flow updated" badges   │  Updates on each emit_process_flow     │
+│  Thinking indicator      │  Empty state before first tool call    │
+│  Input area (Enter send) │  Zoom/pan controls                     │
+└──────────────────────────┴─────────────────────────────────────────┘
+```
+
+### Agent-to-UI Contract
+
+The `emit_process_flow` tool produces validated `ProcessFlowData` JSON via Pydantic schema. Arrives as a `tool_call` SSE event with `status: "completed"` and `output_preview` containing the full JSON. Frontend parses and renders in `<ProcessFlowMap>`.
+
+**ToolMessage fix:** LangChain wraps tool output in `ToolMessage`. The stream endpoint extracts `.content` before stringifying to ensure clean JSON arrives on frontend.
+
+### Store: `flow-builder-store.ts`
+
+Zustand + localStorage (`fta-flow-builder`). Two separate data structures:
+- **`sessions`**: active building session per engagement (cleared on accept/discard)
+- **`acceptedFlows`**: completed flows per engagement (accumulate, shown in index)
+
+`acceptFlow()` moves `currentFlow` to `acceptedFlows` and deletes the active session.
+
+### Agent Client Extensions
+
+`agent-client.ts` extended with `StreamOptions`:
+- `history`: conversation history for multi-turn (sent in POST body)
+- `onToolCall(tool, output)`: callback on completed tool_call events
+- `mockMode`: per-request mock override (Mock/Live toggle button)
+
+### Mock Backend
+
+`stream.py` includes `_stream_mock_fc()` — multi-turn mock for Functional Consultant:
+- Turn 1 (< 2 messages in history): clarifying questions about PA, roles, thresholds
+- Turn 2+: emits `_FC_MOCK_FLOW` (GL Coding Block Correction, 3 swimlanes, 8 steps, 1 gateway, 2 overlays) + explanation
+
+### Backend Agent
+
+`functional_consultant.py` — tool-calling LangGraph graph:
+- Loads system prompt from `prompts/functional_consultant_flow.md`
+- Binds `emit_process_flow` tool to LLM
+- Conditional edges: `has_tool_calls → tools → agent` loop, else `END`
+- Reconstructs full conversation history from `StreamRequest.history`
+
+### Accept + Index Integration
+
+- "Accept Flow" button → `acceptFlow(engId)` → flow moves to `acceptedFlows`, session deleted
+- ProcessFlowIndex reads `acceptedFlows[engId]` and renders custom flows with "Custom" badge
+- Click custom flow → opens builder (future: could open ProcessFlowMap directly)
+- "Discard" button → session cleared, return to index
+
+### Session Lifecycle
+
+Fresh start on every builder open (`initialized` flag forces `clearSession + startSession`). Session persistence via localStorage for mid-conversation navigation. Accept clears session and persists flow. Discard clears everything.

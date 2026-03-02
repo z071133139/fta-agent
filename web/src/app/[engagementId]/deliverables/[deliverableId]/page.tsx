@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import {
   MOCK_ENGAGEMENTS,
   MOCK_WORKSPACES,
+  REPORT_GENERATORS,
   isWorkshopEligible,
   type AgentRunState,
   type ProcessInventoryData,
@@ -27,11 +28,13 @@ import { LiveAgentWorkspace } from "@/components/workspace/LiveAgentWorkspace";
 import { ProcessInventoryGraph } from "@/components/workspace/ProcessInventoryGraph";
 import { ProcessFlowMap } from "@/components/workspace/ProcessFlowMap";
 import { ProcessFlowIndex } from "@/components/workspace/ProcessFlowIndex";
+import { ProcessFlowBuilder } from "@/components/workspace/ProcessFlowBuilder";
 import { BusinessRequirementsTable } from "@/components/workspace/BusinessRequirementsTable";
 import { CaptureBar, type CaptureBarHandle } from "@/components/workspace/CaptureBar";
 import { useWorkshopKeyboard } from "@/hooks/useWorkshopKeyboard";
 import { CommandPalette } from "@/components/workspace/CommandPalette";
 import { COADesignWorkbench } from "@/components/workspace/COADesignWorkbench";
+import { ReportView } from "@/components/workspace/InlineReportPanel";
 
 const AGENT_LABEL: Record<string, string> = {
   gl_design_coach: "GL Design Coach",
@@ -95,6 +98,16 @@ export default function DeliverablePage() {
   const [analysisRunning, setAnalysisRunning] = useState(false);
   // Track follow-up running state
   const [followUpRunning, setFollowUpRunning] = useState(false);
+
+  // ── Report generation from Reporting Inventory (d-006-01) ──────────
+  const isReportingInventory = params.deliverableId === "d-006-01";
+  const [expandedReportRow, setExpandedReportRow] = useState<string | null>(null);
+  const generatableRowIds = isReportingInventory
+    ? new Set(Object.keys(REPORT_GENERATORS))
+    : undefined;
+
+  // ── Flow builder state (PDD-007) ─────────────────────────────────────
+  const [showFlowBuilder, setShowFlowBuilder] = useState(false);
 
   // ── Hydration guard for persisted stores ────────────────────────────
   // Zustand persist stores hydrate async from localStorage after mount.
@@ -399,9 +412,13 @@ export default function DeliverablePage() {
               </div>
             )}
 
-            {/* Graph path — process flow index */}
+            {/* Graph path — process flow index / builder */}
             {hasGraph && workspaceTemplate.graph!.kind === "process_flow_index" && (
-              <ProcessFlowIndex />
+              showFlowBuilder ? (
+                <ProcessFlowBuilder onClose={() => setShowFlowBuilder(false)} />
+              ) : (
+                <ProcessFlowIndex onStartBuilder={() => setShowFlowBuilder(true)} />
+              )
             )}
 
             {/* Graph path — process flow map */}
@@ -429,7 +446,7 @@ export default function DeliverablePage() {
             )}
 
             {/* Table path */}
-            {!hasGraph && (
+            {!hasGraph && !expandedReportRow && (
               <div className="flex-1 overflow-y-auto px-5 py-4">
                 {/* Insight cards — data-grounded agents only */}
                 {workspaceTemplate.insight_cards &&
@@ -463,8 +480,25 @@ export default function DeliverablePage() {
                       />
                     ) : undefined
                   }
+                  generatableRows={generatableRowIds}
+                  onRowAction={(rowId) => setExpandedReportRow(rowId)}
                 />
               </div>
+            )}
+
+            {/* Report view — replaces table when a generatable row is selected */}
+            {!hasGraph && expandedReportRow && REPORT_GENERATORS[expandedReportRow] && (
+              <ReportView
+                key={expandedReportRow}
+                engagementId={params.engagementId}
+                reportRowId={expandedReportRow}
+                reportName={
+                  workspaceTemplate.rows.find((r) => r.row_id === expandedReportRow)?.cells.report
+                  ?? expandedReportRow
+                }
+                config={REPORT_GENERATORS[expandedReportRow]}
+                onBack={() => setExpandedReportRow(null)}
+              />
             )}
 
             {/* Chat input — hidden in workshop mode */}

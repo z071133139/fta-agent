@@ -151,7 +151,6 @@ const ACME_WORKPLAN: Workplan = {
         { deliverable_id: "d-006-03", name: "Regulatory/Statutory Reporting Map (NAIC Annual Statement)", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-006-04", name: "Analytics & Dashboard Requirements", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-006-05", name: "SAP Datasphere / BW4HANA Architecture (if in scope)", status: "not_started", owner_agent: "functional_consultant" },
-        { deliverable_id: "d-006-06", name: "GAAP Income Statement (from GL posting data)", status: "not_started", owner_agent: "gl_design_coach", agent_summary: "Generate P&L from posting data with LOB breakdown" },
       ],
     },
     {
@@ -1727,25 +1726,21 @@ Keep under 1000 words. Use tables, not prose.`,
     ],
   },
 
-  "d-006-06": {
-    deliverable_id: "d-006-06",
-    agent_kind: "data_grounded",
-    run_state: "preflight",
-    agent_live: true,
-    agent_prompt: "Generate a GAAP income statement from the GL posting data for the full fiscal year (periods 1-12). Break it down by line of business. Show total revenue, total expenses, and net income. Then analyze the loss ratio by LOB and highlight any unusual patterns or areas of concern for the finance transformation.",
-    preflight_title: "GAAP Income Statement",
-    preflight_bullets: [
-      "Generate P&L from 1M+ GL posting lines across 12 fiscal periods",
-      "Revenue and expense classification by account group",
-      "Line of business breakdown (AUTO, HOME, COMML, WC)",
-      "Loss ratio analysis and pattern detection",
-      "Dimensional quality assessment for reporting readiness",
-    ],
-    preflight_data_source: "DuckDB · 1,064,838 posting lines · FY2025",
-    columns: [],
-    rows: [],
-    insight_cards: [],
-    activity: [],
+};
+
+// ── Report Generators ─────────────────────────────────────────────
+// Maps row IDs in the Reporting Inventory (d-006-01) to agent-driven report generation.
+// Rows with an entry here show a "Generate" affordance in the table.
+
+export const REPORT_GENERATORS: Record<string, {
+  agent: string;
+  prompt: string;
+  description: string;
+}> = {
+  "rpt-08b": {
+    agent: "gl_design_coach",
+    prompt: "Generate a GAAP income statement from the GL posting data for the full fiscal year (periods 1-12). Break it down by line of business. Show total revenue, total expenses, and net income. Then analyze the loss ratio by LOB and highlight any unusual patterns or areas of concern for the finance transformation.",
+    description: "Generate P&L from 1M+ GL posting lines with LOB breakdown and loss ratio analysis",
   },
 };
 

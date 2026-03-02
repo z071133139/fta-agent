@@ -23,6 +23,17 @@ export interface COAAccountGroup {
   notes: string;
 }
 
+export type IssueStatus = "open" | "in_progress" | "resolved" | "deferred";
+
+export interface COAIssue {
+  id: string;
+  title: string;
+  status: IssueStatus;
+  consultant_notes: string;
+  created_at: string;
+  resolved_at: string | null;
+}
+
 export interface COADimension {
   id: string;
   dimension: string;
@@ -31,7 +42,7 @@ export interface COADimension {
   mandatory: boolean;
   key_values: string;
   reporting_purpose: string;
-  issues: string;
+  issues: COAIssue[];
 }
 
 export type DecisionStatus = "pending" | "approved" | "rejected";
@@ -54,11 +65,15 @@ export interface ChatMessage {
   timestamp: string;
 }
 
+/** Raw dimension from agent output — issues arrive as a plain string */
+export type COADimensionRaw = Omit<COADimension, "id" | "issues"> & { issues: string };
+
+/** Raw agent output — issues arrive as a plain string, parsed into COAIssue[] during seed */
 export interface COADesignData {
   summary: string;
   code_blocks: Omit<COACodeBlock, "id" | "notes">[];
   account_groups: Omit<COAAccountGroup, "id">[];
-  dimensions: Omit<COADimension, "id">[];
+  dimensions: COADimensionRaw[];
   decisions: Omit<COADecision, "id" | "status" | "consultant_notes">[];
 }
 
@@ -105,6 +120,11 @@ interface COAStoreState {
   addDimension: (key: string) => void;
   deleteDimension: (key: string, id: string) => void;
 
+  // CRUD — Issues (within dimensions)
+  updateIssue: (key: string, dimId: string, issueId: string, updates: Partial<COAIssue>) => void;
+  addIssue: (key: string, dimId: string) => void;
+  deleteIssue: (key: string, dimId: string, issueId: string) => void;
+
   // CRUD — Decisions
   updateDecision: (key: string, id: string, updates: Partial<COADecision>) => void;
 
@@ -125,6 +145,21 @@ function makeKey(engagementId: string, deliverableId: string): string {
 let idCounter = 0;
 function nextId(prefix: string): string {
   return `${prefix}-${Date.now()}-${++idCounter}`;
+}
+
+function parseIssuesString(raw: string): COAIssue[] {
+  if (!raw || !raw.trim()) return [];
+  const parts = raw.includes(";")
+    ? raw.split(";").map((s) => s.trim()).filter(Boolean)
+    : [raw.trim()];
+  return parts.map((title) => ({
+    id: nextId("iss"),
+    title,
+    status: "open" as const,
+    consultant_notes: "",
+    created_at: new Date().toISOString(),
+    resolved_at: null,
+  }));
 }
 
 function emptyStoreEntry(): COAStoreState["stores"][string] {
@@ -202,7 +237,7 @@ export const useCOAStore = create<COAStoreState>()(
               mandatory: d.mandatory,
               key_values: d.key_values,
               reporting_purpose: d.reporting_purpose,
-              issues: d.issues,
+              issues: parseIssuesString(d.issues),
             })),
             decisions: data.decisions.map((dec) => ({
               id: nextId("dec"),
@@ -367,7 +402,7 @@ export const useCOAStore = create<COAStoreState>()(
             mandatory: false,
             key_values: "",
             reporting_purpose: "",
-            issues: "",
+            issues: [],
           };
           return {
             stores: {
@@ -392,6 +427,80 @@ export const useCOAStore = create<COAStoreState>()(
                 ...store,
                 modifiedAt: new Date().toISOString(),
                 dimensions: store.dimensions.filter((d) => d.id !== id),
+              },
+            },
+          };
+        }),
+
+      // ── Issues (within Dimensions) ────────────────────────────────────
+      updateIssue: (key, dimId, issueId, updates) =>
+        set((state) => {
+          const store = state.stores[key];
+          if (!store) return state;
+          return {
+            stores: {
+              ...state.stores,
+              [key]: {
+                ...store,
+                modifiedAt: new Date().toISOString(),
+                dimensions: store.dimensions.map((d) =>
+                  d.id === dimId
+                    ? {
+                        ...d,
+                        issues: d.issues.map((iss) =>
+                          iss.id === issueId ? { ...iss, ...updates } : iss
+                        ),
+                      }
+                    : d
+                ),
+              },
+            },
+          };
+        }),
+
+      addIssue: (key, dimId) =>
+        set((state) => {
+          const store = state.stores[key];
+          if (!store) return state;
+          const newIssue: COAIssue = {
+            id: nextId("iss"),
+            title: "",
+            status: "open",
+            consultant_notes: "",
+            created_at: new Date().toISOString(),
+            resolved_at: null,
+          };
+          return {
+            stores: {
+              ...state.stores,
+              [key]: {
+                ...store,
+                modifiedAt: new Date().toISOString(),
+                dimensions: store.dimensions.map((d) =>
+                  d.id === dimId
+                    ? { ...d, issues: [...d.issues, newIssue] }
+                    : d
+                ),
+              },
+            },
+          };
+        }),
+
+      deleteIssue: (key, dimId, issueId) =>
+        set((state) => {
+          const store = state.stores[key];
+          if (!store) return state;
+          return {
+            stores: {
+              ...state.stores,
+              [key]: {
+                ...store,
+                modifiedAt: new Date().toISOString(),
+                dimensions: store.dimensions.map((d) =>
+                  d.id === dimId
+                    ? { ...d, issues: d.issues.filter((iss) => iss.id !== issueId) }
+                    : d
+                ),
               },
             },
           };
@@ -466,6 +575,26 @@ export const useCOAStore = create<COAStoreState>()(
     }),
     {
       name: "fta-coa-store",
+      version: 2,
+      migrate: (persisted: unknown, version: number) => {
+        const state = persisted as COAStoreState;
+        if (version < 2 && state.stores) {
+          // Migrate issues from string to COAIssue[]
+          for (const key of Object.keys(state.stores)) {
+            const store = state.stores[key];
+            if (store?.dimensions) {
+              store.dimensions = store.dimensions.map((d) => ({
+                ...d,
+                issues:
+                  typeof d.issues === "string"
+                    ? parseIssuesString(d.issues as unknown as string)
+                    : d.issues,
+              }));
+            }
+          }
+        }
+        return state;
+      },
     }
   )
 );

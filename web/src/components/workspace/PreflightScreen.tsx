@@ -19,10 +19,13 @@ export default function PreflightScreen({
 }: PreflightScreenProps) {
   const isDataGrounded = workspace.agent_kind === "data_grounded";
 
-  const ctaLabel = isDataGrounded ? "Start Analysis" : "Review Library";
-  const headline = isDataGrounded
-    ? "Ready to analyze your data."
-    : "Pre-populated from leading practice library.";
+  const isLive = workspace.agent_live === true;
+  const ctaLabel = isLive ? "Run Live Analysis" : isDataGrounded ? "Start Analysis" : "Review Library";
+  const headline = isLive
+    ? "Agent will analyze your data in real-time."
+    : isDataGrounded
+      ? "Ready to analyze your data."
+      : "Pre-populated from leading practice library.";
 
   const sourceLabel = isDataGrounded
     ? workspace.preflight_data_source
@@ -32,9 +35,17 @@ export default function PreflightScreen({
     <div className="flex flex-col items-center justify-center flex-1 px-8 py-12">
       <div className="w-full max-w-lg">
         {/* Deliverable + agent */}
-        <p className="text-[10px] uppercase tracking-[0.15em] text-muted font-medium mb-1">
-          {agentName}
-        </p>
+        <div className="flex items-center gap-2 mb-1">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-muted font-medium">
+            {agentName}
+          </p>
+          {isLive && (
+            <span className="inline-flex items-center gap-1 rounded bg-blue-500/15 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-blue-400">
+              <span className="h-1 w-1 rounded-full bg-blue-400 animate-pulse" />
+              Live
+            </span>
+          )}
+        </div>
         <h2 className="text-xl font-semibold text-foreground mb-6 leading-tight">
           {deliverableName}
         </h2>

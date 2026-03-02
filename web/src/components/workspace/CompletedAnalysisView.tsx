@@ -2,6 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { AnalysisState, AnalysisEntry } from "@/lib/analysis-store";
 
 function ToolBadge({ tool }: { tool: string }) {
@@ -44,8 +46,10 @@ function AnalysisBlock({
       )}
 
       {/* Output */}
-      <div className="prose prose-invert prose-sm max-w-none font-mono text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
-        {entry.output}
+      <div className="prose prose-invert prose-sm max-w-none text-sm text-slate-200 leading-relaxed [&_table]:w-full [&_table]:text-left [&_th]:px-3 [&_th]:py-2 [&_th]:text-[10px] [&_th]:uppercase [&_th]:tracking-[0.1em] [&_th]:text-slate-400 [&_th]:border-b [&_th]:border-slate-700 [&_td]:px-3 [&_td]:py-2 [&_td]:border-b [&_td]:border-slate-800 [&_td]:text-slate-300 [&_code]:font-mono [&_code]:text-slate-300 [&_pre]:bg-slate-800/50 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-slate-700">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {entry.output}
+        </ReactMarkdown>
       </div>
     </div>
   );
