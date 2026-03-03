@@ -19,6 +19,7 @@
 | **024** | PDD-006: COA Design Workbench (d-005-02) | B | COA workbench, mock backend COA response |
 | **025** | PDD-007: Custom Process Flow Builder | B | FC agent, emit_process_flow tool, split-view builder, flow-builder-store |
 | **026** | PDD-008 color pass, PDD-009 data gates, PDD-010 mission control | B+C | Color readability, workstream data gates, landing page rewrite, presence pips, DuckDB fix |
+| **027** | Slide deck content, Phase 1 gap analysis, COA visual research, dynamic hierarchy design | — | `docs/content/fta-slide-deck-content.md` (16+1 slides, old/new/value format), Phase 1 outstanding items audit, insurance COA visualization research (6 formats), dynamic hierarchy architecture (three-tier classification: rule/pattern/agent-pinned, audit trail, reproducibility hash, multi-perspective FSLI roll-ups) |
 
 **Milestone (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
 

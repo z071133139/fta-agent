@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 025: PDD-007 Custom Process Flow Builder — NLP-driven flow creation via Functional Consultant agent. Split-view workspace (chat + live preview), `emit_process_flow` tool, multi-turn conversation, accept/discard lifecycle, Mock/Live toggle. Third agent capability end-to-end. 16/36 deliverables (44%) + custom flows.
+> Updated Session 027: Slide deck content created. Phase 1 gap analysis completed. COA Design Workbench visual gap identified + major architectural insight: static ERP hierarchies (FSVs) can be replaced by agent-computed dynamic roll-ups with three-tier classification (rule → pattern → agent-pinned). Audit-ready by design: every mapping has classification source, basis, approval trail, change history, reproducibility hash. PDD-011 queued for Session 028: Account String Diagram + Dimensional Matrix + Dynamic Hierarchy with Audit Trail.
 
 ```
 Phase 1: Personal Use MVP
@@ -361,7 +361,8 @@ Phase 1: Personal Use MVP
 │   ├── B7 Cap 2: GAAP Income Statement      ✅
 │   ├── B8 Demo polish                       ✅
 │   ├── PDD-006 COA Design Workbench         ✅ Session 024
-│   └── PDD-007 Custom Process Flow Builder  ✅ Session 025 ← NOW
+│   ├── PDD-007 Custom Process Flow Builder  ✅ Session 025
+│   └── PDD-011 COA Visuals + Dynamic Hierarchy ⬜ Session 028 ← NEXT
 │
 ├── Stream A continued: A4–A10               (after B)
 ├── Stream C: Platform Polish                (after B)
@@ -389,7 +390,9 @@ Phase 3: Broad Rollout
 
 **Backend state:** Two agent graphs: GL Design Coach (5 analysis tools) + Functional Consultant (emit_process_flow tool). SSE streaming with multi-turn history support, per-request mock mode. DataEngine + DuckDB + Polars pipeline.
 
-**Next priority:** End-to-end testing of Process Flow Builder + COA Workbench. Then Agentic FC expansion (5 more capabilities) or Stream A resume.
+**Next priority:** PDD-011 COA Visuals + Dynamic Hierarchy (Account String Diagram, Dimensional Matrix, agent-computed FSLI roll-ups with three-tier classification and audit trail). Then end-to-end verification, trust-building layer PDD, and Agentic FC expansion.
+
+**Key architectural insight (Session 027):** Static ERP hierarchies (FSVs) are unnecessary with agentic classification. Instead of manually assigning accounts to FSLI nodes across multiple reporting bases, the agent classifies using deterministic rules (80%) + pattern heuristics (15%) + LLM-proposed/consultant-pinned (5%). The system converges toward zero LLM calls. Every mapping is more auditable than traditional manual assignment: classification source, basis text, approval chain, change history, reproducibility hash. This changes the COA design deliverable from "build hierarchies" to "validate agent classifications."
 
 ---
 

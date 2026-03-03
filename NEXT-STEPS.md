@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-03-02 (Session 026)
+> Last updated: 2026-03-02 (Session 027)
 > Current phase: Phase 1 — Personal Use MVP
 
 ---
@@ -17,16 +17,28 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 
 **PDD-010 complete (Session 026):** Mission Control Landing Page — unified context selector (engagements + pursuits), attention queue, resume card, data status widget, consultant presence pips, kill engagement dashboard.
 
+**Session 027:** Slide deck content created (`docs/content/fta-slide-deck-content.md`). Phase 1 gap analysis completed. COA Design Workbench visual gap identified: missing Account String Diagram and Dimensional Matrix — the two most important COA visualizations for CFO presentations. Research completed on 6 standard insurance COA visual formats.
+
 ---
 
-## Session 027 Pickup
+## Session 028 Pickup
 
-1. **PDD-008 — Color Readability Overhaul** — see `docs/plans/pdd-008-color-readability-overhaul.md`
-2. **End-to-end Process Flow Builder testing** — test full flow: mock mode (turn 1 = clarifying Qs, turn 2+ = flow emission), live mode (verify ToolMessage fix renders preview), accept → index, discard → clean state
-3. **COA Workbench verification** — clear localStorage, restart backend with `FTA_MOCK_AGENT=true`, navigate to d-005-02, run analysis → confirm workbench + 4 tabs
-4. **Live LLM testing (both agents)** — `FTA_MOCK_AGENT=false`: test GL Design Coach on d-005-01/d-005-02 + Functional Consultant process flow builder
-5. **Agentic Functional Consultant expansion** — 6 capabilities beyond flow building: gap→req pipeline, coverage analysis, cross-PA impact, session prep, deliverable drafting (see `docs/plans/stream-b-agentic-functional-consultant.md`)
-6. **Stream A resume** — remaining knowledge workspaces (A6–A8, A10)
+1. **PDD-011 — COA Visual Enhancements + Dynamic Hierarchy** — Major evolution of d-005-02 COA Design Workbench. Three components:
+   - **Account String Diagram:** Interactive horizontal segmented bar showing full account string composition (Company | Dept | Natural Account | LOB | Reinsurance Type | Product). Each segment: label, width, example values, NAIC alignment. The centerpiece of every COA presentation to CFOs.
+   - **Dimensional Matrix:** Cross-reference grid showing Natural Account x LOB x Reinsurance Type intersections. Active vs. unused combinations. Shows the "explosion" problem and drives rationalization.
+   - **Dynamic Hierarchy with Audit Trail:** Replaces static ERP hierarchies (FSVs) with agent-computed roll-ups. Three-tier classification model:
+     - Tier 1 (Rule): deterministic lookup — `account_type + naic_category → FSLI`. Covers ~80%. No LLM.
+     - Tier 2 (Pattern): coded heuristics on posting behavior + name + dimensions. Covers ~15%. No LLM.
+     - Tier 3 (Agent→Pinned): LLM proposes for ambiguous accounts, consultant approves, approval converts to Tier 1 rule. System converges toward zero LLM calls.
+   - **Audit artifact:** Every mapping has classification_source (rule/pattern/agent_pinned), basis text, approved_by, date, full change history. Agent reasoning preserved verbatim for Tier 3 pins. Override chain (nothing deleted). Reproducibility hash (data + rule version → deterministic output). Exportable as audit workpaper appendix.
+   - **Multi-perspective:** Same accounts, different reporting frameworks on demand — "Show me NAIC Annual Statement" / "Show me GAAP" / "Show me IFRS 17". Hierarchy is a view, not a structure.
+   - Research: 6 standard COA visual formats identified. We have range table + dimension canvas. Missing account string, dimensional matrix, hierarchy tree, crosswalk.
+2. **PDD-008 — Color Readability Overhaul** — see `docs/plans/pdd-008-color-readability-overhaul.md`
+3. **End-to-end Process Flow Builder testing** — test full flow: mock mode (turn 1 = clarifying Qs, turn 2+ = flow emission), live mode (verify ToolMessage fix renders preview), accept → index, discard → clean state
+4. **COA Workbench verification** — clear localStorage, restart backend with `FTA_MOCK_AGENT=true`, navigate to d-005-02, run analysis → confirm workbench + 4 tabs
+5. **Live LLM testing (both agents)** — `FTA_MOCK_AGENT=false`: test GL Design Coach on d-005-01/d-005-02 + Functional Consultant process flow builder
+6. **Agentic Functional Consultant expansion** — 5 capabilities beyond flow building: gap→req pipeline, coverage analysis, cross-PA impact, session prep, deliverable drafting (see `docs/plans/stream-b-agentic-functional-consultant.md`)
+7. **Stream A resume** — remaining knowledge workspaces (A6–A8, A10)
 
 ---
 
@@ -57,7 +69,7 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 
 ## Frozen Streams (resume after B)
 
-- **Stream A — Framework Expansion:** 6 remaining knowledge workspaces (A4, A6–A8, A10). See `docs/reference/feature-specs.md`.
+- **Stream A — Framework Expansion:** 4 remaining knowledge workspaces (A6–A8, A10). A4 completed as PDD-006. See `docs/reference/feature-specs.md`.
 - **Stream C — Platform Polish:** WorkplanSpine sidebar, breadcrumbs, loading/error states. See `docs/reference/feature-specs.md`.
 - **Stream E — Current State Extraction:** Designed, not built. See `docs/reference/feature-specs.md`.
 
