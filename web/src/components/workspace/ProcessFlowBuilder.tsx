@@ -138,7 +138,7 @@ export function ProcessFlowBuilder({ onClose }: ProcessFlowBuilderProps) {
           <button
             onClick={() => setUseMock((v) => !v)}
             className={[
-              "text-[9px] font-mono px-2.5 py-1 rounded border transition-colors",
+              "text-[10px] font-mono px-2.5 py-1 rounded border transition-colors",
               useMock
                 ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/25 hover:bg-[#F59E0B]/20"
                 : "bg-[#10B981]/10 text-[#10B981] border-[#10B981]/25 hover:bg-[#10B981]/20",
@@ -150,14 +150,14 @@ export function ProcessFlowBuilder({ onClose }: ProcessFlowBuilderProps) {
           {session.currentFlow && (
             <button
               onClick={handleAccept}
-              className="text-[10px] font-mono px-3 py-1.5 rounded bg-[#10B981]/15 text-[#10B981] hover:bg-[#10B981]/25 border border-[#10B981]/20 transition-colors"
+              className="text-[11px] font-mono px-3 py-1.5 rounded bg-success/15 text-success hover:bg-success/25 border border-success/20 transition-colors"
             >
               Accept Flow
             </button>
           )}
           <button
             onClick={handleDiscard}
-            className="text-[10px] font-mono px-3 py-1.5 rounded bg-surface-alt/50 text-muted hover:text-foreground border border-border/30 transition-colors"
+            className="text-[11px] font-mono px-3 py-1.5 rounded bg-surface-alt/50 text-muted hover:text-foreground border border-border/30 transition-colors"
           >
             Discard
           </button>

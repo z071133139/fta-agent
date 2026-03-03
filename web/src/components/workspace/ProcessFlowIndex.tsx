@@ -122,7 +122,7 @@ export function ProcessFlowIndex({ onStartBuilder }: ProcessFlowIndexProps) {
   return (
     <div className="relative flex flex-col flex-1 min-h-0 overflow-hidden">
       {/* Summary bar */}
-      <div className="flex items-center gap-4 px-6 py-2.5 border-b border-border/40 text-[10px]">
+      <div className="flex items-center gap-4 px-6 py-2.5 border-b border-border/40 text-[11px]">
         <span className="text-muted">{allEntries.length} process flows</span>
         <span>
           <span className="text-muted mr-1">Swimlane designs</span>
@@ -137,7 +137,7 @@ export function ProcessFlowIndex({ onStartBuilder }: ProcessFlowIndexProps) {
           </span>
         )}
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-[9px] font-mono text-muted/60">
+          <span className="text-[10px] font-mono text-muted/60">
             Leading Practice · Insurance Finance
           </span>
         </div>
@@ -148,7 +148,7 @@ export function ProcessFlowIndex({ onStartBuilder }: ProcessFlowIndexProps) {
         <div className="max-w-2xl space-y-5">
           {[...groups].map(([pa, paEntries]) => (
             <div key={pa}>
-              <h3 className="text-[10px] uppercase tracking-[0.14em] text-muted font-semibold px-3 mb-1.5">
+              <h3 className="text-[11px] uppercase tracking-[0.14em] text-muted font-semibold px-3 mb-1.5">
                 {paEntries[0]?.pa_name ?? pa}
               </h3>
               <div className="space-y-0.5">
@@ -177,7 +177,7 @@ export function ProcessFlowIndex({ onStartBuilder }: ProcessFlowIndexProps) {
                     </div>
 
                     {/* SP ID */}
-                    <span className="flex-shrink-0 text-[9px] font-mono text-muted/80 w-12">
+                    <span className="flex-shrink-0 text-[10px] font-mono text-muted/80 w-12">
                       {entry.sp_id}
                     </span>
 
@@ -196,31 +196,31 @@ export function ProcessFlowIndex({ onStartBuilder }: ProcessFlowIndexProps) {
 
                     {/* Node type breakdown badges */}
                     {entry.leading > 0 && (
-                      <span className="flex-shrink-0 text-[9px] px-2 py-0.5 rounded border border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]">
+                      <span className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded border border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]">
                         {entry.leading} LP
                       </span>
                     )}
                     {entry.overlay > 0 && (
-                      <span className="flex-shrink-0 text-[9px] px-2 py-0.5 rounded border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B]">
+                      <span className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B]">
                         {entry.overlay} Overlay
                       </span>
                     )}
                     {entry.gap > 0 && (
-                      <span className="flex-shrink-0 text-[9px] px-2 py-0.5 rounded border border-[#EF4444]/30 bg-[#EF4444]/10 text-[#EF4444]">
+                      <span className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded border border-[#EF4444]/30 bg-[#EF4444]/10 text-[#EF4444]">
                         {entry.gap} Gap
                       </span>
                     )}
 
                     {/* Custom badge */}
                     {entry.isCustom && (
-                      <span className="flex-shrink-0 text-[9px] px-2 py-0.5 rounded border border-accent/30 bg-accent/10 text-accent">
+                      <span className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded border border-accent/30 bg-accent/10 text-accent">
                         Custom
                       </span>
                     )}
 
                     {/* Findings count */}
                     {entry.overlay_count > 0 && (
-                      <span className="flex-shrink-0 text-[9px] px-2 py-0.5 rounded border border-border/20 text-muted/70">
+                      <span className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded border border-border/20 text-muted/70">
                         {entry.overlay_count} findings
                       </span>
                     )}
@@ -255,7 +255,7 @@ export function ProcessFlowIndex({ onStartBuilder }: ProcessFlowIndexProps) {
               <span className="text-[12px] text-muted group-hover:text-foreground transition-colors">
                 {hasInProgressSession ? "Continue Building Flow" : "New Process Flow"}
               </span>
-              <span className="text-[9px] font-mono text-muted/50 ml-auto">
+              <span className="text-[10px] font-mono text-muted/50 ml-auto">
                 Functional Consultant
               </span>
             </button>

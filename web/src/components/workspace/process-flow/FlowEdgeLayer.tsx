@@ -38,7 +38,7 @@ export const FlowEdgeLayer = React.memo(function FlowEdgeLayer({
           markerHeight="5"
           orient="auto-start-reverse"
         >
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569" />
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--color-border-strong)" />
         </marker>
         <marker
           id={ARROW_SELECTED}
@@ -49,7 +49,7 @@ export const FlowEdgeLayer = React.memo(function FlowEdgeLayer({
           markerHeight="5"
           orient="auto-start-reverse"
         >
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="#3B82F6" />
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--color-accent)" />
         </marker>
       </defs>
 
@@ -57,7 +57,7 @@ export const FlowEdgeLayer = React.memo(function FlowEdgeLayer({
         const isRelated =
           selectedId !== null &&
           (edge.sourceId === selectedId || edge.targetId === selectedId);
-        const stroke = isRelated ? "#3B82F6" : "#475569";
+        const stroke = isRelated ? "var(--color-accent)" : "var(--color-border-strong)";
         const marker = isRelated
           ? `url(#${ARROW_SELECTED})`
           : `url(#${ARROW_DEFAULT})`;
@@ -82,19 +82,19 @@ export const FlowEdgeLayer = React.memo(function FlowEdgeLayer({
               <g>
                 <rect
                   x={edge.labelX - 14}
-                  y={edge.labelY - 7}
+                  y={edge.labelY - 8}
                   width={28}
-                  height={14}
+                  height={16}
                   rx={3}
-                  fill="#1E293B"
-                  fillOpacity={0.9}
+                  fill="var(--color-surface)"
+                  fillOpacity={0.95}
                 />
                 <text
                   x={edge.labelX}
                   y={edge.labelY + 4}
                   textAnchor="middle"
-                  fontSize={9}
-                  fill="#94A3B8"
+                  fontSize={10}
+                  fill="var(--color-secondary)"
                   fontFamily="'JetBrains Mono', monospace"
                 >
                   {edge.label}

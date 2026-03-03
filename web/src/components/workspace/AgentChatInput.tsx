@@ -52,7 +52,7 @@ export default function AgentChatInput({
   };
 
   return (
-    <div className="border-t border-border/40 bg-background/60 backdrop-blur-sm">
+    <div className="border-t border-border bg-surface/80 backdrop-blur-sm">
       {/* Message history */}
       {history.length > 0 && (
         <div
@@ -83,12 +83,12 @@ export default function AgentChatInput({
           }}
           placeholder={placeholder}
           rows={1}
-          className="flex-1 bg-surface border border-border/60 rounded-lg px-3 py-2 text-xs text-foreground placeholder:text-muted/40 resize-none focus:outline-none focus:border-accent/60 transition-colors"
+          className="flex-1 bg-background border border-border-strong rounded-lg px-3.5 py-2.5 text-sm text-foreground placeholder:text-faint resize-none focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-colors"
         />
         <button
           onClick={handleSend}
           disabled={!draft.trim()}
-          className="shrink-0 px-3 py-2 rounded-lg text-xs font-medium bg-accent/20 text-accent hover:bg-accent/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="shrink-0 px-4 py-2.5 rounded-lg text-sm font-medium bg-accent text-white hover:bg-accent/85 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           Send
         </button>

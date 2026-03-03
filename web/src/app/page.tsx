@@ -1,19 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { Suspense, useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 import {
   MOCK_ENGAGEMENTS,
-  AGENT_CARDS,
+  MOCK_PURSUITS,
   PHASE_LABELS,
   type Engagement,
+  type Pursuit,
   type EngagementPhase,
 } from "@/lib/mock-data";
+import { ContextSelector } from "@/components/landing/ContextSelector";
+import { AttentionQueue } from "@/components/landing/AttentionQueue";
+import { PursuitContent } from "@/components/landing/PursuitContent";
 import { WorkplanPanel } from "@/components/WorkplanPanel";
 
 // ── Helpers ───────────────────────────────────────────────────────────────
+
+const STORAGE_KEY = "fta_selected_context";
 
 function getGreeting(name: string): string {
   const hour = new Date().getHours();
@@ -24,33 +30,14 @@ function getGreeting(name: string): string {
 
 function getContextLine(engagements: Engagement[]): string {
   const active = engagements.filter((e) => e.is_active);
-  if (active.length === 0)
-    return "You have no active engagements. Start one below.";
+  if (active.length === 0) return "You have no active engagements.";
   const urgent = active.find((e) => e.stats.open_decisions > 0);
   if (urgent)
     return `${urgent.client_name} has ${urgent.stats.open_decisions} decision${urgent.stats.open_decisions > 1 ? "s" : ""} waiting for your input.`;
   return `You have ${active.length} active engagement${active.length > 1 ? "s" : ""}.`;
 }
 
-const PHASE_BORDER: Record<EngagementPhase, string> = {
-  discovery:     "border-l-[var(--color-phase-discovery)]",
-  current_state: "border-l-[var(--color-phase-current-state)]",
-  design:        "border-l-[var(--color-phase-design)]",
-  build:         "border-l-[var(--color-phase-build)]",
-  test:          "border-l-[var(--color-phase-test)]",
-  cutover:       "border-l-[var(--color-phase-test)]",
-};
-
-const PHASE_GLOW: Record<EngagementPhase, string> = {
-  discovery:     "rgba(6,182,212,0.15)",
-  current_state: "rgba(245,158,11,0.15)",
-  design:        "rgba(59,130,246,0.15)",
-  build:         "rgba(168,85,247,0.15)",
-  test:          "rgba(16,185,129,0.15)",
-  cutover:       "rgba(16,185,129,0.15)",
-};
-
-// ── Typewriter hook ───────────────────────────────────────────────────────
+// ── Typewriter hook ─────────────────────────────────────────────────────
 
 function useTypewriter(text: string, delay = 0, speed = 28) {
   const [displayed, setDisplayed] = useState("");
@@ -78,222 +65,223 @@ function useTypewriter(text: string, delay = 0, speed = 28) {
   return { displayed, done };
 }
 
-// ── Engagement Card ───────────────────────────────────────────────────────
+// ── Phase border helpers ─────────────────────────────────────────────────
 
-function EngagementCard({
-  engagement,
-  selected,
+const PHASE_GLOW: Record<EngagementPhase, string> = {
+  discovery: "rgba(6,182,212,0.12)",
+  current_state: "rgba(245,158,11,0.12)",
+  design: "rgba(59,130,246,0.12)",
+  build: "rgba(168,85,247,0.12)",
+  test: "rgba(16,185,129,0.12)",
+  cutover: "rgba(16,185,129,0.12)",
+};
+
+const PHASE_BORDER: Record<EngagementPhase, string> = {
+  discovery: "border-l-[var(--color-phase-discovery)]",
+  current_state: "border-l-[var(--color-phase-current-state)]",
+  design: "border-l-[var(--color-phase-design)]",
+  build: "border-l-[var(--color-phase-build)]",
+  test: "border-l-[var(--color-phase-test)]",
+  cutover: "border-l-[var(--color-phase-test)]",
+};
+
+// ── First Visit Card Picker ──────────────────────────────────────────────
+
+function CardPicker({
+  engagements,
+  pursuits,
   onSelect,
 }: {
-  engagement: Engagement;
-  selected: boolean;
-  onSelect: () => void;
+  engagements: Engagement[];
+  pursuits: Pursuit[];
+  onSelect: (id: string, kind: "engagement" | "pursuit") => void;
 }) {
-  const router = useRouter();
-  const [hovered, setHovered] = useState(false);
-  const { stats, phase } = engagement;
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
-      onClick={onSelect}
-      style={{
-        boxShadow: hovered
-          ? `0 0 0 1px rgba(255,255,255,0.06), 0 8px 32px ${PHASE_GLOW[phase]}`
-          : selected
-          ? `0 0 0 1px rgba(59,130,246,0.3)`
-          : "0 0 0 1px rgba(255,255,255,0.04)",
-        transform: hovered ? "translateY(-2px)" : "translateY(0px)",
-        transition: "box-shadow 0.2s ease, transform 0.2s ease",
-      }}
-      className={`cursor-pointer rounded-lg bg-surface border-l-4 ${PHASE_BORDER[phase]} p-5`}
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <div>
-          <h3
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/${engagement.engagement_id}`);
-            }}
-            className="text-base font-semibold text-foreground leading-tight tracking-tight hover:text-accent transition-colors cursor-pointer"
-          >
-            {engagement.client_name}
-          </h3>
-          <p className="text-xs text-muted mt-0.5">
-            {engagement.sub_segment} · {engagement.erp_target} · Last active{" "}
-            {engagement.last_active}
-          </p>
-        </div>
-        <span className="shrink-0 text-xs font-medium text-muted bg-surface-alt px-2 py-1 rounded">
-          {PHASE_LABELS[phase]}
-        </span>
-      </div>
-
-      {/* Consultant avatars */}
-      <div className="flex items-center gap-1.5 mb-4">
-        {engagement.consultants.slice(0, 4).map((c) => (
-          <div
-            key={c.consultant_id}
-            title={c.display_name}
-            className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-alt text-[10px] font-medium text-muted"
-          >
-            {c.initials}
+    <div>
+      {/* Engagements */}
+      {engagements.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-[9px] uppercase tracking-[0.15em] text-muted/60 font-medium">
+              Engagements
+            </span>
+            <div className="flex-1 h-px bg-border/20" />
           </div>
-        ))}
-        {engagement.consultants.length > 4 && (
-          <span className="text-xs text-muted">+{engagement.consultants.length - 4}</span>
-        )}
-      </div>
 
-      {/* Stats */}
-      <div className="flex flex-wrap gap-3 mb-4 text-xs">
-        {stats.open_decisions > 0 && (
-          <span className="text-warning font-medium">
-            {stats.open_decisions} open decision{stats.open_decisions > 1 ? "s" : ""}
-          </span>
-        )}
-        {stats.high_findings > 0 && (
-          <span className="text-error font-medium">
-            {stats.high_findings} HIGH finding{stats.high_findings > 1 ? "s" : ""}
-          </span>
-        )}
-        {stats.requirements > 0 && (
-          <span className="text-muted">
-            {stats.requirements} req
-            {stats.unvalidated_reqs > 0 && (
-              <span className="text-warning"> · {stats.unvalidated_reqs} unvalidated</span>
-            )}
-          </span>
-        )}
-        {stats.blocked_items > 0 && (
-          <span className="text-warning">{stats.blocked_items} blocked</span>
-        )}
-        {stats.open_decisions === 0 && stats.high_findings === 0 && stats.blocked_items === 0 && (
-          <span className="text-success">No urgent items</span>
-        )}
-      </div>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {engagements.map((eng) => (
+              <motion.button
+                key={eng.engagement_id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -2 }}
+                onClick={() => onSelect(eng.engagement_id, "engagement")}
+                style={{
+                  boxShadow: `0 0 0 1px rgba(255,255,255,0.04)`,
+                }}
+                className={`cursor-pointer rounded-lg bg-surface border-l-4 ${PHASE_BORDER[eng.phase]} p-5 text-left transition-shadow hover:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_32px_${PHASE_GLOW[eng.phase]}]`}
+              >
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground leading-tight">
+                      {eng.client_name}
+                    </h3>
+                    <p className="text-xs text-muted mt-0.5">
+                      {eng.sub_segment} · {eng.erp_target} · {eng.last_active}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs font-medium text-muted bg-surface-alt px-2 py-1 rounded">
+                    {PHASE_LABELS[eng.phase]}
+                  </span>
+                </div>
 
-      {/* Agent buttons */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { label: "GL Design Coach", slug: "gl-coach" },
-          { label: "Functional", slug: "functional" },
-          { label: "Consulting", slug: "consulting" },
-        ].map((a) => (
-          <button
-            key={a.slug}
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/${engagement.engagement_id}/${a.slug}`);
-            }}
-            className="rounded px-3 py-1.5 text-xs font-medium bg-surface-alt text-muted hover:bg-accent/20 hover:text-accent transition-colors"
-          >
-            {a.label}
-          </button>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
+                {/* Consultants */}
+                <div className="flex items-center gap-1.5 mb-3">
+                  {eng.consultants.slice(0, 4).map((c) => (
+                    <div
+                      key={c.consultant_id}
+                      className="h-5 w-5 rounded-full bg-surface-alt flex items-center justify-center text-[9px] font-medium text-muted"
+                    >
+                      {c.initials}
+                    </div>
+                  ))}
+                </div>
 
-// ── Agent Team Card ───────────────────────────────────────────────────────
+                {/* Stats line */}
+                <div className="flex flex-wrap gap-2 text-xs mb-3">
+                  {eng.stats.open_decisions > 0 && (
+                    <span className="text-warning font-medium">
+                      {eng.stats.open_decisions} decisions
+                    </span>
+                  )}
+                  {eng.stats.high_findings > 0 && (
+                    <span className="text-error font-medium">
+                      {eng.stats.high_findings} HIGH
+                    </span>
+                  )}
+                  {eng.stats.open_decisions === 0 &&
+                    eng.stats.high_findings === 0 && (
+                      <span className="text-success">No urgent items</span>
+                    )}
+                </div>
 
-function AgentTeamCard({
-  agent,
-  engagement,
-  index,
-}: {
-  agent: (typeof AGENT_CARDS)[number];
-  engagement: Engagement | null;
-  index: number;
-}) {
-  const router = useRouter();
-  const stats = engagement?.stats ?? null;
-
-  const statLine: Record<string, string | null> = {
-    gl_design_coach: stats
-      ? `${stats.open_decisions} open decisions · ${stats.high_findings} HIGH findings`
-      : null,
-    functional_consultant: stats
-      ? `${stats.requirements} requirements · ${stats.unvalidated_reqs} unvalidated`
-      : null,
-    consulting_agent: stats
-      ? `${stats.blocked_items} blocked · ${PHASE_LABELS[engagement!.phase]} phase`
-      : null,
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut", delay: index * 0.06 }}
-      whileHover={{ y: -2 }}
-      className="flex flex-col gap-4 rounded-lg bg-surface border border-border p-5 transition-shadow hover:shadow-[0_0_0_1px_rgba(255,255,255,0.07)]"
-    >
-      {/* Header */}
-      <div>
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="text-sm font-semibold text-foreground">{agent.name}</h3>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <div className="h-1.5 w-1.5 rounded-full bg-success" />
-            <span className="text-xs text-muted">Available</span>
+                <span className="text-xs font-medium text-accent">Open ›</span>
+              </motion.button>
+            ))}
           </div>
         </div>
-        <p className="text-xs text-muted">{agent.role}</p>
-      </div>
-
-      <p className="text-xs text-muted leading-relaxed">{agent.description}</p>
-
-      {statLine[agent.agent_id] && (
-        <p className="text-xs font-mono text-muted border-t border-border pt-3">
-          {statLine[agent.agent_id]}
-        </p>
       )}
 
-      <button
-        onClick={() => {
-          if (engagement) {
-            router.push(
-              `/${engagement.engagement_id}/${agent.agent_id.replace(/_/g, "-")}`
-            );
-          }
-        }}
-        disabled={!engagement}
-        className="mt-auto w-full rounded py-2 text-xs font-medium text-muted bg-surface-alt hover:bg-accent/20 hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      >
-        {engagement
-          ? `Open for ${engagement.client_name} ›`
-          : "Select an engagement"}
-      </button>
-    </motion.div>
+      {/* Pursuits */}
+      {pursuits.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-[9px] uppercase tracking-[0.15em] text-muted/60 font-medium">
+              Pursuits
+            </span>
+            <div className="flex-1 h-px bg-border/20" />
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            {pursuits.map((p) => (
+              <motion.button
+                key={p.pursuit_id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -2 }}
+                onClick={() => onSelect(p.pursuit_id, "pursuit")}
+                className="cursor-pointer rounded-lg bg-surface border-l-4 border-l-cyan-500 p-5 text-left transition-shadow hover:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_32px_rgba(6,182,212,0.12)]"
+              >
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground leading-tight">
+                      {p.name}
+                    </h3>
+                    <p className="text-xs text-muted mt-0.5">
+                      {p.sub_segment} · {p.meeting_type}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs font-medium text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded">
+                    Pursuit
+                  </span>
+                </div>
+                <p className="text-xs text-muted mb-3">{p.summary}</p>
+                <span className="text-xs font-medium text-accent">Open ›</span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
+  return (
+    <Suspense fallback={null}>
+      <LandingPageInner />
+    </Suspense>
+  );
+}
+
+function LandingPageInner() {
   const { consultant, isLoading, logout } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Restore from query param or localStorage
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedKind, setSelectedKind] = useState<"engagement" | "pursuit">(
+    "engagement"
+  );
 
   useEffect(() => {
-    if (!isLoading && !consultant) router.replace("/login");
-  }, [consultant, isLoading, router]);
+    // Priority: query param > localStorage
+    const engParam = searchParams.get("eng");
+    const pursuitParam = searchParams.get("pursuit");
+    if (engParam) {
+      setSelectedId(engParam);
+      setSelectedKind("engagement");
+      return;
+    }
+    if (pursuitParam) {
+      setSelectedId(pursuitParam);
+      setSelectedKind("pursuit");
+      return;
+    }
+    // localStorage fallback
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as { id: string; kind: "engagement" | "pursuit" };
+        setSelectedId(parsed.id);
+        setSelectedKind(parsed.kind);
+      }
+    } catch {
+      // ignore
+    }
+  }, [searchParams]);
+
+  const handleSelect = useCallback(
+    (id: string, kind: "engagement" | "pursuit") => {
+      setSelectedId(id);
+      setSelectedKind(kind);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ id, kind }));
+      } catch {
+        // ignore
+      }
+    },
+    []
+  );
 
   const engagements = MOCK_ENGAGEMENTS;
-  const primaryEngagement =
-    engagements.find((e) => e.engagement_id === selectedId) ??
-    engagements[0] ??
-    null;
+  const pursuits = MOCK_PURSUITS;
 
   const greetingText = consultant ? getGreeting(consultant.display_name) : "";
   const contextText = getContextLine(engagements);
-
   const greeting = useTypewriter(greetingText, 300, 30);
   const context = useTypewriter(
     greeting.done ? contextText : "",
@@ -301,7 +289,22 @@ export default function LandingPage() {
     18
   );
 
+  useEffect(() => {
+    if (!isLoading && !consultant) router.replace("/login");
+  }, [consultant, isLoading, router]);
+
   if (isLoading || !consultant) return null;
+
+  const selectedEngagement =
+    selectedKind === "engagement"
+      ? engagements.find((e) => e.engagement_id === selectedId) ?? null
+      : null;
+  const selectedPursuit =
+    selectedKind === "pursuit"
+      ? pursuits.find((p) => p.pursuit_id === selectedId) ?? null
+      : null;
+
+  const hasSelection = selectedEngagement || selectedPursuit;
 
   return (
     <div className="min-h-screen bg-background">
@@ -315,10 +318,11 @@ export default function LandingPage() {
       />
 
       <div className="relative mx-auto max-w-5xl px-8 py-8">
-
         {/* Top bar */}
         <div className="flex items-center justify-between mb-8">
-          <span className="font-serif text-xl text-foreground tracking-tight">FTA</span>
+          <span className="font-serif text-xl text-foreground tracking-tight">
+            FTA
+          </span>
           <div className="flex items-center gap-5">
             <a
               href="/framework"
@@ -349,118 +353,56 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* Pursuits section */}
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[10px] uppercase tracking-[0.15em] text-muted font-medium">
-              Active Pursuits
-            </h2>
-            <button className="text-xs text-muted hover:text-foreground transition-colors">
-              + New Pursuit
-            </button>
-          </div>
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            onClick={() => router.push("/pursue/pursuit-001")}
-            className="cursor-pointer rounded-lg bg-surface border-l-4 border-l-cyan-500 p-5 transition-shadow hover:shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_32px_rgba(6,182,212,0.12)]"
-          >
-            <div className="flex items-start justify-between gap-4 mb-2">
-              <div>
-                <h3 className="text-base font-semibold text-foreground leading-tight tracking-tight">
-                  New Client Scoping
-                </h3>
-                <p className="text-xs text-muted mt-0.5">
-                  P&amp;C Carrier &middot; CFO/Controller Meeting &middot; Scoping Canvas
-                </p>
-              </div>
-              <span className="shrink-0 text-xs font-medium text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded">
-                Pursuit
-              </span>
-            </div>
-            <p className="text-xs text-muted">
-              1 context + 7 themes &middot; 76 scoping questions &middot; Ready for executive session
-            </p>
-          </motion.div>
-        </section>
+        {/* Context Selector */}
+        <div className="mb-8">
+          <ContextSelector
+            engagements={engagements}
+            pursuits={pursuits}
+            selectedId={selectedId}
+            onSelect={handleSelect}
+          />
+        </div>
 
-        {/* Engagements section */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[10px] uppercase tracking-[0.15em] text-muted font-medium">
-              Active Engagements
-            </h2>
-            <button className="text-xs text-muted hover:text-foreground transition-colors">
-              + New Engagement
-            </button>
-          </div>
-
-          {engagements.length === 0 ? (
-            <div className="rounded-lg bg-surface border border-border p-8 text-center text-sm text-muted">
-              No active engagements. Start one to begin.
-            </div>
-          ) : (
-            <div className="grid gap-4 lg:grid-cols-2">
-              {engagements.map((eng) => (
-                <EngagementCard
-                  key={eng.engagement_id}
-                  engagement={eng}
-                  selected={selectedId === eng.engagement_id}
-                  onSelect={() =>
-                    setSelectedId((prev) =>
-                      prev === eng.engagement_id ? null : eng.engagement_id
-                    )
-                  }
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Workplan panel — full-width, slides in below cards */}
-          <AnimatePresence mode="wait">
-            {selectedId && primaryEngagement && (
-              <WorkplanPanel
-                key={selectedId}
-                engagement={primaryEngagement}
-              />
-            )}
-          </AnimatePresence>
-        </section>
-
-        {/* Agent team section */}
-        <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[10px] uppercase tracking-[0.15em] text-muted font-medium">
-              Your Consulting Team
-            </h2>
-            {engagements.length > 1 && (
-              <select
-                value={primaryEngagement?.engagement_id ?? ""}
-                onChange={(e) => setSelectedId(e.target.value)}
-                className="text-xs bg-surface border border-border rounded px-2 py-1 text-muted focus:outline-none focus:border-accent"
-              >
-                {engagements.map((e) => (
-                  <option key={e.engagement_id} value={e.engagement_id}>
-                    {e.client_name}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {AGENT_CARDS.map((agent, i) => (
-              <AgentTeamCard
-                key={agent.agent_id}
-                agent={agent}
-                engagement={primaryEngagement}
-                index={i}
-              />
-            ))}
-          </div>
-        </section>
+        {/* Content — adapts to selection type */}
+        {!hasSelection ? (
+          <CardPicker
+            engagements={engagements}
+            pursuits={pursuits}
+            onSelect={handleSelect}
+          />
+        ) : selectedEngagement ? (
+          <EngagementContent engagement={selectedEngagement} />
+        ) : selectedPursuit ? (
+          <PursuitMissionControl pursuit={selectedPursuit} />
+        ) : null}
       </div>
     </div>
+  );
+}
+
+// ── Engagement Mission Control ────────────────────────────────────────────
+
+function EngagementContent({
+  engagement,
+}: {
+  engagement: Engagement;
+}) {
+  return (
+    <div className="flex flex-col gap-8">
+      <AttentionQueue engagement={engagement} />
+      <WorkplanPanel engagement={engagement} />
+    </div>
+  );
+}
+
+// ── Pursuit Mission Control ───────────────────────────────────────────────
+
+function PursuitMissionControl({
+  pursuit,
+}: {
+  pursuit: Pursuit;
+}) {
+  return (
+    <PursuitContent pursuit={pursuit} />
   );
 }

@@ -22,8 +22,8 @@ function AgentBubble({ content, hasFlowUpdate }: { content: string; hasFlowUpdat
       </div>
       {hasFlowUpdate && (
         <div className="flex items-center gap-1.5 px-1">
-          <div className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-          <span className="text-[9px] font-mono text-[#10B981]">
+          <div className="h-1.5 w-1.5 rounded-full bg-success" />
+          <span className="text-[10px] font-mono text-success">
             Flow updated
           </span>
         </div>
@@ -128,9 +128,9 @@ export function BuilderChatPanel({
 
         {/* Error */}
         {agentStatus === "error" && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-lg">
-            <div className="h-1.5 w-1.5 rounded-full bg-[#EF4444]" />
-            <span className="text-[11px] text-[#EF4444]">
+          <div className="flex items-center gap-2 px-3 py-2 bg-error/10 border border-error/20 rounded-lg">
+            <div className="h-1.5 w-1.5 rounded-full bg-error" />
+            <span className="text-[11px] text-error">
               Something went wrong. Try sending your message again.
             </span>
           </div>
@@ -141,7 +141,7 @@ export function BuilderChatPanel({
       <div className="shrink-0 border-t border-border/40 px-4 py-3">
         {disabled ? (
           <div className="flex items-center justify-center py-2">
-            <span className="text-[11px] text-[#10B981] font-mono">
+            <span className="text-[11px] text-success font-mono">
               Flow accepted
             </span>
           </div>
@@ -158,7 +158,7 @@ export function BuilderChatPanel({
               rows={2}
             />
             <div className="flex items-center justify-between mt-1.5">
-              <span className="text-[9px] font-mono text-muted/50">
+              <span className="text-[10px] font-mono text-faint">
                 Enter to send · Shift+Enter for newline
               </span>
               <button

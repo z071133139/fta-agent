@@ -53,6 +53,13 @@ export interface EngagementStats {
   blocked_items: number;
 }
 
+export interface ConsultantPresence {
+  consultant_id: string;
+  deliverable_id: string | null;
+  last_seen: string; // ISO timestamp
+  is_active: boolean;
+}
+
 export interface Engagement {
   engagement_id: string;
   client_name: string;
@@ -64,6 +71,23 @@ export interface Engagement {
   stats: EngagementStats;
   is_active: boolean;
   workplan?: Workplan;
+  presence?: ConsultantPresence[];
+}
+
+export interface PursuitDeliverable {
+  id: string;
+  name: string;
+  status: "ready" | "not_started" | "in_progress";
+  summary?: string;
+}
+
+export interface Pursuit {
+  pursuit_id: string;
+  name: string;
+  sub_segment: string;
+  meeting_type: string;
+  summary: string;
+  deliverables: PursuitDeliverable[];
 }
 
 export interface AgentCard {
@@ -284,6 +308,11 @@ export const MOCK_ENGAGEMENTS: Engagement[] = [
     },
     is_active: true,
     workplan: ACME_WORKPLAN,
+    presence: [
+      { consultant_id: "mock-001", deliverable_id: "d-005-02", last_seen: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), is_active: false },
+      { consultant_id: "mock-002", deliverable_id: "d-001-03", last_seen: new Date(Date.now() - 20 * 60 * 1000).toISOString(), is_active: true },
+      { consultant_id: "mock-003", deliverable_id: null, last_seen: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), is_active: false },
+    ],
   },
   {
     engagement_id: "eng-002",
@@ -304,6 +333,22 @@ export const MOCK_ENGAGEMENTS: Engagement[] = [
     },
     is_active: true,
     workplan: BEACON_WORKPLAN,
+  },
+];
+
+export const MOCK_PURSUITS: Pursuit[] = [
+  {
+    pursuit_id: "pursuit-001",
+    name: "New Client Scoping",
+    sub_segment: "P&C Carrier",
+    meeting_type: "CFO/Controller Meeting",
+    summary: "1 context + 7 themes · 76 scoping questions · Ready for executive session",
+    deliverables: [
+      { id: "p-001-01", name: "Scoping Canvas", status: "ready", summary: "76 questions · Rapid 12 + Deep Dive · Ready for executive session" },
+      { id: "p-001-02", name: "Executive Summary", status: "not_started" },
+      { id: "p-001-03", name: "Value Hypothesis", status: "not_started" },
+      { id: "p-001-04", name: "Proposal Draft", status: "not_started" },
+    ],
   },
 ];
 

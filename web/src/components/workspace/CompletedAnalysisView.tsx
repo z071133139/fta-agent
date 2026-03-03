@@ -8,9 +8,9 @@ import type { AnalysisState, AnalysisEntry } from "@/lib/analysis-store";
 
 function ToolBadge({ tool }: { tool: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/60 px-2 py-1 text-xs">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-      <span className="font-mono text-slate-300">{tool}</span>
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface/60 px-2 py-1 text-xs">
+      <span className="h-1.5 w-1.5 rounded-full bg-success" />
+      <span className="font-mono text-secondary">{tool}</span>
     </span>
   );
 }
@@ -26,11 +26,11 @@ function AnalysisBlock({
     <div>
       {label && (
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] uppercase tracking-[0.1em] text-muted font-medium">
+          <span className="text-[11px] uppercase tracking-[0.1em] text-muted font-medium">
             {label}
           </span>
           <div className="flex-1 h-px bg-border/20" />
-          <span className="text-[10px] font-mono text-muted/50">
+          <span className="text-[10px] font-mono text-muted">
             {new Date(entry.completedAt).toLocaleTimeString()}
           </span>
         </div>
@@ -46,7 +46,7 @@ function AnalysisBlock({
       )}
 
       {/* Output */}
-      <div className="prose prose-invert prose-sm max-w-none text-sm text-slate-200 leading-relaxed [&_table]:w-full [&_table]:text-left [&_th]:px-3 [&_th]:py-2 [&_th]:text-[10px] [&_th]:uppercase [&_th]:tracking-[0.1em] [&_th]:text-slate-400 [&_th]:border-b [&_th]:border-slate-700 [&_td]:px-3 [&_td]:py-2 [&_td]:border-b [&_td]:border-slate-800 [&_td]:text-slate-300 [&_code]:font-mono [&_code]:text-slate-300 [&_pre]:bg-slate-800/50 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-slate-700">
+      <div className="prose prose-invert prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_table]:w-full [&_table]:text-left [&_th]:px-3 [&_th]:py-2 [&_th]:text-[11px] [&_th]:uppercase [&_th]:tracking-[0.1em] [&_th]:text-secondary [&_th]:border-b [&_th]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:border-b [&_td]:border-surface-alt [&_td]:text-secondary [&_code]:font-mono [&_code]:text-secondary [&_pre]:bg-surface/50 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-border">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {entry.output}
         </ReactMarkdown>
@@ -104,7 +104,7 @@ export function CompletedAnalysisView({
       </div>
 
       {/* Bottom bar: follow-up + re-run */}
-      <div className="shrink-0 border-t border-slate-700/50 px-5 py-3">
+      <div className="shrink-0 border-t border-border/50 px-5 py-3">
         <div className="flex gap-2">
           <input
             type="text"
@@ -117,18 +117,18 @@ export function CompletedAnalysisView({
               }
             }}
             placeholder="Ask a follow-up question..."
-            className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground/90 placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
           />
           <button
             onClick={handleSend}
             disabled={!followUpInput.trim()}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:opacity-40"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/80 disabled:opacity-40"
           >
             Send
           </button>
           <button
             onClick={onRerun}
-            className="rounded-lg border border-slate-600 px-3 py-2 text-xs font-mono text-muted hover:text-foreground hover:border-slate-500 transition-colors"
+            className="rounded-lg border border-border px-3 py-2 text-xs font-mono text-muted hover:text-foreground hover:border-border-strong transition-colors"
             title="Re-run full analysis"
           >
             Re-run

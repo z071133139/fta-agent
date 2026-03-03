@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useDataStore, type DataFile, FILE_TYPE_LABELS } from "@/lib/data-store";
+import { WORKSTREAM_DATA_REQUIREMENTS } from "@/lib/workstream-data-config";
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -48,6 +49,7 @@ interface DataAnalysisPreflightProps {
   agentName: string;
   bullets: string[];
   onStart: () => void;
+  workstreamId?: string;
 }
 
 export function DataAnalysisPreflight({
@@ -55,6 +57,7 @@ export function DataAnalysisPreflight({
   agentName,
   bullets,
   onStart,
+  workstreamId,
 }: DataAnalysisPreflightProps) {
   const params = useParams<{ engagementId: string }>();
   const router = useRouter();
@@ -62,7 +65,18 @@ export function DataAnalysisPreflight({
   const files = useMemo(() => filesMap[params.engagementId] ?? [], [filesMap, params.engagementId]);
   const hasData = files.length > 0;
 
+  // Resolve required types from workstream config
+  const wsConfig = workstreamId ? WORKSTREAM_DATA_REQUIREMENTS[workstreamId] : undefined;
+  const requiredTypes = wsConfig
+    ? wsConfig.requirements.map((r) => r.label)
+    : ["Trial Balance", "Posting History"];
+
   if (!hasData) {
+    const targetUrl = workstreamId
+      ? `/${params.engagementId}/workstreams/${workstreamId}`
+      : `/${params.engagementId}`;
+    const targetLabel = workstreamId ? "Go to Data Setup" : "Go to Dashboard";
+
     return (
       <div className="flex flex-col items-center justify-center flex-1 px-8 py-12">
         <div className="w-full max-w-lg text-center">
@@ -85,15 +99,24 @@ export function DataAnalysisPreflight({
             <p className="text-sm text-foreground/80 mb-2">
               Upload GL data to run analysis
             </p>
-            <p className="text-xs text-muted mb-4">
-              This analysis requires trial balance or posting history data.
-              Upload files on the engagement dashboard.
+            <p className="text-xs text-muted mb-1">
+              This deliverable requires:
             </p>
+            <div className="flex justify-center gap-1.5 mb-4">
+              {requiredTypes.map((label) => (
+                <span
+                  key={label}
+                  className="rounded bg-warning/10 px-2 py-0.5 text-[10px] font-mono text-warning"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
             <button
-              onClick={() => router.push(`/${params.engagementId}`)}
+              onClick={() => router.push(targetUrl)}
               className="rounded-lg bg-warning/20 px-4 py-2 text-sm font-medium text-warning hover:bg-warning/30 transition-colors"
             >
-              Go to Dashboard
+              {targetLabel}
             </button>
           </div>
         </div>
@@ -109,8 +132,8 @@ export function DataAnalysisPreflight({
           <p className="text-[10px] uppercase tracking-[0.15em] text-muted font-medium">
             {agentName}
           </p>
-          <span className="inline-flex items-center gap-1 rounded bg-blue-500/15 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-blue-400">
-            <span className="h-1 w-1 rounded-full bg-blue-400 animate-pulse" />
+          <span className="inline-flex items-center gap-1 rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent">
+            <span className="h-1 w-1 rounded-full bg-accent animate-pulse" />
             Live
           </span>
         </div>

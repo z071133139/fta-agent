@@ -15,7 +15,7 @@ export default function WorkspaceShell({
   engagement: Engagement;
   children: ReactNode;
 }) {
-  const params = useParams<{ deliverableId?: string }>();
+  const params = useParams<{ deliverableId?: string; workstreamId?: string }>();
   const workshopMode = useWorkshopStore((s) => s.workshopMode);
   const endWorkshop = useWorkshopStore((s) => s.endWorkshop);
 
@@ -24,7 +24,7 @@ export default function WorkspaceShell({
     : false;
 
   const isWorkshopActive = workshopMode && eligible;
-  const isDashboard = !params.deliverableId;
+  const isDashboard = !params.deliverableId && !params.workstreamId;
 
   // Cmd+E exits workshop mode (entering requires PA selection via TopBar)
   const handleKeyDown = useCallback(

@@ -22,7 +22,7 @@ const TAG_CFG: Record<BRTag, { label: string; color: string; bg: string }> = {
   REG: { label: "REG", color: "#EF4444", bg: "rgba(239,68,68,0.15)" },
   CTL: { label: "CTL", color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
   FIN: { label: "FIN", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
-  OPS: { label: "OPS", color: "#94A3B8", bg: "rgba(100,116,139,0.20)" },
+  OPS: { label: "OPS", color: "#CBD5E1", bg: "rgba(100,116,139,0.20)" },
   INT: { label: "INT", color: "#8B5CF6", bg: "rgba(139,92,246,0.15)" },
 };
 
@@ -34,7 +34,7 @@ const SEGMENT_CFG: Record<BRSegment, { label: string; color: string; bg: string 
   "P&C": { label: "P&C", color: "#3B82F6", bg: "rgba(59,130,246,0.12)" },
   Life: { label: "Life", color: "#A855F7", bg: "rgba(168,85,247,0.12)" },
   Re:   { label: "Re",   color: "#F59E0B", bg: "rgba(245,158,11,0.12)" },
-  All:  { label: "All",  color: "#64748B", bg: "rgba(100,116,139,0.15)" },
+  All:  { label: "All",  color: "#94A3B8", bg: "rgba(100,116,139,0.15)" },
 };
 
 const FIT_CFG: Record<FitRating, { label: string; color: string; bg: string }> = {
@@ -49,11 +49,11 @@ const AGENTIC_CFG: Record<AgenticRating, { label: string; color: string; bg: str
   A1: { label: "Full Closure",    color: "#10B981", bg: "rgba(16,185,129,0.15)" },
   A2: { label: "Partial Closure", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
   A3: { label: "Agent-Assisted",  color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
-  A0: { label: "Not Applicable",  color: "#64748B", bg: "rgba(100,116,139,0.15)" },
+  A0: { label: "Not Applicable",  color: "#94A3B8", bg: "rgba(100,116,139,0.15)" },
 };
 
 const STATUS_CFG: Record<string, { color: string; bg: string }> = {
-  draft:        { color: "#64748B", bg: "rgba(100,116,139,0.15)" },
+  draft:        { color: "#94A3B8", bg: "rgba(100,116,139,0.15)" },
   validated:    { color: "#10B981", bg: "rgba(16,185,129,0.15)" },
   deferred:     { color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
   out_of_scope: { color: "#EF4444", bg: "rgba(239,68,68,0.12)" },
@@ -89,7 +89,7 @@ function Badge({ label, color, bg, border, onClick }: { label: string; color: st
     <span
       onClick={onClick}
       style={{
-        fontSize: 9,
+        fontSize: 10,
         fontFamily: "'JetBrains Mono', monospace",
         fontWeight: 600,
         color,
@@ -115,7 +115,7 @@ function FitGapCard({ fitGap }: { fitGap: FitGapAnalysis }) {
       {/* ERP Assessment table */}
       <div className="rounded-lg bg-surface/60 border border-border/40 overflow-hidden">
         <div className="px-3 py-2 border-b border-border/30">
-          <span className="text-[9px] uppercase tracking-[0.12em] text-[#3B82F6] font-semibold">
+          <span className="text-[10px] uppercase tracking-[0.12em] text-[#3B82F6] font-semibold">
             ERP Assessment
           </span>
         </div>
@@ -124,11 +124,11 @@ function FitGapCard({ fitGap }: { fitGap: FitGapAnalysis }) {
             const fc = FIT_CFG[a.rating];
             return (
               <div key={a.platform} className="flex items-start gap-3 px-3 py-2">
-                <span className="flex-shrink-0 w-[120px] text-[10px] text-muted pt-0.5">
+                <span className="flex-shrink-0 w-[120px] text-[11px] text-secondary pt-0.5">
                   {a.platform}
                 </span>
                 <Badge label={a.rating} color={fc.color} bg={fc.bg} border />
-                <span className="text-[10px] text-muted leading-relaxed flex-1">
+                <span className="text-[11px] text-secondary leading-relaxed flex-1">
                   {a.notes}
                 </span>
               </div>
@@ -142,10 +142,10 @@ function FitGapCard({ fitGap }: { fitGap: FitGapAnalysis }) {
         <div className="rounded-lg bg-surface/60 border border-border/40 px-3 py-2.5">
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <span className="text-[9px] uppercase tracking-[0.12em] text-[#F59E0B] font-semibold">
+              <span className="text-[10px] uppercase tracking-[0.12em] text-[#F59E0B] font-semibold">
                 Gap Remediation
               </span>
-              <p className="text-[10px] text-muted mt-1 leading-relaxed">{fitGap.gap_remediation}</p>
+              <p className="text-[11px] text-secondary mt-1 leading-relaxed">{fitGap.gap_remediation}</p>
             </div>
             {fitGap.gap_effort && (
               <Badge label={`Effort: ${fitGap.gap_effort}`} color="#F59E0B" bg="rgba(245,158,11,0.12)" border />
@@ -157,7 +157,7 @@ function FitGapCard({ fitGap }: { fitGap: FitGapAnalysis }) {
       {/* Agentic Bridge */}
       {fitGap.agentic_rating && (
         <div className="rounded-lg bg-surface/60 border border-border/40 px-3 py-2.5">
-          <span className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold">
+          <span className="text-[10px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold">
             Agentic Bridge
           </span>
           <div className="flex items-center gap-2 mt-1.5">
@@ -200,7 +200,7 @@ function FrameworkLegend() {
             <div className="grid grid-cols-2 gap-6">
               {/* Fit Rating column */}
               <div>
-                <p className="text-[9px] uppercase tracking-[0.12em] text-[#3B82F6] font-semibold mb-2.5">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#3B82F6] font-semibold mb-2.5">
                   ERP Fit Rating
                 </p>
                 <div className="space-y-1.5">
@@ -218,7 +218,7 @@ function FrameworkLegend() {
 
               {/* Agentic column */}
               <div>
-                <p className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold mb-2.5">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold mb-2.5">
                   Agentic Gap Closure
                 </p>
                 <div className="space-y-1.5">
@@ -345,7 +345,7 @@ function RequirementRow({
         )}
 
         {/* ID */}
-        <span className="flex-shrink-0 text-[9px] font-mono text-muted w-[72px]">
+        <span className="flex-shrink-0 text-[10px] font-mono text-muted w-[72px]">
           {req.id}
         </span>
 
@@ -443,7 +443,7 @@ function CrossPAChips({ refs }: { refs: string[] }) {
       {refs.map((ref) => (
         <span
           key={ref}
-          className="text-[8px] font-mono px-1.5 py-0.5 rounded shrink-0"
+          className="text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0"
           style={{
             backgroundColor: "rgba(6,182,212,0.12)",
             color: "#06B6D4",
@@ -488,7 +488,7 @@ function AgentInsightPanel({
     >
       <div className="flex items-center gap-2 mb-2">
         <div className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6] agent-thinking" />
-        <span className="text-[9px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold">
+        <span className="text-[10px] uppercase tracking-[0.12em] text-[#8B5CF6] font-semibold">
           Agent Insight
         </span>
         {ac && fg.agentic_rating && (
@@ -506,7 +506,7 @@ function AgentInsightPanel({
           className="group flex items-start gap-2 w-full text-left px-2.5 py-2 rounded-md border border-border/30 hover:border-[#8B5CF6]/30 hover:bg-[#8B5CF6]/5 transition-colors mb-1.5"
         >
           <span className="text-[9px] text-[#10B981] font-mono mt-0.5 shrink-0">+R</span>
-          <span className="text-[10px] text-muted leading-relaxed flex-1">
+          <span className="text-[11px] text-secondary leading-relaxed flex-1">
             {fg.agentic_bridge}
           </span>
           <span
@@ -525,7 +525,7 @@ function AgentInsightPanel({
           className="group flex items-start gap-2 w-full text-left px-2.5 py-2 rounded-md border border-border/30 hover:border-[#F59E0B]/30 hover:bg-[#F59E0B]/5 transition-colors"
         >
           <span className="text-[9px] text-[#F59E0B] font-mono mt-0.5 shrink-0">+R</span>
-          <span className="text-[10px] text-muted leading-relaxed flex-1">
+          <span className="text-[11px] text-secondary leading-relaxed flex-1">
             {fg.gap_remediation}
           </span>
           <span
@@ -543,13 +543,13 @@ function AgentInsightPanel({
       {/* ERP assessment summary chips */}
       {fg.erp_assessments.length > 0 && (
         <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/20">
-          <span className="text-[8px] text-muted/60 uppercase tracking-wide">ERP Fit</span>
+          <span className="text-[9px] text-muted/60 uppercase tracking-wide">ERP Fit</span>
           {fg.erp_assessments.map((a) => {
             const fc = FIT_CFG[a.rating];
             return (
               <span key={a.platform} className="flex items-center gap-1">
                 <Badge label={a.rating} color={fc.color} bg={fc.bg} />
-                <span className="text-[8px] text-muted/60">{a.platform}</span>
+                <span className="text-[9px] text-muted/60">{a.platform}</span>
               </span>
             );
           })}
@@ -578,7 +578,7 @@ function InlineEditOverlay({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
         <div className="bg-surface border border-border rounded-xl p-4 w-[480px] shadow-2xl">
-          <p className="text-[9px] uppercase tracking-[0.12em] text-muted font-semibold mb-2">
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted font-semibold mb-2">
             Edit Requirement — {req.id}
           </p>
           <textarea
@@ -749,7 +749,7 @@ function LegendStrip({ hasAssessed }: { hasAssessed: boolean }) {
   return (
     <div className="px-6 py-2 border-b border-border/20 flex items-center gap-4 flex-wrap" style={{ backgroundColor: "rgba(30,41,59,0.6)" }}>
       {/* Tags */}
-      <span className="text-[8px] uppercase tracking-[0.1em] text-muted/50 font-semibold">Type</span>
+      <span className="text-[9px] uppercase tracking-[0.1em] text-muted/50 font-semibold">Type</span>
       {(Object.keys(TAG_CFG) as BRTag[]).map((t) => (
         <span key={t} className="flex items-center gap-1">
           <span className="text-[9px] font-mono font-semibold" style={{ color: TAG_CFG[t].color }}>{t}</span>
@@ -760,7 +760,7 @@ function LegendStrip({ hasAssessed }: { hasAssessed: boolean }) {
       <div className="w-px h-3 bg-border/20" />
 
       {/* Segments */}
-      <span className="text-[8px] uppercase tracking-[0.1em] text-muted/50 font-semibold">Segment</span>
+      <span className="text-[9px] uppercase tracking-[0.1em] text-muted/50 font-semibold">Segment</span>
       {(Object.keys(SEGMENT_CFG) as BRSegment[]).map((s) => (
         <span key={s} className="flex items-center gap-1">
           <span className="text-[9px] font-mono font-semibold" style={{ color: SEGMENT_CFG[s].color }}>{s}</span>
@@ -773,7 +773,7 @@ function LegendStrip({ hasAssessed }: { hasAssessed: boolean }) {
           <div className="w-px h-3 bg-border/20" />
 
           {/* Fit */}
-          <span className="text-[8px] uppercase tracking-[0.1em] text-muted/50 font-semibold">ERP Fit</span>
+          <span className="text-[9px] uppercase tracking-[0.1em] text-muted/50 font-semibold">ERP Fit</span>
           {(["F1", "F2", "F3", "F4", "F5"] as FitRating[]).map((r) => (
             <span key={r} className="flex items-center gap-1">
               <span className="text-[9px] font-mono font-semibold" style={{ color: FIT_CFG[r].color }}>{r}</span>
@@ -784,7 +784,7 @@ function LegendStrip({ hasAssessed }: { hasAssessed: boolean }) {
           <div className="w-px h-3 bg-border/20" />
 
           {/* Agentic */}
-          <span className="text-[8px] uppercase tracking-[0.1em] text-muted/50 font-semibold">Agentic</span>
+          <span className="text-[9px] uppercase tracking-[0.1em] text-muted/50 font-semibold">Agentic</span>
           {(["A0", "A1", "A2", "A3"] as AgenticRating[]).map((r) => (
             <span key={r} className="flex items-center gap-1">
               <span className="text-[9px] font-mono font-semibold" style={{ color: AGENTIC_CFG[r].color }}>{r}</span>
@@ -1203,7 +1203,7 @@ export function BusinessRequirementsTable({ data, captureBarRef }: { data: Busin
                   className="flex items-center gap-2.5 w-full text-left px-3 mb-1.5 group"
                 >
                   <span className="text-[9px] font-mono text-muted/80">{paId}</span>
-                  <h3 className="text-[10px] uppercase tracking-[0.14em] text-muted font-semibold">
+                  <h3 className="text-[11px] uppercase tracking-[0.14em] text-muted font-semibold">
                     {PA_NAMES[paId] ?? paId}
                   </h3>
                   <span className="text-[9px] font-mono text-muted/80 ml-1">

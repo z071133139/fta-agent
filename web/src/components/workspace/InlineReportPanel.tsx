@@ -15,9 +15,9 @@ import type { REPORT_GENERATORS } from "@/lib/mock-data";
 
 function ToolBadge({ tool }: { tool: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 bg-slate-800/60 px-2 py-1 text-xs">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-      <span className="font-mono text-slate-300">{tool}</span>
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface/60 px-2 py-1 text-xs">
+      <span className="h-1.5 w-1.5 rounded-full bg-success" />
+      <span className="font-mono text-secondary">{tool}</span>
     </span>
   );
 }
@@ -103,7 +103,7 @@ export function ReportView({
   return (
     <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
       {/* Header with back button */}
-      <div className="shrink-0 border-b border-slate-700/50 px-5 py-3 flex items-center gap-3">
+      <div className="shrink-0 border-b border-border/50 px-5 py-3 flex items-center gap-3">
         <button
           onClick={onBack}
           className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted hover:text-foreground transition-colors hover:bg-surface-alt/50"
@@ -113,7 +113,7 @@ export function ReportView({
           </svg>
           Reporting Inventory
         </button>
-        <div className="h-4 w-px bg-slate-700" />
+        <div className="h-4 w-px bg-border" />
         <h2 className="text-sm font-medium text-foreground">{reportName}</h2>
       </div>
 
@@ -144,7 +144,7 @@ export function ReportView({
                 </div>
               )}
 
-              <div className="prose prose-invert prose-sm max-w-none text-sm text-slate-200 leading-relaxed [&_table]:w-full [&_table]:text-left [&_th]:px-3 [&_th]:py-2 [&_th]:text-[10px] [&_th]:uppercase [&_th]:tracking-[0.1em] [&_th]:text-slate-400 [&_th]:border-b [&_th]:border-slate-700 [&_td]:px-3 [&_td]:py-2 [&_td]:border-b [&_td]:border-slate-800 [&_td]:text-slate-300 [&_code]:font-mono [&_code]:text-slate-300 [&_pre]:bg-slate-800/50 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-slate-700">
+              <div className="prose prose-invert prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_table]:w-full [&_table]:text-left [&_th]:px-3 [&_th]:py-2 [&_th]:text-[11px] [&_th]:uppercase [&_th]:tracking-[0.1em] [&_th]:text-secondary [&_th]:border-b [&_th]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:border-b [&_td]:border-surface-alt [&_td]:text-secondary [&_code]:font-mono [&_code]:text-secondary [&_pre]:bg-surface/50 [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-border">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {cached.primary!.output}
                 </ReactMarkdown>
@@ -167,7 +167,7 @@ export function ReportView({
               {status === "error" && (
                 <button
                   onClick={handleRerun}
-                  className="rounded-lg bg-red-600/20 px-3 py-1.5 text-sm text-red-400 transition-colors hover:bg-red-600/30"
+                  className="rounded-lg bg-error/20 px-3 py-1.5 text-sm text-error transition-colors hover:bg-error/30"
                 >
                   Retry
                 </button>
@@ -192,7 +192,7 @@ export function ReportView({
                 </div>
                 <h3 className="text-base font-medium text-foreground">{reportName}</h3>
                 <p className="text-sm text-muted leading-relaxed">{config.description}</p>
-                <p className="text-[10px] font-mono text-muted/50 mt-1">
+                <p className="text-[10px] font-mono text-muted mt-1">
                   Agent: {config.agent.replace(/_/g, " ")} · DuckDB · 1,064,838 posting lines · FY2025
                 </p>
               </div>
@@ -209,13 +209,13 @@ export function ReportView({
 
       {/* Bottom bar — re-run for cached, nothing for idle/streaming */}
       {hasCached && !isActive && (
-        <div className="shrink-0 border-t border-slate-700/50 px-5 py-3 flex items-center gap-3">
-          <span className="text-[10px] font-mono text-muted/50">
+        <div className="shrink-0 border-t border-border/50 px-5 py-3 flex items-center gap-3">
+          <span className="text-[10px] font-mono text-muted">
             Generated {new Date(cached.primary!.completedAt).toLocaleTimeString()}
           </span>
           <button
             onClick={handleRerun}
-            className="rounded-md border border-slate-600 px-3 py-1.5 text-xs font-mono text-muted hover:text-foreground hover:border-slate-500 transition-colors"
+            className="rounded-md border border-border px-3 py-1.5 text-xs font-mono text-muted hover:text-foreground hover:border-border-strong transition-colors"
           >
             Re-run
           </button>

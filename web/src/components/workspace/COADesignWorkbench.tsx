@@ -58,7 +58,7 @@ function EditableCell({
   if (!editing) {
     return (
       <span
-        className={`cursor-pointer hover:bg-slate-700/50 px-1 -mx-1 rounded transition-colors ${
+        className={`cursor-pointer hover:bg-surface-alt/50 px-1 -mx-1 rounded transition-colors ${
           wide ? "block" : "inline-block"
         }`}
         onClick={() => {
@@ -89,7 +89,7 @@ function EditableCell({
         onSave(draft);
         setEditing(false);
       }}
-      className={`bg-slate-700 border border-slate-500 rounded px-1 py-0.5 text-sm text-slate-200 font-mono focus:border-blue-500 focus:outline-none ${
+      className={`bg-surface-alt border border-border-strong rounded px-1 py-0.5 text-sm text-foreground font-mono focus:border-accent focus:outline-none ${
         wide ? "w-full" : "w-auto"
       }`}
       type={numeric ? "number" : "text"}
@@ -113,9 +113,9 @@ function MandatoryToggle({
       title={value ? "Mandatory" : "Optional"}
     >
       {value ? (
-        <span className="text-emerald-400">&#10003;</span>
+        <span className="text-success">&#10003;</span>
       ) : (
-        <span className="text-slate-500">&mdash;</span>
+        <span className="text-faint">&mdash;</span>
       )}
     </button>
   );
@@ -137,7 +137,7 @@ function CodeBlocksTab({
     <div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-700 text-left text-[10px] uppercase tracking-[0.1em] text-slate-400">
+          <tr className="border-b border-border text-left text-[11px] uppercase tracking-[0.1em] text-muted">
             <th className="px-3 py-2 w-[100px]">Range</th>
             <th className="px-3 py-2 w-[160px]">Account Type</th>
             <th className="px-3 py-2 w-[200px]">NAIC Alignment</th>
@@ -149,27 +149,27 @@ function CodeBlocksTab({
           {blocks.map((cb) => (
             <tr
               key={cb.id}
-              className="border-b border-slate-800 hover:bg-slate-700/30 transition-colors"
+              className="border-b border-border/30 hover:bg-surface-alt/30 transition-colors"
             >
-              <td className="px-3 py-2 font-mono text-slate-200">
+              <td className="px-3 py-2 font-mono text-foreground">
                 <EditableCell
                   value={cb.range}
                   onSave={(v) => update(storeKey, cb.id, { range: v })}
                 />
               </td>
-              <td className="px-3 py-2 text-slate-300">
+              <td className="px-3 py-2 text-secondary">
                 <EditableCell
                   value={cb.account_type}
                   onSave={(v) => update(storeKey, cb.id, { account_type: v })}
                 />
               </td>
-              <td className="px-3 py-2 text-slate-300">
+              <td className="px-3 py-2 text-secondary">
                 <EditableCell
                   value={cb.naic_alignment}
                   onSave={(v) => update(storeKey, cb.id, { naic_alignment: v })}
                 />
               </td>
-              <td className="px-3 py-2 text-right font-mono text-slate-300">
+              <td className="px-3 py-2 text-right font-mono text-secondary">
                 <EditableCell
                   value={cb.count}
                   numeric
@@ -178,7 +178,7 @@ function CodeBlocksTab({
                   }
                 />
               </td>
-              <td className="px-3 py-2 text-slate-400">
+              <td className="px-3 py-2 text-muted">
                 <EditableCell
                   value={cb.notes}
                   wide
@@ -191,7 +191,7 @@ function CodeBlocksTab({
       </table>
       <button
         onClick={() => add(storeKey)}
-        className="mt-3 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 border border-dashed border-slate-600 hover:border-slate-400 rounded transition-colors"
+        className="mt-3 px-3 py-1.5 text-xs text-muted hover:text-foreground border border-dashed border-border hover:border-secondary rounded transition-colors"
       >
         + Add Row
       </button>
@@ -215,7 +215,7 @@ function AccountGroupsTab({
     <div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-700 text-left text-[10px] uppercase tracking-[0.1em] text-slate-400">
+          <tr className="border-b border-border text-left text-[11px] uppercase tracking-[0.1em] text-muted">
             <th className="px-3 py-2 w-[100px]">Code</th>
             <th className="px-3 py-2 w-[200px]">Name</th>
             <th className="px-3 py-2 w-[200px]">NAIC Schedule Line</th>
@@ -227,9 +227,9 @@ function AccountGroupsTab({
           {groups.map((ag) => (
             <tr
               key={ag.id}
-              className="border-b border-slate-800 hover:bg-slate-700/30 transition-colors"
+              className="border-b border-border/30 hover:bg-surface-alt/30 transition-colors"
             >
-              <td className="px-3 py-2 font-mono text-slate-200">
+              <td className="px-3 py-2 font-mono text-foreground">
                 <EditableCell
                   value={ag.group_code}
                   onSave={(v) =>
@@ -237,13 +237,13 @@ function AccountGroupsTab({
                   }
                 />
               </td>
-              <td className="px-3 py-2 text-slate-300">
+              <td className="px-3 py-2 text-secondary">
                 <EditableCell
                   value={ag.name}
                   onSave={(v) => update(storeKey, ag.id, { name: v })}
                 />
               </td>
-              <td className="px-3 py-2 text-slate-300">
+              <td className="px-3 py-2 text-secondary">
                 <EditableCell
                   value={ag.naic_schedule_line}
                   onSave={(v) =>
@@ -251,7 +251,7 @@ function AccountGroupsTab({
                   }
                 />
               </td>
-              <td className="px-3 py-2 text-right font-mono text-slate-300">
+              <td className="px-3 py-2 text-right font-mono text-secondary">
                 <EditableCell
                   value={ag.account_count}
                   numeric
@@ -262,7 +262,7 @@ function AccountGroupsTab({
                   }
                 />
               </td>
-              <td className="px-3 py-2 text-slate-400">
+              <td className="px-3 py-2 text-muted">
                 <EditableCell
                   value={ag.notes}
                   wide
@@ -275,7 +275,7 @@ function AccountGroupsTab({
       </table>
       <button
         onClick={() => add(storeKey)}
-        className="mt-3 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 border border-dashed border-slate-600 hover:border-slate-400 rounded transition-colors"
+        className="mt-3 px-3 py-1.5 text-xs text-muted hover:text-foreground border border-dashed border-border hover:border-secondary rounded transition-colors"
       >
         + Add Row
       </button>
@@ -287,23 +287,23 @@ function AccountGroupsTab({
 
 const ISSUE_STATUS_STYLES: Record<IssueStatus, { border: string; badge: string; label: string }> = {
   open: {
-    border: "border-l-amber-500",
-    badge: "bg-amber-500/20 text-amber-400",
+    border: "border-l-warning",
+    badge: "bg-warning/20 text-warning",
     label: "OPEN",
   },
   in_progress: {
-    border: "border-l-blue-500",
-    badge: "bg-blue-500/20 text-blue-400",
+    border: "border-l-accent",
+    badge: "bg-accent/20 text-accent",
     label: "IN PROGRESS",
   },
   resolved: {
-    border: "border-l-emerald-500",
-    badge: "bg-emerald-500/20 text-emerald-400",
+    border: "border-l-success",
+    badge: "bg-success/20 text-success",
     label: "RESOLVED",
   },
   deferred: {
-    border: "border-l-slate-500",
-    badge: "bg-slate-500/20 text-slate-400",
+    border: "border-l-border-strong",
+    badge: "bg-border-strong/20 text-muted",
     label: "DEFERRED",
   },
 };
@@ -320,7 +320,7 @@ function IssueSummaryBadge({
   onToggle: () => void;
 }) {
   if (issues.length === 0) {
-    return <span className="text-slate-500">&mdash;</span>;
+    return <span className="text-faint">&mdash;</span>;
   }
 
   const openCount = issues.filter((i) => i.status === "open" || i.status === "in_progress").length;
@@ -329,10 +329,10 @@ function IssueSummaryBadge({
   return (
     <button
       onClick={onToggle}
-      className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-mono uppercase tracking-wider transition-colors ${
         allResolved
-          ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
-          : "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
+          ? "bg-success/20 text-success hover:bg-success/30"
+          : "bg-warning/20 text-warning hover:bg-warning/30"
       }`}
     >
       <svg
@@ -387,7 +387,7 @@ function IssueCard({
   };
 
   return (
-    <div className={`border-l-4 ${style.border} rounded-r-lg bg-slate-800/80 p-3 space-y-2`}>
+    <div className={`border-l-4 ${style.border} rounded-r-lg bg-surface/80 p-3 space-y-2`}>
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -407,27 +407,27 @@ function IssueCard({
                 updateIssue(storeKey, dimId, issue.id, { title: titleDraft });
                 setEditing(false);
               }}
-              className="w-full bg-slate-700 border border-slate-500 rounded px-2 py-1 text-sm text-slate-200 font-mono focus:border-blue-500 focus:outline-none"
+              className="w-full bg-surface-alt border border-border-strong rounded px-2 py-1 text-sm text-foreground font-mono focus:border-accent focus:outline-none"
             />
           ) : (
             <span
-              className="text-sm text-slate-200 cursor-pointer hover:text-white transition-colors"
+              className="text-sm text-foreground cursor-pointer hover:text-foreground transition-colors"
               onClick={() => {
                 setTitleDraft(issue.title);
                 setEditing(true);
               }}
             >
-              {issue.title || <span className="text-slate-500 italic">Click to add title...</span>}
+              {issue.title || <span className="text-faint italic">Click to add title...</span>}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider ${style.badge}`}>
+          <span className={`px-2 py-0.5 rounded text-[11px] font-mono uppercase tracking-wider ${style.badge}`}>
             {style.label}
           </span>
           <button
             onClick={() => deleteIssue(storeKey, dimId, issue.id)}
-            className="text-slate-600 hover:text-red-400 transition-colors"
+            className="text-faint hover:text-error transition-colors"
             title="Delete issue"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -439,7 +439,7 @@ function IssueCard({
 
       {/* Consultant notes */}
       <div>
-        <span className="text-[10px] uppercase tracking-[0.1em] text-slate-500">
+        <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
           Resolution Notes
         </span>
         <textarea
@@ -451,7 +451,7 @@ function IssueCard({
           }
           placeholder="Add resolution notes, action items..."
           rows={2}
-          className="mt-1 w-full rounded border border-slate-600 bg-slate-700/50 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none resize-none"
+          className="mt-1 w-full rounded border border-border bg-surface-alt/50 px-3 py-2 text-sm text-foreground placeholder:text-faint focus:border-accent focus:outline-none resize-none"
         />
       </div>
 
@@ -460,7 +460,7 @@ function IssueCard({
         {issue.status !== "in_progress" && (
           <button
             onClick={() => handleStatusChange("in_progress")}
-            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-blue-600/20 text-blue-400 hover:bg-blue-600/30"
+            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-accent/20 text-accent hover:bg-accent/30"
           >
             Start Working
           </button>
@@ -468,7 +468,7 @@ function IssueCard({
         {issue.status !== "resolved" && (
           <button
             onClick={() => handleStatusChange("resolved")}
-            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30"
+            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-success/20 text-success hover:bg-success/30"
           >
             &#10003; Resolve
           </button>
@@ -476,7 +476,7 @@ function IssueCard({
         {issue.status !== "deferred" && (
           <button
             onClick={() => handleStatusChange("deferred")}
-            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-slate-600/20 text-slate-400 hover:bg-slate-600/30"
+            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-surface-alt/20 text-muted hover:bg-surface-alt/30"
           >
             Defer
           </button>
@@ -484,7 +484,7 @@ function IssueCard({
         {issue.status !== "open" && (
           <button
             onClick={() => handleStatusChange("open")}
-            className="rounded px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+            className="rounded px-3 py-1.5 text-xs text-muted hover:text-foreground transition-colors"
           >
             Reopen
           </button>
@@ -524,7 +524,7 @@ function DimensionsTab({
     <div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-700 text-left text-[10px] uppercase tracking-[0.1em] text-slate-400">
+          <tr className="border-b border-border text-left text-[11px] uppercase tracking-[0.1em] text-muted">
             <th className="px-3 py-2 w-[150px]">Dimension</th>
             <th className="px-3 py-2 w-[90px] text-right">Fill Rate</th>
             <th className="px-3 py-2 w-[80px] text-right">Values</th>
@@ -537,14 +537,14 @@ function DimensionsTab({
         <tbody>
           {dimensions.map((dim) => (
             <Fragment key={dim.id}>
-              <tr className="border-b border-slate-800 hover:bg-slate-700/30 transition-colors">
-                <td className="px-3 py-2 font-mono text-slate-200">
+              <tr className="border-b border-border/30 hover:bg-surface-alt/30 transition-colors">
+                <td className="px-3 py-2 font-mono text-foreground">
                   <EditableCell
                     value={dim.dimension}
                     onSave={(v) => update(storeKey, dim.id, { dimension: v })}
                   />
                 </td>
-                <td className="px-3 py-2 text-right font-mono text-slate-300">
+                <td className="px-3 py-2 text-right font-mono text-secondary">
                   <EditableCell
                     value={dim.fill_rate}
                     numeric
@@ -552,9 +552,9 @@ function DimensionsTab({
                       update(storeKey, dim.id, { fill_rate: parseFloat(v) || 0 })
                     }
                   />
-                  <span className="text-slate-500">%</span>
+                  <span className="text-faint">%</span>
                 </td>
-                <td className="px-3 py-2 text-right font-mono text-slate-300">
+                <td className="px-3 py-2 text-right font-mono text-secondary">
                   <EditableCell
                     value={dim.unique_values}
                     numeric
@@ -571,13 +571,13 @@ function DimensionsTab({
                     }
                   />
                 </td>
-                <td className="px-3 py-2 text-slate-300 font-mono text-xs">
+                <td className="px-3 py-2 text-secondary font-mono text-xs">
                   <EditableCell
                     value={dim.key_values}
                     onSave={(v) => update(storeKey, dim.id, { key_values: v })}
                   />
                 </td>
-                <td className="px-3 py-2 text-slate-300">
+                <td className="px-3 py-2 text-secondary">
                   <EditableCell
                     value={dim.reporting_purpose}
                     wide
@@ -594,7 +594,7 @@ function DimensionsTab({
               </tr>
               {/* Expandable issue sub-row */}
               {expandedDims.has(dim.id) && (
-                <tr className="bg-slate-800/30">
+                <tr className="bg-surface/30">
                   <td colSpan={7} className="px-4 py-3">
                     <div className="space-y-3">
                       {dim.issues.map((issue) => (
@@ -607,7 +607,7 @@ function DimensionsTab({
                       ))}
                       <button
                         onClick={() => addIssue(storeKey, dim.id)}
-                        className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 border border-dashed border-slate-600 hover:border-slate-400 rounded transition-colors"
+                        className="px-3 py-1.5 text-xs text-muted hover:text-foreground border border-dashed border-border hover:border-secondary rounded transition-colors"
                       >
                         + Add Issue
                       </button>
@@ -621,7 +621,7 @@ function DimensionsTab({
       </table>
       <button
         onClick={() => add(storeKey)}
-        className="mt-3 px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 border border-dashed border-slate-600 hover:border-slate-400 rounded transition-colors"
+        className="mt-3 px-3 py-1.5 text-xs text-muted hover:text-foreground border border-dashed border-border hover:border-secondary rounded transition-colors"
       >
         + Add Row
       </button>
@@ -633,18 +633,18 @@ function DimensionsTab({
 
 const STATUS_STYLES: Record<DecisionStatus, { border: string; badge: string; label: string }> = {
   pending: {
-    border: "border-l-amber-500",
-    badge: "bg-amber-500/20 text-amber-400",
+    border: "border-l-warning",
+    badge: "bg-warning/20 text-warning",
     label: "PENDING",
   },
   approved: {
-    border: "border-l-emerald-500",
-    badge: "bg-emerald-500/20 text-emerald-400",
+    border: "border-l-success",
+    badge: "bg-success/20 text-success",
     label: "APPROVED",
   },
   rejected: {
-    border: "border-l-red-500",
-    badge: "bg-red-500/20 text-red-400",
+    border: "border-l-error",
+    badge: "bg-error/20 text-error",
     label: "REJECTED",
   },
 };
@@ -661,17 +661,17 @@ function DecisionCard({
 
   return (
     <div
-      className={`border-l-4 ${style.border} rounded-r-lg bg-slate-800/80 p-4 space-y-3`}
+      className={`border-l-4 ${style.border} rounded-r-lg bg-surface/80 p-4 space-y-3`}
     >
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-100">
+          <span className="text-sm font-medium text-foreground">
             {decision.title}
           </span>
         </div>
         <span
-          className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider ${style.badge}`}
+          className={`px-2 py-0.5 rounded text-[11px] font-mono uppercase tracking-wider ${style.badge}`}
         >
           {style.label}
         </span>
@@ -680,34 +680,34 @@ function DecisionCard({
       {/* Content fields */}
       <div className="space-y-2 text-sm">
         <div>
-          <span className="text-[10px] uppercase tracking-[0.1em] text-slate-500">
+          <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
             Context
           </span>
-          <p className="text-slate-300 mt-0.5">{decision.context}</p>
+          <p className="text-secondary mt-0.5">{decision.context}</p>
         </div>
         <div>
-          <span className="text-[10px] uppercase tracking-[0.1em] text-slate-500">
+          <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
             Recommendation
           </span>
-          <p className="text-slate-200 mt-0.5">{decision.recommendation}</p>
+          <p className="text-foreground mt-0.5">{decision.recommendation}</p>
         </div>
         <div>
-          <span className="text-[10px] uppercase tracking-[0.1em] text-slate-500">
+          <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
             Alternative
           </span>
-          <p className="text-slate-400 mt-0.5">{decision.alternative}</p>
+          <p className="text-muted mt-0.5">{decision.alternative}</p>
         </div>
         <div>
-          <span className="text-[10px] uppercase tracking-[0.1em] text-slate-500">
+          <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
             Impact
           </span>
-          <p className="text-slate-400 mt-0.5">{decision.impact}</p>
+          <p className="text-muted mt-0.5">{decision.impact}</p>
         </div>
       </div>
 
       {/* Consultant notes */}
       <div>
-        <span className="text-[10px] uppercase tracking-[0.1em] text-slate-500">
+        <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
           Consultant Notes
         </span>
         <textarea
@@ -719,7 +719,7 @@ function DecisionCard({
           }
           placeholder="Add your notes..."
           rows={2}
-          className="mt-1 w-full rounded border border-slate-600 bg-slate-700/50 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none resize-none"
+          className="mt-1 w-full rounded border border-border bg-surface-alt/50 px-3 py-2 text-sm text-foreground placeholder:text-faint focus:border-accent focus:outline-none resize-none"
         />
       </div>
 
@@ -730,7 +730,7 @@ function DecisionCard({
             update(storeKey, decision.id, { status: "approved" })
           }
           disabled={decision.status === "approved"}
-          className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 disabled:opacity-30 disabled:cursor-default"
+          className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-success/20 text-success hover:bg-success/30 disabled:opacity-30 disabled:cursor-default"
         >
           &#10003; Approve
         </button>
@@ -739,7 +739,7 @@ function DecisionCard({
             update(storeKey, decision.id, { status: "rejected" })
           }
           disabled={decision.status === "rejected"}
-          className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-red-600/20 text-red-400 hover:bg-red-600/30 disabled:opacity-30 disabled:cursor-default"
+          className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-error/20 text-error hover:bg-error/30 disabled:opacity-30 disabled:cursor-default"
         >
           &#10007; Reject
         </button>
@@ -748,7 +748,7 @@ function DecisionCard({
             onClick={() =>
               update(storeKey, decision.id, { status: "pending" })
             }
-            className="rounded px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+            className="rounded px-3 py-1.5 text-xs text-muted hover:text-foreground transition-colors"
           >
             Reset
           </button>
@@ -773,7 +773,7 @@ function DecisionsTab({
         <DecisionCard key={d.id} decision={d} storeKey={storeKey} />
       ))}
       {decisions.length === 0 && (
-        <p className="text-sm text-slate-500 py-8 text-center">
+        <p className="text-sm text-faint py-8 text-center">
           No design decisions recorded yet.
         </p>
       )}
@@ -821,11 +821,11 @@ function AgentChatPanel({
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="shrink-0 w-10 flex flex-col items-center justify-center border-l border-slate-700 bg-slate-900 hover:bg-slate-800 transition-colors"
+        className="shrink-0 w-10 flex flex-col items-center justify-center border-l border-border bg-background hover:bg-surface transition-colors"
         title="Open agent chat"
       >
         <svg
-          className="w-4 h-4 text-slate-400"
+          className="w-4 h-4 text-muted"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -842,15 +842,15 @@ function AgentChatPanel({
   }
 
   return (
-    <div className="shrink-0 w-[280px] border-l border-slate-700 bg-slate-900 flex flex-col">
+    <div className="shrink-0 w-[280px] border-l border-border bg-background flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700">
-        <span className="text-[10px] uppercase tracking-[0.1em] text-slate-400 font-medium">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+        <span className="text-[11px] uppercase tracking-[0.1em] text-muted font-medium">
           Agent Chat
         </span>
         <button
           onClick={() => setExpanded(false)}
-          className="text-slate-500 hover:text-slate-300 transition-colors"
+          className="text-faint hover:text-secondary transition-colors"
         >
           <svg
             className="w-3.5 h-3.5"
@@ -871,7 +871,7 @@ function AgentChatPanel({
       {/* Messages */}
       <div className="flex-1 min-h-0 overflow-y-auto px-3 py-2 space-y-2">
         {messages.length === 0 && (
-          <p className="text-xs text-slate-500 text-center py-4">
+          <p className="text-xs text-faint text-center py-4">
             Ask the GL Design Coach about this tab.
           </p>
         )}
@@ -880,8 +880,8 @@ function AgentChatPanel({
             key={m.id}
             className={`rounded px-2.5 py-1.5 text-xs leading-relaxed ${
               m.role === "user"
-                ? "bg-slate-700 text-slate-200 ml-4"
-                : "bg-slate-800 text-slate-300 mr-4"
+                ? "bg-surface-alt text-foreground ml-4"
+                : "bg-surface text-secondary mr-4"
             }`}
           >
             {m.content}
@@ -891,7 +891,7 @@ function AgentChatPanel({
       </div>
 
       {/* Input */}
-      <div className="shrink-0 border-t border-slate-700 p-2">
+      <div className="shrink-0 border-t border-border p-2">
         <div className="flex gap-1.5">
           <input
             value={input}
@@ -903,12 +903,12 @@ function AgentChatPanel({
               }
             }}
             placeholder="Ask about this section..."
-            className="flex-1 rounded border border-slate-600 bg-slate-800 px-2.5 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+            className="flex-1 rounded border border-border bg-surface px-2.5 py-1.5 text-xs text-foreground placeholder:text-faint focus:border-accent focus:outline-none"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="rounded bg-blue-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-blue-500 disabled:opacity-40 transition-colors"
+            className="rounded bg-accent px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent/80 disabled:opacity-40 transition-colors"
           >
             Send
           </button>
@@ -969,16 +969,16 @@ export function COADesignWorkbench({
     <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
       {/* Agent Summary Banner */}
       <div className="shrink-0 mx-5 mt-4">
-        <div className="rounded-lg bg-slate-700/50 border border-slate-600/50">
+        <div className="rounded-lg bg-surface-alt/50 border border-border/50">
           <button
             onClick={() => toggleSummary(storeKey)}
             className="w-full flex items-center justify-between px-4 py-2.5"
           >
-            <span className="text-[10px] uppercase tracking-[0.1em] text-slate-400 font-medium">
+            <span className="text-[11px] uppercase tracking-[0.1em] text-muted font-medium">
               Agent Summary
             </span>
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-mono text-slate-500">
+              <span className="text-[11px] font-mono text-faint">
                 Seeded{" "}
                 {store.seededAt
                   ? new Date(store.seededAt).toLocaleDateString()
@@ -990,7 +990,7 @@ export function COADesignWorkbench({
                   ).toLocaleDateString()}`}
               </span>
               <svg
-                className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
+                className={`w-3.5 h-3.5 text-muted transition-transform ${
                   store.summaryCollapsed ? "" : "rotate-180"
                 }`}
                 fill="none"
@@ -1015,7 +1015,7 @@ export function COADesignWorkbench({
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <p className="px-4 pb-3 text-sm text-slate-300 font-mono leading-relaxed">
+                <p className="px-4 pb-3 text-sm text-secondary font-mono leading-relaxed">
                   {store.summary}
                 </p>
               </motion.div>
@@ -1029,21 +1029,21 @@ export function COADesignWorkbench({
         {/* Main content */}
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           {/* Tab bar */}
-          <div className="shrink-0 flex items-center border-b border-slate-700 px-5">
+          <div className="shrink-0 flex items-center border-b border-border px-5">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`relative px-4 py-2.5 text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? "text-white"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "text-foreground"
+                    : "text-muted hover:text-foreground"
                 }`}
               >
                 <span className="flex items-center gap-2">
                   {tab.label}
                   {tab.badge !== undefined && (
-                    <span className="inline-flex items-center justify-center h-4 min-w-[16px] rounded-full bg-amber-500/20 px-1 text-[10px] font-mono text-amber-400">
+                    <span className="inline-flex items-center justify-center h-4 min-w-[16px] rounded-full bg-warning/20 px-1 text-[11px] font-mono text-warning">
                       {tab.badge}
                     </span>
                   )}
@@ -1051,7 +1051,7 @@ export function COADesignWorkbench({
                 {activeTab === tab.id && (
                   <motion.div
                     layoutId="coa-tab-underline"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"
                   />
                 )}
               </button>
@@ -1081,21 +1081,21 @@ export function COADesignWorkbench({
           </div>
 
           {/* Bottom bar: Re-seed */}
-          <div className="shrink-0 border-t border-slate-700/50 px-5 py-2.5 flex items-center justify-end">
+          <div className="shrink-0 border-t border-border/50 px-5 py-2.5 flex items-center justify-end">
             {confirmReseed ? (
               <div className="flex items-center gap-3">
-                <span className="text-xs text-amber-400">
+                <span className="text-xs text-warning">
                   This will discard all manual edits. Continue?
                 </span>
                 <button
                   onClick={handleReseed}
-                  className="rounded bg-amber-600/20 px-3 py-1 text-xs font-medium text-amber-400 hover:bg-amber-600/30 transition-colors"
+                  className="rounded bg-warning/20 px-3 py-1 text-xs font-medium text-warning hover:bg-warning/30 transition-colors"
                 >
                   Yes, re-seed
                 </button>
                 <button
                   onClick={() => setConfirmReseed(false)}
-                  className="rounded px-3 py-1 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+                  className="rounded px-3 py-1 text-xs text-muted hover:text-foreground transition-colors"
                 >
                   Cancel
                 </button>
@@ -1103,7 +1103,7 @@ export function COADesignWorkbench({
             ) : (
               <button
                 onClick={() => setConfirmReseed(true)}
-                className="flex items-center gap-1.5 rounded border border-slate-600 px-3 py-1.5 text-xs font-mono text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors"
+                className="flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-xs font-mono text-muted hover:text-foreground hover:border-border-strong transition-colors"
               >
                 Re-seed &#8635;
               </button>

@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { WORKSTREAM_DATA_REQUIREMENTS } from "./workstream-data-config";
 
 // ── Mock preview data ───────────────────────────────────────────────────────
 
@@ -120,6 +121,10 @@ interface DataStoreState {
   hasData: (engagementId: string) => boolean;
   /** Get files for an engagement */
   getFiles: (engagementId: string) => DataFile[];
+  /** Get files matching a workstream's required types */
+  getWorkstreamFiles: (engagementId: string, workstreamId: string) => DataFile[];
+  /** Check if all required data types for a workstream are present */
+  hasRequiredData: (engagementId: string, workstreamId: string) => boolean;
 }
 
 export const useDataStore = create<DataStoreState>()(
@@ -161,6 +166,23 @@ export const useDataStore = create<DataStoreState>()(
 
       getFiles: (engagementId) =>
         get().files[engagementId] ?? [],
+
+      getWorkstreamFiles: (engagementId, workstreamId) => {
+        const wsReqs = WORKSTREAM_DATA_REQUIREMENTS[workstreamId];
+        if (!wsReqs) return [];
+        const requiredTypes = new Set(wsReqs.requirements.map((r) => r.type));
+        return (get().files[engagementId] ?? []).filter((f) =>
+          requiredTypes.has(f.type)
+        );
+      },
+
+      hasRequiredData: (engagementId, workstreamId) => {
+        const wsReqs = WORKSTREAM_DATA_REQUIREMENTS[workstreamId];
+        if (!wsReqs) return true; // no requirements = always ready
+        const files = get().files[engagementId] ?? [];
+        const uploadedTypes = new Set(files.map((f) => f.type));
+        return wsReqs.requirements.every((r) => uploadedTypes.has(r.type));
+      },
     }),
     {
       name: "fta-data-store",

@@ -8,7 +8,31 @@ import {
   type Workstream,
   type Deliverable,
   type DeliverableStatus,
+  type ConsultantPresence,
 } from "@/lib/mock-data";
+
+// ── Presence helpers ──────────────────────────────────────────────────────
+
+const CONSULTANT_INITIALS: Record<string, string> = {
+  "mock-001": "SK",
+  "mock-002": "TR",
+  "mock-003": "PM",
+};
+
+function PresencePip({ p }: { p: ConsultantPresence }) {
+  return (
+    <div
+      title={CONSULTANT_INITIALS[p.consultant_id] ?? p.consultant_id}
+      className={`h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-medium shrink-0 ${
+        p.is_active
+          ? "bg-success/20 text-success ring-1 ring-success/30"
+          : "bg-surface-alt text-muted"
+      }`}
+    >
+      {CONSULTANT_INITIALS[p.consultant_id] ?? "?"}
+    </div>
+  );
+}
 
 // ── Status helpers ─────────────────────────────────────────────────────────
 
@@ -44,74 +68,6 @@ const AGENT_CHIP: Record<string, { label: string; cls: string }> = {
   functional_consultant:{ label: "Functional Consultant", cls: "bg-purple/10 text-purple" },
 };
 
-// ── Needs Your Input banner ────────────────────────────────────────────────
-
-interface AttentionItem extends Deliverable {
-  workstream_name: string;
-}
-
-function NeedsInputBanner({ items, engagementId }: { items: AttentionItem[]; engagementId: string }) {
-  const router = useRouter();
-  const [expanded, setExpanded] = useState(false);
-  const visible = expanded ? items : items.slice(0, 3);
-  const overflow = items.length - 3;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.25 }}
-      className="mb-4 rounded-lg border border-warning/25 bg-warning/5 overflow-hidden"
-    >
-      {/* Banner header */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-warning/15">
-        <div className="h-1.5 w-1.5 rounded-full bg-warning" />
-        <span className="text-[10px] uppercase tracking-[0.12em] font-medium text-warning">
-          Needs Your Input
-        </span>
-        <span className="text-[10px] font-mono text-warning/50">{items.length}</span>
-      </div>
-
-      {/* Items */}
-      <ul className="divide-y divide-warning/10">
-        {visible.map((item) => (
-          <li key={item.deliverable_id} className="flex items-start gap-3 px-4 py-2.5">
-            <div className={`mt-1 h-1.5 w-1.5 rounded-full shrink-0 ${
-              item.status === "blocked" ? "bg-error" : "bg-warning"
-            }`} />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-foreground/90 leading-snug">{item.name}</p>
-              {item.agent_summary && (
-                <p className="text-[10px] text-muted mt-0.5 leading-snug">{item.agent_summary}</p>
-              )}
-              <p className="text-[10px] text-muted/50 mt-0.5">{item.workstream_name}</p>
-            </div>
-            <button
-              onClick={() => router.push(`/${engagementId}/deliverables/${item.deliverable_id}`)}
-              className={`shrink-0 text-[10px] font-medium whitespace-nowrap mt-0.5 transition-opacity hover:opacity-70 ${
-                item.status === "blocked" ? "text-error" : "text-warning"
-              }`}
-            >
-              {item.status === "blocked" ? "Resolve →" : "Review →"}
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      {/* Show more / less */}
-      {overflow > 0 && (
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="w-full px-4 py-2 text-[10px] text-muted hover:text-foreground transition-colors text-left border-t border-warning/10"
-        >
-          {expanded ? "Show less" : `Show ${overflow} more`}
-        </button>
-      )}
-    </motion.div>
-  );
-}
-
 // ── Workstream row ─────────────────────────────────────────────────────────
 
 interface WorkstreamRowProps {
@@ -120,9 +76,10 @@ interface WorkstreamRowProps {
   onToggleDeliverable: (id: string) => void;
   onToggleWorkstream: (wsId: string, allOos: boolean) => void;
   engagementId: string;
+  presenceByDeliverable: Map<string, ConsultantPresence[]>;
 }
 
-function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream, engagementId }: WorkstreamRowProps) {
+function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream, engagementId, presenceByDeliverable }: WorkstreamRowProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [headerHovered, setHeaderHovered] = useState(false);
@@ -140,6 +97,21 @@ function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream
 
   const progressPct = inScopeTotal > 0 ? Math.round((complete / inScopeTotal) * 100) : 0;
   const agentChip = ws.owner_agent ? AGENT_CHIP[ws.owner_agent] : null;
+
+  // Collect presence for this workstream (any deliverable within it)
+  const wsPresence: ConsultantPresence[] = [];
+  const seenConsultants = new Set<string>();
+  for (const d of ws.deliverables) {
+    const dp = presenceByDeliverable.get(d.deliverable_id);
+    if (dp) {
+      for (const p of dp) {
+        if (!seenConsultants.has(p.consultant_id)) {
+          seenConsultants.add(p.consultant_id);
+          wsPresence.push(p);
+        }
+      }
+    }
+  }
 
   return (
     <div className={`border rounded-lg overflow-hidden transition-opacity duration-200 ${
@@ -175,6 +147,15 @@ function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream
               <span className={`shrink-0 hidden sm:inline text-[10px] font-medium px-1.5 py-0.5 rounded ${agentChip.cls}`}>
                 {agentChip.label}
               </span>
+            )}
+
+            {/* Presence pips */}
+            {!allOos && wsPresence.length > 0 && (
+              <div className="flex items-center gap-0.5 shrink-0">
+                {wsPresence.map((p) => (
+                  <PresencePip key={p.consultant_id} p={p} />
+                ))}
+              </div>
             )}
 
             {/* Status badges */}
@@ -291,6 +272,15 @@ function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream
                         </p>
                       )}
                     </div>
+
+                    {/* Presence pips on deliverable */}
+                    {!oos && presenceByDeliverable.has(d.deliverable_id) && (
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        {presenceByDeliverable.get(d.deliverable_id)!.map((p) => (
+                          <PresencePip key={p.consultant_id} p={p} />
+                        ))}
+                      </div>
+                    )}
 
                     {/* Right: status + CTA */}
                     {!oos && (
@@ -426,19 +416,15 @@ export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
   const totalComplete    = inScopeAll.filter((d) => d.status === "complete").length;
   const oosCount         = outOfScope.size;
 
-  // Items needing consultant input (for banner)
-  const attentionItems: AttentionItem[] = workplan.workstreams.flatMap((ws) =>
-    ws.deliverables
-      .filter((d) => !outOfScope.has(d.deliverable_id))
-      .filter((d) => d.status === "blocked" || d.needs_input)
-      .map((d) => ({ ...d, workstream_name: ws.name }))
-  );
-  // blocked first, then needs_input
-  attentionItems.sort((a, b) => {
-    if (a.status === "blocked" && b.status !== "blocked") return -1;
-    if (b.status === "blocked" && a.status !== "blocked") return 1;
-    return 0;
-  });
+  // Build presence map: deliverable_id → ConsultantPresence[]
+  const presenceByDeliverable = new Map<string, ConsultantPresence[]>();
+  for (const p of engagement.presence ?? []) {
+    if (p.deliverable_id) {
+      const existing = presenceByDeliverable.get(p.deliverable_id) ?? [];
+      existing.push(p);
+      presenceByDeliverable.set(p.deliverable_id, existing);
+    }
+  }
 
   return (
     <motion.div
@@ -477,13 +463,6 @@ export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
           </span>
         </div>
       </div>
-
-      {/* Needs Your Input banner */}
-      <AnimatePresence>
-        {attentionItems.length > 0 && (
-          <NeedsInputBanner key="attention" items={attentionItems} engagementId={engagement.engagement_id} />
-        )}
-      </AnimatePresence>
 
       {/* Workstream filter pills */}
       <div className="flex flex-wrap gap-1.5 mb-4">
@@ -537,6 +516,7 @@ export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
             onToggleDeliverable={toggleDeliverable}
             onToggleWorkstream={toggleWorkstream}
             engagementId={engagement.engagement_id}
+            presenceByDeliverable={presenceByDeliverable}
           />
         ))}
       </div>

@@ -52,6 +52,7 @@ export default function DeliverablePage() {
   // Resolve deliverable metadata from workplan
   let deliverableName = params.deliverableId;
   let agentId = "consulting_agent";
+  let workstreamId: string | undefined;
 
   if (engagement?.workplan) {
     for (const ws of engagement.workplan.workstreams) {
@@ -61,6 +62,7 @@ export default function DeliverablePage() {
       if (d) {
         deliverableName = d.name;
         agentId = d.owner_agent ?? "consulting_agent";
+        workstreamId = ws.workstream_id;
         break;
       }
     }
@@ -239,6 +241,7 @@ export default function DeliverablePage() {
               agentName={agentName}
               bullets={workspaceTemplate.preflight_bullets}
               onStart={() => setAnalysisRunning(true)}
+              workstreamId={workstreamId}
             />
           </div>
           {!isWorkshopActive && (

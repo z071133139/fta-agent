@@ -1,13 +1,21 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Base */
-  --color-background:    #0F172A;  /* slate-900 */
-  --color-surface:       #1E293B;  /* slate-800 */
-  --color-surface-alt:   #334155;  /* slate-700 */
-  --color-border:        #475569;  /* slate-600 */
-  --color-foreground:    #F1F5F9;  /* slate-100 */
-  --color-muted:         #94A3B8;  /* slate-400 */
+  /* Backgrounds */
+  --color-background:    #0F172A;  /* slate-900 — canvas/page */
+  --color-surface:       #1E293B;  /* slate-800 — cards/panels */
+  --color-surface-alt:   #334155;  /* slate-700 — hover/active */
+  --color-elevated:      #3D4F6A;  /* raised surfaces: flow nodes, prominent cards */
+
+  /* Borders */
+  --color-border:        #475569;  /* slate-600 — default */
+  --color-border-strong: #64748B;  /* visible separators, node outlines */
+
+  /* Text */
+  --color-foreground:    #F1F5F9;  /* slate-100 — primary */
+  --color-secondary:     #CBD5E1;  /* slate-300 — data text, 8.1:1 contrast */
+  --color-muted:         #94A3B8;  /* slate-400 — decorative only, not for data */
+  --color-faint:         #64748B;  /* intentionally dim: hints, placeholders */
 
   /* Accent */
   --color-accent:        #3B82F6;  /* blue-500 */

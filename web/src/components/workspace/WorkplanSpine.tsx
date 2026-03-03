@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Engagement, DeliverableStatus } from "@/lib/mock-data";
+import { useDataStore } from "@/lib/data-store";
+import { WORKSTREAM_DATA_REQUIREMENTS } from "@/lib/workstream-data-config";
 
 const STATUS_DOT: Record<DeliverableStatus, string> = {
   not_started: "bg-muted/40",
@@ -18,9 +20,11 @@ export default function WorkplanSpine({
 }: {
   engagement: Engagement;
 }) {
-  const params = useParams<{ engagementId: string; deliverableId?: string }>();
+  const params = useParams<{ engagementId: string; deliverableId?: string; workstreamId?: string }>();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [hoveredWs, setHoveredWs] = useState<string | null>(null);
+  const hasRequiredData = useDataStore((s) => s.hasRequiredData);
 
   // Find which workstream contains the active deliverable
   const activeWsId = engagement.workplan?.workstreams.find((ws) =>
@@ -114,29 +118,64 @@ export default function WorkplanSpine({
             (d) => d.status === "complete"
           ).length;
 
+          const hasDataReqs = !!WORKSTREAM_DATA_REQUIREMENTS[ws.workstream_id];
+          const dataReady = hasDataReqs
+            ? hasRequiredData(params.engagementId, ws.workstream_id)
+            : null;
+          const isHovered = hoveredWs === ws.workstream_id;
+          const isActiveWs = params.workstreamId === ws.workstream_id;
+
           return (
             <div key={ws.workstream_id}>
               {/* Workstream header */}
-              <button
-                onClick={() => toggleWs(ws.workstream_id)}
+              <div
                 className={`w-full flex items-center gap-2 px-4 py-2 text-left transition-colors hover:bg-surface-alt/50 ${
-                  hasActive ? "text-foreground" : "text-muted"
+                  hasActive || isActiveWs ? "text-foreground" : "text-muted"
                 }`}
+                onMouseEnter={() => setHoveredWs(ws.workstream_id)}
+                onMouseLeave={() => setHoveredWs(null)}
               >
-                <motion.span
-                  animate={{ rotate: isOpen ? 90 : 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="text-muted text-[10px] shrink-0"
+                <button
+                  onClick={() => toggleWs(ws.workstream_id)}
+                  className="flex items-center gap-2 flex-1 min-w-0"
                 >
-                  ›
-                </motion.span>
-                <span className="text-[11px] font-medium leading-snug flex-1 min-w-0 truncate">
-                  {ws.name}
-                </span>
+                  <motion.span
+                    animate={{ rotate: isOpen ? 90 : 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="text-muted text-[10px] shrink-0"
+                  >
+                    ›
+                  </motion.span>
+                  {hasDataReqs && (
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                        dataReady ? "bg-success" : "bg-warning"
+                      }`}
+                      title={dataReady ? "Data ready" : "Data needed"}
+                    />
+                  )}
+                  <span className="text-[11px] font-medium leading-snug flex-1 min-w-0 truncate text-left">
+                    {ws.name}
+                  </span>
+                </button>
                 <span className="text-[9px] font-mono text-muted shrink-0">
                   {complete}/{ws.deliverables.length}
                 </span>
-              </button>
+                {hasDataReqs && isHovered && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(
+                        `/${params.engagementId}/workstreams/${ws.workstream_id}`
+                      );
+                    }}
+                    title="Data setup"
+                    className="text-muted/60 hover:text-foreground transition-colors text-[10px] shrink-0"
+                  >
+                    &rarr;
+                  </button>
+                )}
+              </div>
 
               {/* Deliverables */}
               <AnimatePresence initial={false}>

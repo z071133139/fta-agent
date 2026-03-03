@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-03-02 (Session 025)
+> Last updated: 2026-03-02 (Session 026)
 > Current phase: Phase 1 — Personal Use MVP
 
 ---
@@ -13,16 +13,20 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 
 **PDD-007 complete (Session 025):** Custom Process Flow Builder — NLP-driven flow creation via Functional Consultant agent. Split-view workspace, multi-turn conversation, live preview, accept/discard lifecycle.
 
+**PDD-009 complete (Session 026):** Workstream-Level Data Gates — declarative per-workstream data requirements, workstream gate page, deliverable readiness table, WorkplanSpine data pips.
+
+**PDD-010 complete (Session 026):** Mission Control Landing Page — unified context selector (engagements + pursuits), attention queue, resume card, data status widget, consultant presence pips, kill engagement dashboard.
+
 ---
 
-## Session 026 Pickup
+## Session 027 Pickup
 
-1. **End-to-end Process Flow Builder testing** — test full flow: mock mode (turn 1 = clarifying Qs, turn 2+ = flow emission), live mode (verify ToolMessage fix renders preview), accept → index, discard → clean state
-2. **COA Workbench verification** — clear localStorage, restart backend with `FTA_MOCK_AGENT=true`, navigate to d-005-02, run analysis → confirm workbench + 4 tabs
-3. **Live LLM testing (both agents)** — `FTA_MOCK_AGENT=false`: test GL Design Coach on d-005-01/d-005-02 + Functional Consultant process flow builder
-4. **Agentic Functional Consultant expansion** — 6 capabilities beyond flow building: gap→req pipeline, coverage analysis, cross-PA impact, session prep, deliverable drafting (see `docs/plans/stream-b-agentic-functional-consultant.md`)
-5. **Stream A resume** — remaining knowledge workspaces (A6–A8, A10)
-6. **Stream C** — platform polish (WorkplanSpine, breadcrumbs, loading states)
+1. **PDD-008 — Color Readability Overhaul** — see `docs/plans/pdd-008-color-readability-overhaul.md`
+2. **End-to-end Process Flow Builder testing** — test full flow: mock mode (turn 1 = clarifying Qs, turn 2+ = flow emission), live mode (verify ToolMessage fix renders preview), accept → index, discard → clean state
+3. **COA Workbench verification** — clear localStorage, restart backend with `FTA_MOCK_AGENT=true`, navigate to d-005-02, run analysis → confirm workbench + 4 tabs
+4. **Live LLM testing (both agents)** — `FTA_MOCK_AGENT=false`: test GL Design Coach on d-005-01/d-005-02 + Functional Consultant process flow builder
+5. **Agentic Functional Consultant expansion** — 6 capabilities beyond flow building: gap→req pipeline, coverage analysis, cross-PA impact, session prep, deliverable drafting (see `docs/plans/stream-b-agentic-functional-consultant.md`)
+6. **Stream A resume** — remaining knowledge workspaces (A6–A8, A10)
 
 ---
 
@@ -40,6 +44,8 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 | B8 | Demo polish — fallback, transitions, timing, status bar | B6, B7 | Done |
 | PDD-006 | COA Design Workbench (d-005-02) — living document pattern | B4, B5 | Done |
 | PDD-007 | Custom Process Flow Builder — FC agent + split-view + emit_process_flow | B3, B5 | Done |
+| PDD-009 | Workstream-Level Data Gates — declarative data requirements per workstream | B1 | Done |
+| PDD-010 | Mission Control Landing Page — unified context selector, attention queue, presence | PDD-009 | Done |
 
 **End state:** Three agent capabilities working end-to-end. GL Design Coach (account analysis, COA design) + Functional Consultant (process flow builder). Real data in, real agent processing, real streamed results.
 
@@ -90,6 +96,10 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 - `web/src/components/workspace/ProcessFlowBuilder.tsx` — split-view FC agent builder (PDD-007)
 - `web/src/components/workspace/ProcessFlowIndex.tsx` — flow index with custom flows + builder entry
 - `web/src/components/workspace/flow-builder/` — BuilderChatPanel, BuilderPreviewPanel
+- `web/src/components/landing/` — ContextSelector, AttentionQueue, ResumeCard, DataStatusWidget, PursuitContent
+- `web/src/components/workstream/` — WorkstreamDataPanel, WorkstreamDataSummary
+- `web/src/lib/workstream-data-config.ts` — declarative per-workstream data requirements
+- `web/src/lib/data-store.ts` — Zustand store for uploaded data files + workstream selectors
 
 ### Backend
 - `src/fta_agent/agents/consulting_agent.py` — router agent

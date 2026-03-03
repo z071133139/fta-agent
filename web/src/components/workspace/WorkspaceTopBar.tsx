@@ -85,8 +85,12 @@ export default function WorkspaceTopBar({
     return info;
   }, [pickerOpen, engagementId]);
 
-  // Check for direct PA previous session
-  const directPAHasSession = directPA ? hasPreviousSession(engagementId, directPA) : false;
+  // Hydration guard — localStorage isn't available during SSR
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setHydrated(true); }, []);
+
+  // Check for direct PA previous session (only after hydration to avoid mismatch)
+  const directPAHasSession = hydrated && directPA ? hasPreviousSession(engagementId, directPA) : false;
 
   // Close picker on outside click
   useEffect(() => {

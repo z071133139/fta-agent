@@ -1,30 +1,15 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { MOCK_ENGAGEMENTS } from "@/lib/mock-data";
-import { EngagementOverview } from "@/components/engagement/EngagementOverview";
-import { DataSourcesPanel } from "@/components/engagement/DataSourcesPanel";
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 export default function EngagementDashboard() {
   const params = useParams<{ engagementId: string }>();
-  const engagement = MOCK_ENGAGEMENTS.find(
-    (e) => e.engagement_id === params.engagementId
-  );
+  const router = useRouter();
 
-  if (!engagement) {
-    return (
-      <div className="flex flex-1 items-center justify-center text-sm text-muted">
-        Engagement not found.
-      </div>
-    );
-  }
+  useEffect(() => {
+    router.replace(`/?eng=${params.engagementId}`);
+  }, [params.engagementId, router]);
 
-  return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="max-w-3xl mx-auto px-6 py-8">
-        <EngagementOverview engagement={engagement} />
-        <DataSourcesPanel engagementId={engagement.engagement_id} />
-      </div>
-    </div>
-  );
+  return null;
 }

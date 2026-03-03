@@ -53,13 +53,13 @@ export default function AnnotatedTable({
               <th
                 key={col.key}
                 style={{ width: col.width, minWidth: col.width }}
-                className="px-3 py-2 text-left text-[10px] uppercase tracking-[0.1em] text-muted font-medium whitespace-nowrap"
+                className="px-3 py-2 text-left text-[11px] uppercase tracking-[0.1em] text-secondary font-medium whitespace-nowrap"
               >
                 {col.label}
               </th>
             ))}
             {hasActionColumn && (
-              <th className="px-3 py-2 text-right text-[10px] uppercase tracking-[0.1em] text-muted font-medium whitespace-nowrap w-[90px]" />
+              <th className="px-3 py-2 text-right text-[11px] uppercase tracking-[0.1em] text-secondary font-medium whitespace-nowrap w-[90px]" />
             )}
           </tr>
         </thead>
@@ -100,19 +100,19 @@ export default function AnnotatedTable({
                               {row.flags.map((flag) => (
                                 <span
                                   key={flag}
-                                  className="bg-warning/20 text-warning rounded-full px-2 py-0.5 text-[10px] font-medium"
+                                  className="bg-warning/20 text-warning rounded-full px-2 py-0.5 text-[11px] font-medium"
                                 >
                                   {flag}
                                 </span>
                               ))}
                             </div>
                           ) : (
-                            <span className="text-muted/30">—</span>
+                            <span className="text-faint">—</span>
                           )
                         ) : col.key === "status" && value && value !== "—" ? (
                           /* Status column — colored badge */
                           <span
-                            className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                            className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-medium ${
                               value === "Mapped" || value === "Confirmed"
                                 ? "bg-success/10 text-success"
                                 : value === "Gap Identified"
@@ -126,7 +126,7 @@ export default function AnnotatedTable({
                           </span>
                         ) : (
                           /* Default cell */
-                          <span className={value === "—" ? "text-muted/30" : ""}>
+                          <span className={value === "—" ? "text-faint" : ""}>
                             {value}
                           </span>
                         )}
@@ -166,7 +166,7 @@ export default function AnnotatedTable({
                       colSpan={columns.length + (hasActionColumn ? 1 : 0)}
                       className="px-4 py-1.5 bg-surface/60"
                     >
-                      <span className="text-[10px] font-mono text-muted">
+                      <span className="text-[11px] font-mono text-muted">
                         {row.provenance}
                       </span>
                     </td>
@@ -189,7 +189,7 @@ export default function AnnotatedTable({
 
       {/* Rows hidden indicator */}
       {interruptIdx >= 0 && !interruptResolved && rows.length > visibleRows.length && (
-        <div className="px-4 py-2 border-t border-border/30 text-[10px] text-muted font-mono">
+        <div className="px-4 py-2 border-t border-border/30 text-[11px] text-muted font-mono">
           {rows.length - visibleRows.length} row
           {rows.length - visibleRows.length !== 1 ? "s" : ""} pending decision
         </div>

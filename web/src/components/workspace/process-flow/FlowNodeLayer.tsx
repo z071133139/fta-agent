@@ -7,9 +7,9 @@ import { LABEL_COL_W, GW, SE } from "./useFlowLayout";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const STATUS_STRIPE: Record<string, string> = {
-  leading_practice: "#3B82F6",
-  client_overlay: "#F59E0B",
-  gap: "#EF4444",
+  leading_practice: "var(--color-accent)",
+  client_overlay: "var(--color-warning)",
+  gap: "var(--color-error)",
 };
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -49,9 +49,9 @@ const SwimlaneBand = React.memo(function SwimlaneBand({
         width: lane.w,
         height: lane.h,
         pointerEvents: "none", // never intercept clicks
-        borderTop: "1px solid rgba(71,85,105,0.3)",
-        borderBottom: isLast ? "1px solid rgba(71,85,105,0.3)" : "none",
-        backgroundColor: "rgba(15,23,42,0.3)",
+        borderTop: "1px solid rgba(100,116,139,0.35)",
+        borderBottom: isLast ? "1px solid rgba(100,116,139,0.35)" : "none",
+        backgroundColor: "rgba(30,41,59,0.25)",
       }}
     >
       {/* Lane label column */}
@@ -62,7 +62,7 @@ const SwimlaneBand = React.memo(function SwimlaneBand({
           top: 0,
           bottom: 0,
           width: LABEL_COL_W,
-          borderRight: "1px solid rgba(71,85,105,0.3)",
+          borderRight: "1px solid rgba(100,116,139,0.35)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -70,11 +70,11 @@ const SwimlaneBand = React.memo(function SwimlaneBand({
       >
         <span
           style={{
-            fontSize: 9,
+            fontSize: 11,
             fontFamily: "'DM Sans', system-ui, sans-serif",
-            letterSpacing: "0.18em",
+            letterSpacing: "0.14em",
             textTransform: "uppercase",
-            color: "#94A3B8",
+            color: "var(--color-secondary)",
             fontWeight: 600,
             writingMode: "vertical-lr",
             transform: "rotate(180deg)",
@@ -179,16 +179,16 @@ const TaskNode = React.memo(function TaskNode({
         top: node.y,
         width: node.w,
         height: node.h,
-        backgroundColor: "#1E293B",
+        backgroundColor: "var(--color-elevated)",
         borderStyle: gapFlagged ? "dashed" : "solid",
         borderWidth: stripeColor
           ? `${selected ? 1.5 : 1}px ${selected ? 1.5 : 1}px ${selected ? 1.5 : 1}px 3px`
           : selected ? "1.5px" : "1px",
         borderColor: stripeColor
-          ? `rgba(71,85,105,0.7) rgba(71,85,105,0.7) rgba(71,85,105,0.7) ${stripeColor}`
+          ? `var(--color-border-strong) var(--color-border-strong) var(--color-border-strong) ${stripeColor}`
           : selected
             ? "rgba(59,130,246,0.7)"
-            : "rgba(71,85,105,0.7)",
+            : "var(--color-border-strong)",
         borderRadius: 8,
         padding: "10px 12px",
         cursor: editing ? "default" : "pointer",
@@ -207,10 +207,10 @@ const TaskNode = React.memo(function TaskNode({
             position: "absolute",
             top: -6,
             right: -6,
-            width: 16,
-            height: 16,
+            width: 18,
+            height: 18,
             borderRadius: "50%",
-            backgroundColor: "#F59E0B",
+            backgroundColor: "var(--color-warning)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -219,7 +219,7 @@ const TaskNode = React.memo(function TaskNode({
         >
           <span
             style={{
-              fontSize: 8,
+              fontSize: 10,
               fontWeight: 700,
               color: "#000",
               lineHeight: 1,
@@ -246,10 +246,10 @@ const TaskNode = React.memo(function TaskNode({
             border: "none",
             outline: "none",
             resize: "none",
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 500,
             fontFamily: "'DM Sans', system-ui, sans-serif",
-            color: "#F1F5F9",
+            color: "var(--color-foreground)",
             lineHeight: 1.4,
             padding: 0,
             cursor: "text",
@@ -259,10 +259,10 @@ const TaskNode = React.memo(function TaskNode({
         <p
           style={{
             margin: 0,
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 500,
             fontFamily: "'DM Sans', system-ui, sans-serif",
-            color: "#F1F5F9",
+            color: "var(--color-foreground)",
             lineHeight: 1.4,
             display: "-webkit-box",
             WebkitLineClamp: 2,
@@ -285,12 +285,12 @@ const TaskNode = React.memo(function TaskNode({
         >
           <span
             style={{
-              fontSize: 8,
+              fontSize: 10,
               fontFamily: "'JetBrains Mono', monospace",
-              color: "#64748B",
-              backgroundColor: "#334155",
+              color: "var(--color-secondary)",
+              backgroundColor: "var(--color-surface-alt)",
               borderRadius: 3,
-              padding: "1px 5px",
+              padding: "1px 6px",
             }}
           >
             {node.raw.system}
@@ -322,9 +322,9 @@ const TaskNode = React.memo(function TaskNode({
           >
             <span
               style={{
-                fontSize: 8,
+                fontSize: 10,
                 fontFamily: "'JetBrains Mono', monospace",
-                color: "#EF4444",
+                color: "var(--color-error)",
                 fontWeight: 600,
                 flexShrink: 0,
                 marginTop: 1,
@@ -334,9 +334,9 @@ const TaskNode = React.memo(function TaskNode({
             </span>
             <span
               style={{
-                fontSize: 9,
+                fontSize: 10,
                 fontFamily: "'DM Sans', system-ui, sans-serif",
-                color: "#94A3B8",
+                color: "var(--color-secondary)",
                 lineHeight: 1.3,
                 display: "-webkit-box",
                 WebkitLineClamp: 2,
@@ -388,10 +388,10 @@ const GatewayNode = React.memo(function GatewayNode({
           top: 4,
           left: 4,
           transform: "rotate(45deg)",
-          backgroundColor: "#334155",
+          backgroundColor: "var(--color-surface-alt)",
           border: selected
             ? "1.5px solid rgba(59,130,246,0.7)"
-            : "1px solid rgba(71,85,105,0.6)",
+            : "1px solid var(--color-border-strong)",
           boxShadow: selected ? "0 0 0 3px rgba(59,130,246,0.15)" : undefined,
           transition: "border-color 0.12s ease",
         }}
@@ -409,9 +409,9 @@ const GatewayNode = React.memo(function GatewayNode({
       >
         <span
           style={{
-            fontSize: 8,
+            fontSize: 10,
             fontFamily: "'DM Sans', system-ui, sans-serif",
-            color: "#94A3B8",
+            color: "var(--color-secondary)",
             textAlign: "center",
             maxWidth: 46,
             lineHeight: 1.2,
@@ -442,8 +442,8 @@ const StartEndNode = React.memo(function StartEndNode({
         height: SE,
         borderRadius: "50%",
         border: isStart
-          ? "2px solid #3B82F6"
-          : "2px solid #10B981",
+          ? "2px solid var(--color-accent)"
+          : "2px solid var(--color-success)",
         backgroundColor: isStart
           ? "rgba(59,130,246,0.15)"
           : "rgba(16,185,129,0.15)",
@@ -459,7 +459,7 @@ const StartEndNode = React.memo(function StartEndNode({
             width: 10,
             height: 10,
             borderRadius: "50%",
-            backgroundColor: "#10B981",
+            backgroundColor: "var(--color-success)",
           }}
         />
       )}

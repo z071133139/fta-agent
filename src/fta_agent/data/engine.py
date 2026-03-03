@@ -27,9 +27,12 @@ class DataEngine:
         return self.conn.execute(sql).pl()
 
     def load_polars(self, df: pl.DataFrame, table_name: str) -> None:
-        """Register a Polars DataFrame as a DuckDB table."""
-        # DuckDB can query Polars DataFrames directly via replacement scans
-        self.conn.register(table_name, df.to_arrow())
+        """Load a Polars DataFrame into a persistent DuckDB table."""
+        arrow_table = df.to_arrow()
+        self.conn.register("_tmp_load", arrow_table)
+        self.conn.execute(f"DROP TABLE IF EXISTS {table_name}")
+        self.conn.execute(f"CREATE TABLE {table_name} AS SELECT * FROM _tmp_load")
+        self.conn.unregister("_tmp_load")
 
     def tables(self) -> list[str]:
         """List all tables in the database."""

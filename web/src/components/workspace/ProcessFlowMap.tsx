@@ -15,10 +15,10 @@ const OV_CFG: Record<
   ProcessOverlayKind,
   { label: string; cls: string }
 > = {
-  constraint: { label: "Constraint", cls: "bg-[#F59E0B]/15 text-[#F59E0B]" },
-  requirement: { label: "Requirement", cls: "bg-[#3B82F6]/15 text-[#3B82F6]" },
-  exception: { label: "Exception", cls: "bg-[#A855F7]/15 text-[#A855F7]" },
-  risk: { label: "Risk", cls: "bg-[#EF4444]/15 text-[#EF4444]" },
+  constraint: { label: "Constraint", cls: "bg-warning/15 text-warning" },
+  requirement: { label: "Requirement", cls: "bg-accent/15 text-accent" },
+  exception: { label: "Exception", cls: "bg-purple/15 text-purple" },
+  risk: { label: "Risk", cls: "bg-error/15 text-error" },
 };
 
 // ── Agentic rating config ─────────────────────────────────────────────────
@@ -27,7 +27,7 @@ const AGENTIC_CFG: Record<string, { label: string; color: string; bg: string }> 
   A1: { label: "Full Closure",    color: "#10B981", bg: "rgba(16,185,129,0.15)" },
   A2: { label: "Partial Closure", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
   A3: { label: "Agent-Assisted",  color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
-  A0: { label: "Not Applicable",  color: "#64748B", bg: "rgba(100,116,139,0.15)" },
+  A0: { label: "Not Applicable",  color: "#94A3B8", bg: "rgba(148,163,184,0.15)" },
 };
 
 // ── Zoom controls ─────────────────────────────────────────────────────────────

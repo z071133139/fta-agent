@@ -18,6 +18,7 @@
 | **021** | Stream B pivot — agentic capabilities (B1–B8) | B | B1+ |
 | **024** | PDD-006: COA Design Workbench (d-005-02) | B | COA workbench, mock backend COA response |
 | **025** | PDD-007: Custom Process Flow Builder | B | FC agent, emit_process_flow tool, split-view builder, flow-builder-store |
+| **026** | PDD-008 color pass, PDD-009 data gates, PDD-010 mission control | B+C | Color readability, workstream data gates, landing page rewrite, presence pips, DuckDB fix |
 
 **Milestone (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
 
@@ -266,3 +267,91 @@ Zustand + localStorage (`fta-flow-builder`). Two separate data structures:
 ### Session Lifecycle
 
 Fresh start on every builder open (`initialized` flag forces `clearSession + startSession`). Session persistence via localStorage for mid-conversation navigation. Accept clears session and persists flow. Discard clears everything.
+
+---
+
+## PDD-008 — Color Readability Overhaul (Session 026)
+
+Systematic pass across all workspace components to fix color readability issues. Replaced `text-[9px]` with `text-[10px]`, swapped hardcoded `blue-400/500` tokens with `accent` CSS variable, increased contrast on muted text in dark theme. Applied to: AgentChatInput, AnnotatedTable, BusinessRequirementsTable, COADesignWorkbench, CompletedAnalysisView, InlineReportPanel, PreflightScreen, ProcessFlowBuilder, ProcessFlowIndex, ProcessFlowMap, WorkplanSpine, WorkspaceTopBar, BuilderChatPanel, FlowEdgeLayer, FlowNodeLayer, DataAnalysisPreflight.
+
+---
+
+## PDD-009 — Workstream-Level Data Gates (Session 026)
+
+Moved data upload from engagement dashboard to workstream-level landing pages with declarative per-workstream data requirements.
+
+### Config
+
+`web/src/lib/workstream-data-config.ts` — static registry of `WorkstreamDataRequirements`. Each workstream declares required file types (e.g. ws-005 needs `trial_balance` + `coa_extract`), with labels, descriptions, and which deliverables each file unlocks.
+
+### Store Extensions
+
+`web/src/lib/data-store.ts` extended with:
+- `getWorkstreamFiles(engId, wsId)` — files matching a workstream's required types
+- `hasRequiredData(engId, wsId)` — true if all required types present
+
+### Workstream Gate Page
+
+Route: `/[engId]/workstreams/[wsId]`. Renders `WorkstreamDataPanel` with:
+- Header (workstream name + agent label)
+- Requirement cards (one per file type): status pip, description, upload zone or file card with Preview/Remove, "required for" deliverable list
+- Deliverable readiness table: each deliverable shows required types, ready/missing status, clickable to navigate
+
+### DataPreviewTable Enhancement
+
+Added "Columns" tab as default showing all 29 trial balance columns (name, SQL type, nullable, sample value). Tabs: Columns | Postings | Accounts.
+
+### WorkplanSpine Integration
+
+Workstream headers with data requirements show readiness pip (emerald=complete, amber=partial). Hover reveals navigate arrow to workstream gate page.
+
+### DataAnalysisPreflight Update
+
+"No data" state now shows required type badges and routes to `/[engId]/workstreams/[wsId]` instead of dashboard.
+
+### Dashboard Replacement
+
+`WorkstreamDataSummary` replaces `DataSourcesPanel` on the engagement dashboard — compact one-row-per-workstream summary with navigate arrows.
+
+---
+
+## PDD-010 — Mission Control Landing Page (Session 026)
+
+Replaced the engagement cards + agent team grid + workplan panel landing page with a single-screen mission control view.
+
+### Context Selector
+
+`web/src/components/landing/ContextSelector.tsx` — unified dropdown listing engagements AND pursuits as peers. Grouped by type with section headers (ENGAGEMENTS / PURSUITS). Shows selected item name, metadata line, phase dot. Stats bar for engagement mode (stat boxes + progress bar). Pursuit summary for pursuit mode.
+
+### Content Adapts to Selection Type
+
+- **Engagement selected:** Attention queue (collapsed by default, expandable) + full workplan with presence pips
+- **Pursuit selected:** Pursuit deliverable list with status pips
+- **No selection:** Card picker showing both engagements and pursuits as clickable cards
+
+### Attention Queue
+
+`web/src/components/landing/AttentionQueue.tsx` — collapsed single-line bar showing count + truncated item names. Expands to show blocked/review items with presence pips and resolve/review CTAs. Replaced the old "Needs Your Input" banner inside WorkplanPanel.
+
+### Presence Model
+
+`ConsultantPresence` type on `Engagement`: `consultant_id`, `deliverable_id`, `last_seen`, `is_active`. Mock data: SK on d-005-02 (2h ago), TR on d-001-03 (20m ago, active), PM idle (2d ago).
+
+Presence appears as avatar pips on:
+- Attention queue items (with relative time)
+- WorkplanPanel workstream headers (aggregated from deliverables within)
+- WorkplanPanel deliverable rows (individual)
+
+### Engagement Dashboard Kill
+
+`/[engId]` now redirects to `/?eng=[engId]`. No more standalone engagement dashboard page.
+
+### Persistence
+
+`localStorage` stores selected context (ID + kind). Query params `?eng=` and `?pursuit=` override localStorage for direct links.
+
+---
+
+## Backend Fix — DuckDB Table Registration (Session 026)
+
+`DataEngine.load_polars()` changed from `conn.register()` (replacement scan, Arrow reference can be garbage collected) to `CREATE TABLE AS SELECT * FROM _tmp` (persistent in-memory table). Fixes "column not found" errors in `generate_income_statement` and other tools that JOIN `account_master`.
