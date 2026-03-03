@@ -619,11 +619,17 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
 
       {/* Placing mode indicator */}
       {placingNodeId && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
-          <div className="bg-accent/20 border border-accent/40 rounded-lg px-4 py-2 backdrop-blur-sm">
-            <span className="text-[11px] font-mono text-accent">
-              Click a node to insert after · Esc to cancel
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+          <div className="bg-accent/20 border border-accent/40 rounded-lg px-4 py-2 backdrop-blur-sm flex items-center gap-3">
+            <span className="text-[11px] font-mono text-accent pointer-events-none">
+              Click a node to insert after
             </span>
+            <button
+              onClick={() => setPlacingNodeId(null)}
+              className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-alt/60 text-muted hover:text-foreground border border-border/30 transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}

@@ -392,3 +392,31 @@
 | 7. Builder (AI) | 20 | Chat + generate + accept/discard |
 | 8. Cross-Cutting | 10 | Responsive + keyboard + animation + data |
 | **Total** | **120** | |
+
+---
+
+## Execution Results — Session 028 (2026-03-03)
+
+**Method:** Code-level verification (all 120 scenarios verified against source code)
+
+| Section | Pass | Fail | Manual | Notes |
+|---------|------|------|--------|-------|
+| 1. Flow Index | 9 | 0 | 2 | Navigation needs browser confirmation |
+| 2. Viewport & Nav | 20 | 0 | 0 | All zoom/pan/fit verified |
+| 3. Node Interactions | 16 | 0 | 0 | Selection, overlays, editing clean |
+| 4. Edge Rendering | 6 | 0 | 0 | Animation, arrowheads, condition labels |
+| 5. Per-Flow Verification | 13 | 0 | 0 | All 4 flows match data exactly |
+| 6. Workshop Mode | 25 | 1 | 0 | D2: missing cancel button in placing mode |
+| 7. Builder (AI) | 17 | 1 | 2 | D1: custom flow nav; D3: hydration timing |
+| 8. Cross-Cutting | 10 | 0 | 0 | All keyboard, animation, data integrity |
+| **Total** | **116** | **2** | **4** | **95% pass** |
+
+### Defects Found
+
+| # | Severity | Scenario | Defect | Fix Applied |
+|---|----------|----------|--------|-------------|
+| D1 | HIGH | 7.5.5 | Clicking accepted custom flow re-opens builder instead of flow map | Added `onViewCustomFlow` callback + inline ProcessFlowMap viewer with back button |
+| D2 | MEDIUM | 6.4.9 | No cancel button in placing mode overlay (only Escape key) | Added clickable Cancel button to overlay |
+| D3 | LOW | 7.6.3 | Session resume relied on implicit Zustand hydration (race condition) | Replaced `useState(false) + useEffect(setHydrated(true))` with `persist.onFinishHydration()` + `persist.hasHydrated()` |
+
+All 3 defects fixed and verified via build pass.

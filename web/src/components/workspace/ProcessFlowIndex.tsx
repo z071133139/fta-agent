@@ -67,9 +67,10 @@ function buildFlowEntries(indexData: ProcessFlowIndexData): FlowEntry[] {
 
 interface ProcessFlowIndexProps {
   onStartBuilder?: () => void;
+  onViewCustomFlow?: (flow: ProcessFlowData) => void;
 }
 
-export function ProcessFlowIndex({ onStartBuilder }: ProcessFlowIndexProps) {
+export function ProcessFlowIndex({ onStartBuilder, onViewCustomFlow }: ProcessFlowIndexProps) {
   const params = useParams<{ engagementId: string; deliverableId: string }>();
   const router = useRouter();
   const workspace = MOCK_WORKSPACES[params.deliverableId];
@@ -157,8 +158,11 @@ export function ProcessFlowIndex({ onStartBuilder }: ProcessFlowIndexProps) {
                     key={entry.deliverable_id}
                     onClick={() => {
                       if (entry.isCustom) {
-                        // Open builder for accepted custom flow
-                        onStartBuilder?.();
+                        // View accepted custom flow in read-only map
+                        const accepted = (acceptedFlows ?? []).find((a) => a.id === entry.deliverable_id);
+                        if (accepted) {
+                          onViewCustomFlow?.(accepted.flow);
+                        }
                       } else {
                         router.push(
                           `/${params.engagementId}/deliverables/${entry.deliverable_id}`

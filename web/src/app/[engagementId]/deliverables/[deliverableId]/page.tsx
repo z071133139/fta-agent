@@ -110,6 +110,7 @@ export default function DeliverablePage() {
 
   // ── Flow builder state (PDD-007) ─────────────────────────────────────
   const [showFlowBuilder, setShowFlowBuilder] = useState(false);
+  const [viewingCustomFlow, setViewingCustomFlow] = useState<ProcessFlowData | null>(null);
 
   // ── Hydration guard for persisted stores ────────────────────────────
   // Zustand persist stores hydrate async from localStorage after mount.
@@ -419,8 +420,35 @@ export default function DeliverablePage() {
             {hasGraph && workspaceTemplate.graph!.kind === "process_flow_index" && (
               showFlowBuilder ? (
                 <ProcessFlowBuilder onClose={() => setShowFlowBuilder(false)} />
+              ) : viewingCustomFlow ? (
+                <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                  <div className="flex items-center gap-3 px-5 py-2 border-b border-border/40">
+                    <button
+                      onClick={() => setViewingCustomFlow(null)}
+                      className="text-[11px] text-muted hover:text-foreground transition-colors flex items-center gap-1"
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
+                      Process Flow Index
+                    </button>
+                    <div className="h-3 w-px bg-border/40" />
+                    <span className="text-[12px] text-foreground font-medium">
+                      {viewingCustomFlow.name}
+                    </span>
+                    <span className="ml-2 text-[10px] px-2 py-0.5 rounded border border-accent/30 bg-accent/10 text-accent">
+                      Custom
+                    </span>
+                  </div>
+                  <div className="flex-1 min-h-0 relative">
+                    <ProcessFlowMap data={viewingCustomFlow} />
+                  </div>
+                </div>
               ) : (
-                <ProcessFlowIndex onStartBuilder={() => setShowFlowBuilder(true)} />
+                <ProcessFlowIndex
+                  onStartBuilder={() => setShowFlowBuilder(true)}
+                  onViewCustomFlow={(flow) => setViewingCustomFlow(flow)}
+                />
               )
             )}
 

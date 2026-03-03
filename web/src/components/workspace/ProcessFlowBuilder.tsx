@@ -17,10 +17,17 @@ export function ProcessFlowBuilder({ onClose }: ProcessFlowBuilderProps) {
   const params = useParams<{ engagementId: string; deliverableId: string }>();
   const engId = params.engagementId;
 
-  // Hydration guard
+  // Hydration guard — wait for Zustand persist to rehydrate from localStorage
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
-    setHydrated(true);
+    const unsub = useFlowBuilderStore.persist.onFinishHydration(() => {
+      setHydrated(true);
+    });
+    // If already hydrated (e.g. store was created earlier), set immediately
+    if (useFlowBuilderStore.persist.hasHydrated()) {
+      setHydrated(true);
+    }
+    return unsub;
   }, []);
 
   // Mock/live toggle
