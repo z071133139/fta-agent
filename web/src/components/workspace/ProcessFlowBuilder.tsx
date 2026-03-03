@@ -43,16 +43,32 @@ export function ProcessFlowBuilder({ onClose }: ProcessFlowBuilderProps) {
   // Track whether we got a flow update during the current stream
   const [pendingFlowUpdate, setPendingFlowUpdate] = useState(false);
 
-  // Initialize a fresh building session when the builder opens
+  // Initialize building session — resume existing or start fresh
   const [initialized, setInitialized] = useState(false);
   useEffect(() => {
     if (hydrated && !initialized) {
-      // Always start fresh — clear any stale/accepted session
-      clearSession(engId);
-      startSession(engId);
+      const existing = useFlowBuilderStore.getState().getSession(engId);
+      if (existing && existing.status === "building") {
+        // Resume in-progress session
+      } else {
+        // No active session — start fresh
+        clearSession(engId);
+        startSession(engId);
+      }
       setInitialized(true);
     }
   }, [hydrated, initialized, engId, startSession, clearSession]);
+
+  // Escape key → close builder
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && onClose) {
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   // When agent completes, capture the response
   useEffect(() => {

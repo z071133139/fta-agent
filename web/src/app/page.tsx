@@ -317,7 +317,7 @@ function LandingPageInner() {
         }}
       />
 
-      <div className="relative mx-auto max-w-5xl px-8 py-8">
+      <div className="relative mx-auto max-w-7xl px-8 py-8">
         {/* Top bar */}
         <div className="flex items-center justify-between mb-8">
           <span className="font-serif text-xl text-foreground tracking-tight">

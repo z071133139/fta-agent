@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   type Engagement,
   type Workstream,
-  type Deliverable,
   type DeliverableStatus,
   type ConsultantPresence,
 } from "@/lib/mock-data";
@@ -60,13 +59,80 @@ const STATUS_TEXT: Record<DeliverableStatus, string> = {
   blocked:      "text-error",
 };
 
-// ── Agent chip helpers ─────────────────────────────────────────────────────
+// ── Agent column config ──────────────────────────────────────────────────
 
-const AGENT_CHIP: Record<string, { label: string; cls: string }> = {
-  consulting_agent:     { label: "Consulting Agent",    cls: "bg-surface-alt text-muted" },
-  gl_design_coach:      { label: "GL Design Coach",     cls: "bg-accent/10 text-accent" },
-  functional_consultant:{ label: "Functional Consultant", cls: "bg-purple/10 text-purple" },
-};
+type AgentKey = "consulting_agent" | "functional_consultant" | "gl_design_coach";
+
+interface AgentConfig {
+  key: AgentKey;
+  displayName: string;
+  colorCls: string;
+  iconCls: string;
+  bgCls: string;
+}
+
+const AGENT_COLUMNS: AgentConfig[] = [
+  { key: "consulting_agent",       displayName: "Engagement Lead",  colorCls: "border-muted/30",       iconCls: "bg-slate-400",  bgCls: "bg-surface-alt/20" },
+  { key: "functional_consultant",  displayName: "Business Analyst", colorCls: "border-purple-400/30",  iconCls: "bg-purple-400", bgCls: "bg-purple-500/[0.03]" },
+  { key: "gl_design_coach",        displayName: "GL Design Coach",  colorCls: "border-accent/30",      iconCls: "bg-accent",     bgCls: "bg-accent/[0.03]" },
+];
+
+function groupWorkstreamsByAgent(workstreams: Workstream[]): Map<AgentKey, Workstream[]> {
+  const grouped = new Map<AgentKey, Workstream[]>();
+  for (const agent of AGENT_COLUMNS) grouped.set(agent.key, []);
+  for (const ws of workstreams) {
+    const key = (ws.owner_agent ?? "consulting_agent") as AgentKey;
+    grouped.get(key)?.push(ws);
+  }
+  return grouped;
+}
+
+// ── Agent column header ──────────────────────────────────────────────────
+
+function AgentColumnHeader({
+  agent,
+  workstreams,
+  outOfScope,
+}: {
+  agent: AgentConfig;
+  workstreams: Workstream[];
+  outOfScope: Set<string>;
+}) {
+  const allDeliverables = workstreams.flatMap((ws) => ws.deliverables);
+  const inScope = allDeliverables.filter((d) => !outOfScope.has(d.deliverable_id));
+  const complete = inScope.filter((d) => d.status === "complete").length;
+  const total = inScope.length;
+  const pct = total > 0 ? Math.round((complete / total) * 100) : 0;
+  const needsReview = inScope.filter((d) => d.needs_input && d.status !== "blocked").length;
+
+  return (
+    <div className="mb-3 px-1">
+      <div className="flex items-center gap-2 mb-1.5">
+        <div className={`h-2 w-2 rounded-full shrink-0 ${agent.iconCls}`} />
+        <span className="text-sm font-semibold text-foreground">{agent.displayName}</span>
+      </div>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[10px] text-muted font-mono">
+          {complete}/{total} complete
+        </span>
+        {needsReview > 0 && (
+          <span className="text-[10px] text-warning font-mono">
+            · {needsReview} review
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1 bg-surface-alt rounded-full overflow-hidden">
+          <div
+            className="h-full bg-success rounded-full transition-all duration-500"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className="text-[10px] font-mono text-muted shrink-0">{pct}%</span>
+      </div>
+    </div>
+  );
+}
 
 // ── Workstream row ─────────────────────────────────────────────────────────
 
@@ -96,7 +162,6 @@ function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream
   ).length;
 
   const progressPct = inScopeTotal > 0 ? Math.round((complete / inScopeTotal) * 100) : 0;
-  const agentChip = ws.owner_agent ? AGENT_CHIP[ws.owner_agent] : null;
 
   // Collect presence for this workstream (any deliverable within it)
   const wsPresence: ConsultantPresence[] = [];
@@ -125,7 +190,7 @@ function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream
       >
         <button
           onClick={() => setOpen((v) => !v)}
-          className="w-full flex items-center justify-between gap-4 px-4 py-3 bg-surface hover:bg-surface-alt transition-colors text-left"
+          className="w-full flex items-center justify-between gap-3 px-3 py-2.5 bg-surface hover:bg-surface-alt transition-colors text-left"
         >
           <div className="flex items-center gap-2 min-w-0">
             <motion.span
@@ -136,18 +201,11 @@ function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream
               ›
             </motion.span>
 
-            <span className={`text-sm font-medium truncate transition-colors ${
+            <span className={`text-xs font-medium truncate transition-colors ${
               allOos ? "text-muted line-through" : "text-foreground"
             }`}>
               {ws.name}
             </span>
-
-            {/* Agent chip */}
-            {agentChip && !allOos && (
-              <span className={`shrink-0 hidden sm:inline text-[10px] font-medium px-1.5 py-0.5 rounded ${agentChip.cls}`}>
-                {agentChip.label}
-              </span>
-            )}
 
             {/* Presence pips */}
             {!allOos && wsPresence.length > 0 && (
@@ -181,18 +239,18 @@ function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream
             )}
           </div>
 
-          <div className="flex items-center gap-3 shrink-0 pr-24">
+          <div className="flex items-center gap-2 shrink-0 pr-16">
             {!allOos && (
               <>
                 <div className="hidden sm:flex items-center gap-2">
-                  <div className="w-16 h-1 bg-surface-alt rounded-full overflow-hidden">
+                  <div className="w-12 h-1 bg-surface-alt rounded-full overflow-hidden">
                     <div
                       className="h-full bg-success rounded-full transition-all duration-500"
                       style={{ width: `${progressPct}%` }}
                     />
                   </div>
                 </div>
-                <span className="text-xs text-muted font-mono tabular-nums whitespace-nowrap">
+                <span className="text-[10px] text-muted font-mono tabular-nums whitespace-nowrap">
                   {complete}/{inScopeTotal}
                 </span>
               </>
@@ -212,7 +270,7 @@ function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream
                 e.stopPropagation();
                 onToggleWorkstream(ws.workstream_id, allOos);
               }}
-              className={`absolute right-3 top-1/2 -translate-y-1/2 px-2 py-1 rounded text-[10px] font-medium transition-colors whitespace-nowrap ${
+              className={`absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded text-[10px] font-medium transition-colors whitespace-nowrap ${
                 allOos
                   ? "bg-accent/15 text-accent hover:bg-accent/25"
                   : "bg-surface-alt text-muted hover:bg-error/15 hover:text-error"
@@ -242,13 +300,13 @@ function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream
                 return (
                   <li
                     key={d.deliverable_id}
-                    className={`group flex items-start gap-3 px-5 py-3 transition-opacity duration-150 ${
+                    className={`group flex items-start gap-3 px-4 py-2.5 transition-opacity duration-150 ${
                       oos ? "opacity-40" : ""
                     } ${
                       isAttention && d.status === "blocked"
-                        ? "border-l-2 border-l-error/50 pl-[18px]"
+                        ? "border-l-2 border-l-error/50 pl-[14px]"
                         : isAttention
-                        ? "border-l-2 border-l-warning/50 pl-[18px]"
+                        ? "border-l-2 border-l-warning/50 pl-[14px]"
                         : ""
                     }`}
                   >
@@ -320,6 +378,14 @@ function WorkstreamRow({ ws, outOfScope, onToggleDeliverable, onToggleWorkstream
                             Open →
                           </button>
                         )}
+                        {d.status === "not_started" && (
+                          <button
+                            onClick={() => router.push(`/${engagementId}/deliverables/${d.deliverable_id}`)}
+                            className="text-[10px] font-medium text-muted opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
+                          >
+                            Start →
+                          </button>
+                        )}
                       </div>
                     )}
 
@@ -359,7 +425,6 @@ interface WorkplanPanelProps {
 
 export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
   const workplan = engagement.workplan;
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   const [outOfScope, setOutOfScope] = useState<Set<string>>(() => {
     const initial = new Set<string>();
@@ -405,16 +470,13 @@ export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
     );
   }
 
-  const filtered = activeFilter
-    ? workplan.workstreams.filter((ws) => ws.workstream_id === activeFilter)
-    : workplan.workstreams;
-
-  // Progress counts (OOS excluded)
+  // Overall progress (OOS excluded)
   const allDeliverables  = workplan.workstreams.flatMap((ws) => ws.deliverables);
   const inScopeAll       = allDeliverables.filter((d) => !outOfScope.has(d.deliverable_id));
   const totalInScope     = inScopeAll.length;
   const totalComplete    = inScopeAll.filter((d) => d.status === "complete").length;
   const oosCount         = outOfScope.size;
+  const overallPct       = totalInScope > 0 ? Math.round((totalComplete / totalInScope) * 100) : 0;
 
   // Build presence map: deliverable_id → ConsultantPresence[]
   const presenceByDeliverable = new Map<string, ConsultantPresence[]>();
@@ -426,6 +488,9 @@ export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
     }
   }
 
+  // Group workstreams by agent
+  const grouped = groupWorkstreamsByAgent(workplan.workstreams);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -434,8 +499,8 @@ export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
       transition={{ duration: 0.3, ease: "easeOut" }}
       className="mt-4"
     >
-      {/* Panel header */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Panel header — full width */}
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
           <div className="w-px h-4 bg-accent/60" />
           <h3 className="text-[10px] uppercase tracking-[0.15em] text-muted font-medium">
@@ -455,70 +520,45 @@ export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
           <div className="w-24 h-1 bg-surface-alt rounded-full overflow-hidden">
             <div
               className="h-full bg-success rounded-full transition-all duration-700"
-              style={{ width: `${totalInScope > 0 ? Math.round((totalComplete / totalInScope) * 100) : 0}%` }}
+              style={{ width: `${overallPct}%` }}
             />
           </div>
           <span className="text-[10px] font-mono text-muted">
-            {totalInScope > 0 ? Math.round((totalComplete / totalInScope) * 100) : 0}%
+            {overallPct}%
           </span>
         </div>
       </div>
 
-      {/* Workstream filter pills */}
-      <div className="flex flex-wrap gap-1.5 mb-4">
-        <button
-          onClick={() => setActiveFilter(null)}
-          className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-            activeFilter === null
-              ? "bg-accent/20 text-accent"
-              : "bg-surface text-muted hover:bg-surface-alt hover:text-foreground"
-          }`}
-        >
-          All
-        </button>
-        {workplan.workstreams.map((ws) => {
-          const wsInScope  = ws.deliverables.filter((d) => !outOfScope.has(d.deliverable_id));
-          const wsComplete = wsInScope.filter((d) => d.status === "complete").length;
-          const wsBlocked  = wsInScope.filter((d) => d.status === "blocked").length;
-          const wsAllOos   = ws.deliverables.length > 0 && wsInScope.length === 0;
-          const isActive   = activeFilter === ws.workstream_id;
+      {/* Three-column agent grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 items-start">
+        {AGENT_COLUMNS.map((agent) => {
+          const agentWorkstreams = grouped.get(agent.key) ?? [];
           return (
-            <button
-              key={ws.workstream_id}
-              onClick={() => setActiveFilter(isActive ? null : ws.workstream_id)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                wsAllOos
-                  ? "opacity-40 bg-surface text-muted line-through"
-                  : isActive
-                  ? "bg-accent/20 text-accent"
-                  : "bg-surface text-muted hover:bg-surface-alt hover:text-foreground"
-              }`}
+            <div
+              key={agent.key}
+              className={`rounded-lg border ${agent.colorCls} ${agent.bgCls} p-3`}
             >
-              {wsBlocked > 0 && !wsAllOos && (
-                <span className="h-1.5 w-1.5 rounded-full bg-error" />
-              )}
-              {ws.name}
-              {!wsAllOos && (
-                <span className="font-mono opacity-60">{wsComplete}/{wsInScope.length}</span>
-              )}
-            </button>
+              <AgentColumnHeader
+                agent={agent}
+                workstreams={agentWorkstreams}
+                outOfScope={outOfScope}
+              />
+              <div className="flex flex-col gap-2">
+                {agentWorkstreams.map((ws) => (
+                  <WorkstreamRow
+                    key={ws.workstream_id}
+                    ws={ws}
+                    outOfScope={outOfScope}
+                    onToggleDeliverable={toggleDeliverable}
+                    onToggleWorkstream={toggleWorkstream}
+                    engagementId={engagement.engagement_id}
+                    presenceByDeliverable={presenceByDeliverable}
+                  />
+                ))}
+              </div>
+            </div>
           );
         })}
-      </div>
-
-      {/* Workstream rows */}
-      <div className="flex flex-col gap-2">
-        {filtered.map((ws) => (
-          <WorkstreamRow
-            key={ws.workstream_id}
-            ws={ws}
-            outOfScope={outOfScope}
-            onToggleDeliverable={toggleDeliverable}
-            onToggleWorkstream={toggleWorkstream}
-            engagementId={engagement.engagement_id}
-            presenceByDeliverable={presenceByDeliverable}
-          />
-        ))}
       </div>
     </motion.div>
   );

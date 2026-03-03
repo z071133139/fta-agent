@@ -118,7 +118,7 @@ const ACME_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-002",
       name: "Business Case & Scope",
-      owner_agent: "functional_consultant",
+      owner_agent: "consulting_agent",
       deliverables: [
         { deliverable_id: "d-002-01", name: "Business Case Document", status: "complete", owner_agent: "functional_consultant", agent_summary: "Approved · $4.2M investment · 18-month payback · Board signed off" },
         { deliverable_id: "d-002-02", name: "Scope Definition (in/out-of-scope inventory)", status: "complete", owner_agent: "functional_consultant", agent_summary: "47 in-scope items confirmed · 12 explicitly excluded · Baseline locked" },
@@ -212,7 +212,7 @@ const BEACON_WORKPLAN: Workplan = {
     {
       workstream_id: "ws-b02",
       name: "Business Case & Scope",
-      owner_agent: "functional_consultant",
+      owner_agent: "consulting_agent",
       deliverables: [
         { deliverable_id: "d-b02-01", name: "Business Case Document", status: "not_started", owner_agent: "functional_consultant" },
         { deliverable_id: "d-b02-02", name: "Scope Definition (in/out-of-scope inventory)", status: "not_started", owner_agent: "functional_consultant" },

@@ -432,7 +432,8 @@ export const useWorkshopStore = create<WorkshopState>((set, get) => {
           (r) => r.dirty && r.original !== undefined
         ).length +
         state.flowNodeChanges.size +
-        state.newFlowNodes.length
+        state.newFlowNodes.length +
+        state.deletedFlowNodeIds.size
       );
     },
 

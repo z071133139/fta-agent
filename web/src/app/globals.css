@@ -142,7 +142,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .workshop-animate {
+  .workshop-animate,
+  .agent-thinking,
+  .edge-animated {
     animation: none !important;
   }
 }
