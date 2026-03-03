@@ -20,6 +20,7 @@
 | **025** | PDD-007: Custom Process Flow Builder | B | FC agent, emit_process_flow tool, split-view builder, flow-builder-store |
 | **026** | PDD-008 color pass, PDD-009 data gates, PDD-010 mission control | B+C | Color readability, workstream data gates, landing page rewrite, presence pips, DuckDB fix |
 | **027** | Slide deck content, Phase 1 gap analysis, COA visual research, dynamic hierarchy design | — | `docs/content/fta-slide-deck-content.md` (16+1 slides, old/new/value format), Phase 1 outstanding items audit, insurance COA visualization research (6 formats), dynamic hierarchy architecture (three-tier classification: rule/pattern/agent-pinned, audit trail, reproducibility hash, multi-perspective FSLI roll-ups) |
+| **028** | Agent grid workplan, Process Flow UAT execution + 3 defect fixes | B+C | WorkplanPanel 3-column agent grid layout, UAT 120 scenarios (95% pass), D1: custom flow nav→inline viewer, D2: placing mode cancel button, D3: Zustand hydration fix, Playwright setup, session docs 026–028 |
 
 **Milestone (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
 

@@ -2,7 +2,7 @@
 
 > Status: APPROVED (Session 005, updated Sessions 006, 015)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-03-02 (Session 025)
+> Last updated: 2026-03-03 (Session 028)
 
 ## Purpose
 
@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 027: Slide deck content created. Phase 1 gap analysis completed. COA Design Workbench visual gap identified + major architectural insight: static ERP hierarchies (FSVs) can be replaced by agent-computed dynamic roll-ups with three-tier classification (rule → pattern → agent-pinned). Audit-ready by design: every mapping has classification source, basis, approval trail, change history, reproducibility hash. PDD-011 queued for Session 028: Account String Diagram + Dimensional Matrix + Dynamic Hierarchy with Audit Trail.
+> Updated Session 028: WorkplanPanel three-column agent grid (workstreams grouped by agent ownership). Process Flow Builder UAT completed: 120 scenarios verified (code-level), 3 defects found and fixed (custom flow navigation, placing mode cancel, Zustand hydration). Playwright E2E scaffolding added. PDD-011 COA Visuals + Dynamic Hierarchy queued for Session 029.
 
 ```
 Phase 1: Personal Use MVP
@@ -362,7 +362,10 @@ Phase 1: Personal Use MVP
 │   ├── B8 Demo polish                       ✅
 │   ├── PDD-006 COA Design Workbench         ✅ Session 024
 │   ├── PDD-007 Custom Process Flow Builder  ✅ Session 025
-│   └── PDD-011 COA Visuals + Dynamic Hierarchy ⬜ Session 028 ← NEXT
+│   ├── PDD-009 Workstream Data Gates        ✅ Session 026
+│   ├── PDD-010 Mission Control Landing Page ✅ Session 026
+│   ├── Process Flow UAT (120 scenarios)     ✅ Session 028
+│   └── PDD-011 COA Visuals + Dynamic Hierarchy ⬜ Session 029 ← NEXT
 │
 ├── Stream A continued: A4–A10               (after B)
 ├── Stream C: Platform Polish                (after B)

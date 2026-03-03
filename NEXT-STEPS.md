@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-03-02 (Session 027)
+> Last updated: 2026-03-03 (Session 028)
 > Current phase: Phase 1 — Personal Use MVP
 
 ---
@@ -19,9 +19,11 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 
 **Session 027:** Slide deck content created (`docs/content/fta-slide-deck-content.md`). Phase 1 gap analysis completed. COA Design Workbench visual gap identified: missing Account String Diagram and Dimensional Matrix — the two most important COA visualizations for CFO presentations. Research completed on 6 standard insurance COA visual formats.
 
+**Session 028:** WorkplanPanel three-column agent grid (grouped by agent ownership). Process Flow Builder UAT executed (120 scenarios, 95% pass). Three defects found and fixed: custom flow navigation (D1-HIGH), placing mode cancel button (D2-MED), Zustand hydration timing (D3-LOW). Playwright added. Session docs for 026-028 written.
+
 ---
 
-## Session 028 Pickup
+## Session 029 Pickup
 
 1. **PDD-011 — COA Visual Enhancements + Dynamic Hierarchy** — Major evolution of d-005-02 COA Design Workbench. Three components:
    - **Account String Diagram:** Interactive horizontal segmented bar showing full account string composition (Company | Dept | Natural Account | LOB | Reinsurance Type | Product). Each segment: label, width, example values, NAIC alignment. The centerpiece of every COA presentation to CFOs.
@@ -34,11 +36,11 @@ FTA is an **interactive consulting framework** for insurance finance transformat
    - **Multi-perspective:** Same accounts, different reporting frameworks on demand — "Show me NAIC Annual Statement" / "Show me GAAP" / "Show me IFRS 17". Hierarchy is a view, not a structure.
    - Research: 6 standard COA visual formats identified. We have range table + dimension canvas. Missing account string, dimensional matrix, hierarchy tree, crosswalk.
 2. **PDD-008 — Color Readability Overhaul** — see `docs/plans/pdd-008-color-readability-overhaul.md`
-3. **End-to-end Process Flow Builder testing** — test full flow: mock mode (turn 1 = clarifying Qs, turn 2+ = flow emission), live mode (verify ToolMessage fix renders preview), accept → index, discard → clean state
-4. **COA Workbench verification** — clear localStorage, restart backend with `FTA_MOCK_AGENT=true`, navigate to d-005-02, run analysis → confirm workbench + 4 tabs
-5. **Live LLM testing (both agents)** — `FTA_MOCK_AGENT=false`: test GL Design Coach on d-005-01/d-005-02 + Functional Consultant process flow builder
-6. **Agentic Functional Consultant expansion** — 5 capabilities beyond flow building: gap→req pipeline, coverage analysis, cross-PA impact, session prep, deliverable drafting (see `docs/plans/stream-b-agentic-functional-consultant.md`)
-7. **Stream A resume** — remaining knowledge workspaces (A6–A8, A10)
+3. **COA Workbench verification** — clear localStorage, restart backend with `FTA_MOCK_AGENT=true`, navigate to d-005-02, run analysis → confirm workbench + 4 tabs
+4. **Live LLM testing (both agents)** — `FTA_MOCK_AGENT=false`: test GL Design Coach on d-005-01/d-005-02 + Functional Consultant process flow builder
+5. **Agentic Functional Consultant expansion** — 5 capabilities beyond flow building: gap→req pipeline, coverage analysis, cross-PA impact, session prep, deliverable drafting (see `docs/plans/stream-b-agentic-functional-consultant.md`)
+6. **Stream A resume** — remaining knowledge workspaces (A6–A8, A10)
+7. **Browser UAT pass** — 4 remaining MANUAL scenarios from Process Flow UAT need in-browser confirmation
 
 ---
 
@@ -58,6 +60,7 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 | PDD-007 | Custom Process Flow Builder — FC agent + split-view + emit_process_flow | B3, B5 | Done |
 | PDD-009 | Workstream-Level Data Gates — declarative data requirements per workstream | B1 | Done |
 | PDD-010 | Mission Control Landing Page — unified context selector, attention queue, presence | PDD-009 | Done |
+| UAT | Process Flow Builder UAT — 120 scenarios, 3 defects fixed (custom flow nav, placing cancel, hydration) | PDD-007 | Done |
 
 **End state:** Three agent capabilities working end-to-end. GL Design Coach (account analysis, COA design) + Functional Consultant (process flow builder). Real data in, real agent processing, real streamed results.
 
