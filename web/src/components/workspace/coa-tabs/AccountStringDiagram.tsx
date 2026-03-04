@@ -93,10 +93,10 @@ export function AccountStringDiagram() {
       {/* Header */}
       <div>
         <h3 className="text-sm font-medium text-foreground uppercase tracking-wide">
-          Account String Composition
+          Code Block Dimensions
         </h3>
         <p className="text-sm text-muted mt-1">
-          Full GL account string: {totalLength} characters across {segments.length} segments
+          Full coding string: {totalLength} characters across {segments.length} dimensions
         </p>
       </div>
 
@@ -150,7 +150,7 @@ export function AccountStringDiagram() {
 
         {/* Cardinality scale label */}
         <p className="text-[11px] text-faint mt-2 text-center font-mono">
-          Widths proportional to cardinality ({totalCardinality} total unique values)
+          Widths proportional to cardinality ({totalCardinality} total unique values across all dimensions)
         </p>
       </div>
 

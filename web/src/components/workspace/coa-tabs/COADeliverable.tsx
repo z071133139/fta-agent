@@ -695,7 +695,7 @@ export function COADeliverable({
     editTab?: TabId;
   }[] = [
     { title: "Executive Summary" },
-    { title: "Future State Account String", editTab: "account_string" },
+    { title: "Code Block Dimensions", editTab: "account_string" },
     { title: "Code Block Structure", editTab: "code_blocks" },
     { title: "Account Group Taxonomy", editTab: "account_groups" },
     { title: "Dimension Design", editTab: "dimensions" },

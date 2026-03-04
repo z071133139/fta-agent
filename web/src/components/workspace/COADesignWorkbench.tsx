@@ -996,7 +996,7 @@ export function COADesignWorkbench({
       label: "Decisions",
       badge: pendingCount > 0 ? pendingCount : undefined,
     },
-    { id: "account_string", label: "Account String", dividerBefore: true },
+    { id: "account_string", label: "CB Dimensions", dividerBefore: true },
     { id: "dim_matrix", label: "Dim Matrix" },
     { id: "hierarchy", label: "Hierarchy" },
     {

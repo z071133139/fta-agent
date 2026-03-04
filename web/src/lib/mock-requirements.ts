@@ -419,7 +419,7 @@ const OTHER_REQS: BusinessRequirement[] = [
   // PA-01: Chart of Accounts & Org Structure (16 reqs)
   { id: "BR-01.1.01", pa_id: "PA-01", sp_id: "SP-01.1", tag: "FIN", segment: "All", status: "validated", text: "System must support a unified chart of accounts with segment-level granularity enabling STAT, GAAP, and management reporting from a single code block" },
   { id: "BR-01.1.02", pa_id: "PA-01", sp_id: "SP-01.1", tag: "REG", segment: "P&C", status: "validated", text: "CoA must align to NAIC annual statement line items with direct mapping capability to Schedule A–T data elements" },
-  { id: "BR-01.1.03", pa_id: "PA-01", sp_id: "SP-01.1", tag: "FIN", segment: "All", status: "draft", text: "Account code structure must accommodate future expansion for new LOBs and statutory entities without redesign" },
+  { id: "BR-01.1.03", pa_id: "PA-01", sp_id: "SP-01.1", tag: "FIN", segment: "All", status: "draft", text: "Coding string structure must accommodate future expansion for new LOBs and statutory entities without redesign" },
   { id: "BR-01.1.04", pa_id: "PA-01", sp_id: "SP-01.1", tag: "FIN", segment: "All", status: "draft", text: "System must support insurance-specific account groups including premium, loss reserve, reinsurance, and investment categories" },
   { id: "BR-01.2.01", pa_id: "PA-01", sp_id: "SP-01.2", tag: "OPS", segment: "All", status: "draft", text: "Entity structure must support legal entity, pooling entity, and reporting entity hierarchies with elimination capabilities" },
   { id: "BR-01.2.02", pa_id: "PA-01", sp_id: "SP-01.2", tag: "REG", segment: "P&C", status: "draft", text: "Company code structure must align to statutory filing entities for NAIC annual statement submission" },
