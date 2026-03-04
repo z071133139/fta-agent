@@ -99,7 +99,7 @@ The pursuit phase has its own deliverables (Scoping Canvas, Executive Summary, V
 | # | Session | What | Exit |
 |---|---------|------|------|
 | 1 | **Harden live agent** | Run d-005-02 with `FTA_MOCK_AGENT=false`. Fix prompt to reliably produce parseable `<coa_design>` JSON. Test 5+ runs, fix parse/quality failures. | 5 consecutive successful runs producing valid COA workbench data |
-| 2 | **Deploy + golden dataset** | Dockerfile for backend (Railway/Fly.io). Frontend on Vercel. Configurable API URL. Golden pre-seeded data as fallback. Smoke test on live URL. | Working deployed URL with live agent + fallback data |
+| 2 | **Deploy + golden dataset** | Dockerfile for backend (GCP Cloud Run). Frontend on Vercel. Configurable API URL. Golden pre-seeded data as fallback. Smoke test on live URL. | Working deployed URL with live agent + fallback data |
 | 3 | **Demo script + rehearsal** | Write exact click path with timing. Visual polish. Rehearse 3x on deployed URL. Record backup video. | Timed run under 6 minutes on live URL, recovery plan for each failure point |
 
 **What is NOT in Phase 1 (pushed to Phase 2):**
@@ -114,7 +114,7 @@ The pursuit phase has its own deliverables (Scoping Canvas, Executive Summary, V
 - Additional agent capabilities
 
 **Phase 1 exit criteria:**
-- [ ] Deployed to a URL (not localhost) — frontend on Vercel, backend on Railway/Fly.io
+- [ ] Deployed to a URL (not localhost) — frontend on Vercel, backend on GCP Cloud Run
 - [ ] Live demo completed in front of at least one stakeholder
 - [ ] Agent produces valid COA design from trial balance in < 90 seconds
 - [ ] Deliverable tab renders all 9 sections with realistic data
