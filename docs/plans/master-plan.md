@@ -2,7 +2,7 @@
 
 > Status: APPROVED (Session 005, updated Sessions 006, 015)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-03-03 (Session 028)
+> Last updated: 2026-03-03 (Session 029)
 
 ## Purpose
 
@@ -315,7 +315,7 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 028: WorkplanPanel three-column agent grid (workstreams grouped by agent ownership). Process Flow Builder UAT completed: 120 scenarios verified (code-level), 3 defects found and fixed (custom flow navigation, placing mode cancel, Zustand hydration). Playwright E2E scaffolding added. PDD-011 COA Visuals + Dynamic Hierarchy queued for Session 029.
+> Updated Session 029: PDD-012 COA Design Deliverable tab — 8th tab assembles all COA workbench data into a 9-section presentation-quality document with per-section readiness badges and deliverable status lifecycle (Draft → Review → Approved). Sidebar cleaned: 4 backlog deliverables moved to `docs/reference/agent-backlog.md`. Coverage: 16/32 active deliverables (50%) + 19 in agent backlog.
 
 ```
 Phase 1: Personal Use MVP
@@ -365,7 +365,8 @@ Phase 1: Personal Use MVP
 │   ├── PDD-009 Workstream Data Gates        ✅ Session 026
 │   ├── PDD-010 Mission Control Landing Page ✅ Session 026
 │   ├── Process Flow UAT (120 scenarios)     ✅ Session 028
-│   └── PDD-011 COA Visuals + Dynamic Hierarchy ⬜ Session 029 ← NEXT
+│   ├── PDD-012 COA Design Deliverable tab   ✅ Session 029
+│   └── PDD-011 COA Visuals + Dynamic Hierarchy ⬜ Session 030 ← NEXT
 │
 ├── Stream A continued: A4–A10               (after B)
 ├── Stream C: Platform Polish                (after B)
@@ -387,13 +388,13 @@ Phase 3: Broad Rollout
 └── (not started)
 ```
 
-**Coverage:** 16 of 36 deliverables have workspaces (44%) + custom process flows via builder.
+**Coverage:** 16 of 32 active deliverables have workspaces (50%) + custom process flows via builder. 19 deliverables in agent backlog (`docs/reference/agent-backlog.md`).
 
-**Frontend state:** Full workspace UI. 5 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable, COADesignWorkbench) + ProcessFlowBuilder split-view. 16 deliverables with workspaces. Two "living document" patterns: COADesignWorkbench (agent seeds structured data, consultant edits inline) and ProcessFlowBuilder (agent builds structured flows through conversation).
+**Frontend state:** Full workspace UI. 5 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable, COADesignWorkbench) + ProcessFlowBuilder split-view. 16 deliverables with workspaces. Two "living document" patterns: COADesignWorkbench (agent seeds structured data, consultant edits inline, deliverable tab assembles into document) and ProcessFlowBuilder (agent builds structured flows through conversation).
 
 **Backend state:** Two agent graphs: GL Design Coach (5 analysis tools) + Functional Consultant (emit_process_flow tool). SSE streaming with multi-turn history support, per-request mock mode. DataEngine + DuckDB + Polars pipeline.
 
-**Next priority:** PDD-011 COA Visuals + Dynamic Hierarchy (Account String Diagram, Dimensional Matrix, agent-computed FSLI roll-ups with three-tier classification and audit trail). Then end-to-end verification, trust-building layer PDD, and Agentic FC expansion.
+**Next priority:** PDD-011 COA Visuals + Dynamic Hierarchy (already built in Session 027-028 — Account String Diagram, Dimensional Matrix, Dynamic Hierarchy with three-tier classification and audit trail). Then end-to-end verification, trust-building layer PDD, and Agentic FC expansion.
 
 **Key architectural insight (Session 027):** Static ERP hierarchies (FSVs) are unnecessary with agentic classification. Instead of manually assigning accounts to FSLI nodes across multiple reporting bases, the agent classifies using deterministic rules (80%) + pattern heuristics (15%) + LLM-proposed/consultant-pinned (5%). The system converges toward zero LLM calls. Every mapping is more auditable than traditional manual assignment: classification source, basis text, approval chain, change history, reproducibility hash. This changes the COA design deliverable from "build hierarchies" to "validate agent classifications."
 

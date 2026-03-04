@@ -13,16 +13,21 @@ import {
   type COAIssue,
   type IssueStatus,
   type DecisionStatus,
+  type TabId,
 } from "@/lib/coa-store";
+import { useHierarchyStore, hierarchyStoreKey } from "@/lib/hierarchy-store";
+import { AccountStringDiagram } from "./coa-tabs/AccountStringDiagram";
+import { DimensionalMatrix } from "./coa-tabs/DimensionalMatrix";
+import { DynamicHierarchy } from "./coa-tabs/DynamicHierarchy";
+import { COADeliverable } from "./coa-tabs/COADeliverable";
 
 // ── Types ────────────────────────────────────────────────────────────────────
-
-type TabId = "code_blocks" | "account_groups" | "dimensions" | "decisions";
 
 interface Tab {
   id: TabId;
   label: string;
   badge?: number;
+  dividerBefore?: boolean;
 }
 
 interface COADesignWorkbenchProps {
@@ -140,7 +145,7 @@ function CodeBlocksTab({
           <tr className="border-b border-border text-left text-[11px] uppercase tracking-[0.1em] text-muted">
             <th className="px-3 py-2 w-[100px]">Range</th>
             <th className="px-3 py-2 w-[160px]">Account Type</th>
-            <th className="px-3 py-2 w-[200px]">NAIC Alignment</th>
+            <th className="px-3 py-2 w-[200px]">STAT Alignment</th>
             <th className="px-3 py-2 w-[100px] text-right">Count</th>
             <th className="px-3 py-2">Notes</th>
           </tr>
@@ -165,8 +170,8 @@ function CodeBlocksTab({
               </td>
               <td className="px-3 py-2 text-secondary">
                 <EditableCell
-                  value={cb.naic_alignment}
-                  onSave={(v) => update(storeKey, cb.id, { naic_alignment: v })}
+                  value={cb.stat_alignment}
+                  onSave={(v) => update(storeKey, cb.id, { stat_alignment: v })}
                 />
               </td>
               <td className="px-3 py-2 text-right font-mono text-secondary">
@@ -218,7 +223,7 @@ function AccountGroupsTab({
           <tr className="border-b border-border text-left text-[11px] uppercase tracking-[0.1em] text-muted">
             <th className="px-3 py-2 w-[100px]">Code</th>
             <th className="px-3 py-2 w-[200px]">Name</th>
-            <th className="px-3 py-2 w-[200px]">NAIC Schedule Line</th>
+            <th className="px-3 py-2 w-[200px]">Statutory Schedule Line</th>
             <th className="px-3 py-2 w-[100px] text-right">Accounts</th>
             <th className="px-3 py-2">Notes</th>
           </tr>
@@ -245,9 +250,9 @@ function AccountGroupsTab({
               </td>
               <td className="px-3 py-2 text-secondary">
                 <EditableCell
-                  value={ag.naic_schedule_line}
+                  value={ag.stat_schedule_line}
                   onSave={(v) =>
-                    update(storeKey, ag.id, { naic_schedule_line: v })
+                    update(storeKey, ag.id, { stat_schedule_line: v })
                   }
                 />
               </td>
@@ -930,6 +935,9 @@ export function COADesignWorkbench({
   const toggleSummary = useCOAStore((s) => s.toggleSummaryCollapsed);
   const clearStore = useCOAStore((s) => s.clearStore);
 
+  const hKey = hierarchyStoreKey(engagementId, deliverableId);
+  const hStore = useHierarchyStore((s) => s.getStore(hKey));
+
   const [activeTab, setActiveTab] = useState<TabId>("code_blocks");
   const [confirmReseed, setConfirmReseed] = useState(false);
 
@@ -944,6 +952,37 @@ export function COADesignWorkbench({
     0
   );
 
+  // Compute deliverable readiness for tab badge
+  const deliverableReadySections = (() => {
+    let ready = 0;
+    const total = 9;
+    // 1. Exec summary
+    if (store.summary) ready++;
+    // 2. Account string — always ready
+    ready++;
+    // 3. Code blocks
+    if (store.code_blocks.length > 0) ready++;
+    // 4. Account groups
+    if (store.account_groups.length > 0) ready++;
+    // 5. Dimensions
+    if (store.dimensions.length > 0 && openIssueCount === 0) ready++;
+    // 6. Hierarchy
+    const pendingClassifications = hStore
+      ? hStore.classifications.filter((c) => c.status === "agent_proposed").length
+      : 0;
+    if (hStore && pendingClassifications === 0) ready++;
+    // 7. Decisions
+    if (store.decisions.length > 0 && pendingCount === 0) ready++;
+    // 8. Coverage — always ready
+    ready++;
+    // 9. Open items
+    if (openIssueCount + pendingClassifications + pendingCount === 0) ready++;
+    return { ready, total };
+  })();
+
+  const deliverableAllReady = deliverableReadySections.ready === deliverableReadySections.total;
+  const deliverableNonReady = deliverableReadySections.total - deliverableReadySections.ready;
+
   const tabs: Tab[] = [
     { id: "code_blocks", label: "Code Blocks" },
     { id: "account_groups", label: "Account Groups" },
@@ -956,6 +995,15 @@ export function COADesignWorkbench({
       id: "decisions",
       label: "Decisions",
       badge: pendingCount > 0 ? pendingCount : undefined,
+    },
+    { id: "account_string", label: "Account String", dividerBefore: true },
+    { id: "dim_matrix", label: "Dim Matrix" },
+    { id: "hierarchy", label: "Hierarchy" },
+    {
+      id: "deliverable",
+      label: "Deliverable",
+      dividerBefore: true,
+      badge: deliverableAllReady ? undefined : deliverableNonReady,
     },
   ];
 
@@ -1031,30 +1079,38 @@ export function COADesignWorkbench({
           {/* Tab bar */}
           <div className="shrink-0 flex items-center border-b border-border px-5">
             {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative px-4 py-2.5 text-sm font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? "text-foreground"
-                    : "text-muted hover:text-foreground"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  {tab.label}
-                  {tab.badge !== undefined && (
-                    <span className="inline-flex items-center justify-center h-4 min-w-[16px] rounded-full bg-warning/20 px-1 text-[11px] font-mono text-warning">
-                      {tab.badge}
-                    </span>
-                  )}
-                </span>
-                {activeTab === tab.id && (
-                  <motion.div
-                    layoutId="coa-tab-underline"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"
-                  />
+              <Fragment key={tab.id}>
+                {tab.dividerBefore && (
+                  <div className="h-5 w-px bg-border/60 mx-1.5 shrink-0" />
                 )}
-              </button>
+                <button
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative px-4 py-2.5 text-sm font-medium transition-colors ${
+                    activeTab === tab.id
+                      ? "text-foreground"
+                      : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    {tab.label}
+                    {tab.id === "deliverable" && deliverableAllReady ? (
+                      <span className="inline-flex items-center justify-center h-4 min-w-[16px] rounded-full bg-success/20 px-1 text-[11px] font-mono text-success">
+                        &#10003;
+                      </span>
+                    ) : tab.badge !== undefined ? (
+                      <span className="inline-flex items-center justify-center h-4 min-w-[16px] rounded-full bg-warning/20 px-1 text-[11px] font-mono text-warning">
+                        {tab.badge}
+                      </span>
+                    ) : null}
+                  </span>
+                  {activeTab === tab.id && (
+                    <motion.div
+                      layoutId="coa-tab-underline"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"
+                    />
+                  )}
+                </button>
+              </Fragment>
             ))}
           </div>
 
@@ -1077,6 +1133,21 @@ export function COADesignWorkbench({
             )}
             {activeTab === "decisions" && (
               <DecisionsTab storeKey={storeKey} decisions={store.decisions} />
+            )}
+            {activeTab === "account_string" && <AccountStringDiagram />}
+            {activeTab === "dim_matrix" && <DimensionalMatrix />}
+            {activeTab === "hierarchy" && (
+              <DynamicHierarchy
+                engagementId={engagementId}
+                deliverableId={deliverableId}
+              />
+            )}
+            {activeTab === "deliverable" && (
+              <COADeliverable
+                engagementId={engagementId}
+                deliverableId={deliverableId}
+                onNavigateToTab={setActiveTab}
+              />
             )}
           </div>
 
@@ -1111,8 +1182,10 @@ export function COADesignWorkbench({
           </div>
         </div>
 
-        {/* Chat panel */}
-        <AgentChatPanel storeKey={storeKey} activeTab={activeTab} />
+        {/* Chat panel — hidden on deliverable tab */}
+        {activeTab !== "deliverable" && (
+          <AgentChatPanel storeKey={storeKey} activeTab={activeTab} />
+        )}
       </div>
     </div>
   );

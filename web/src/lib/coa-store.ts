@@ -9,7 +9,7 @@ export interface COACodeBlock {
   id: string;
   range: string;
   account_type: string;
-  naic_alignment: string;
+  stat_alignment: string;
   count: number;
   notes: string;
 }
@@ -18,7 +18,7 @@ export interface COAAccountGroup {
   id: string;
   group_code: string;
   name: string;
-  naic_schedule_line: string;
+  stat_schedule_line: string;
   account_count: number;
   notes: string;
 }
@@ -46,6 +46,8 @@ export interface COADimension {
 }
 
 export type DecisionStatus = "pending" | "approved" | "rejected";
+
+export type DeliverableStatus = "draft" | "ready_for_review" | "under_review" | "approved";
 
 export interface COADecision {
   id: string;
@@ -79,7 +81,7 @@ export interface COADesignData {
 
 // ── Store State ──────────────────────────────────────────────────────────────
 
-type TabId = "code_blocks" | "account_groups" | "dimensions" | "decisions";
+export type TabId = "code_blocks" | "account_groups" | "dimensions" | "decisions" | "account_string" | "dim_matrix" | "hierarchy" | "deliverable";
 
 interface COAStoreState {
   // Data keyed by engagement:deliverable
@@ -94,6 +96,7 @@ interface COAStoreState {
       seededAt: string | null;
       modifiedAt: string | null;
       summaryCollapsed: boolean;
+      deliverableStatus: DeliverableStatus;
       chatMessages: Record<TabId, ChatMessage[]>;
     }
   >;
@@ -127,6 +130,9 @@ interface COAStoreState {
 
   // CRUD — Decisions
   updateDecision: (key: string, id: string, updates: Partial<COADecision>) => void;
+
+  // Deliverable status
+  setDeliverableStatus: (key: string, status: DeliverableStatus) => void;
 
   // Summary
   toggleSummaryCollapsed: (key: string) => void;
@@ -172,11 +178,16 @@ function emptyStoreEntry(): COAStoreState["stores"][string] {
     seededAt: null,
     modifiedAt: null,
     summaryCollapsed: false,
+    deliverableStatus: "draft",
     chatMessages: {
       code_blocks: [],
       account_groups: [],
       dimensions: [],
       decisions: [],
+      account_string: [],
+      dim_matrix: [],
+      hierarchy: [],
+      deliverable: [],
     },
   };
 }
@@ -217,7 +228,7 @@ export const useCOAStore = create<COAStoreState>()(
               id: nextId("cb"),
               range: cb.range,
               account_type: cb.account_type,
-              naic_alignment: cb.naic_alignment,
+              stat_alignment: cb.stat_alignment,
               count: cb.count,
               notes: "",
             })),
@@ -225,7 +236,7 @@ export const useCOAStore = create<COAStoreState>()(
               id: nextId("ag"),
               group_code: ag.group_code,
               name: ag.name,
-              naic_schedule_line: ag.naic_schedule_line,
+              stat_schedule_line: ag.stat_schedule_line,
               account_count: ag.account_count,
               notes: ag.notes,
             })),
@@ -280,7 +291,7 @@ export const useCOAStore = create<COAStoreState>()(
             id: nextId("cb"),
             range: "",
             account_type: "",
-            naic_alignment: "",
+            stat_alignment: "",
             count: 0,
             notes: "",
           };
@@ -339,7 +350,7 @@ export const useCOAStore = create<COAStoreState>()(
             id: nextId("ag"),
             group_code: "",
             name: "",
-            naic_schedule_line: "",
+            stat_schedule_line: "",
             account_count: 0,
             notes: "",
           };
@@ -525,6 +536,23 @@ export const useCOAStore = create<COAStoreState>()(
           };
         }),
 
+      // ── Deliverable Status ─────────────────────────────────────────────
+      setDeliverableStatus: (key, status) =>
+        set((state) => {
+          const store = state.stores[key];
+          if (!store) return state;
+          return {
+            stores: {
+              ...state.stores,
+              [key]: {
+                ...store,
+                modifiedAt: new Date().toISOString(),
+                deliverableStatus: status,
+              },
+            },
+          };
+        }),
+
       // ── Summary ────────────────────────────────────────────────────────
       toggleSummaryCollapsed: (key) =>
         set((state) => {
@@ -575,7 +603,7 @@ export const useCOAStore = create<COAStoreState>()(
     }),
     {
       name: "fta-coa-store",
-      version: 2,
+      version: 4,
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as COAStoreState;
         if (version < 2 && state.stores) {
@@ -590,6 +618,33 @@ export const useCOAStore = create<COAStoreState>()(
                     ? parseIssuesString(d.issues as unknown as string)
                     : d.issues,
               }));
+            }
+          }
+        }
+        if (version < 3 && state.stores) {
+          // Add chatMessages for new tabs
+          for (const key of Object.keys(state.stores)) {
+            const store = state.stores[key];
+            if (store?.chatMessages) {
+              const msgs = store.chatMessages as Record<string, unknown[]>;
+              if (!msgs.account_string) msgs.account_string = [];
+              if (!msgs.dim_matrix) msgs.dim_matrix = [];
+              if (!msgs.hierarchy) msgs.hierarchy = [];
+            }
+          }
+        }
+        if (version < 4 && state.stores) {
+          // Add deliverableStatus and deliverable chatMessages
+          for (const key of Object.keys(state.stores)) {
+            const store = state.stores[key];
+            if (store) {
+              if (!store.deliverableStatus) {
+                (store as Record<string, unknown>).deliverableStatus = "draft";
+              }
+              if (store.chatMessages) {
+                const msgs = store.chatMessages as Record<string, unknown[]>;
+                if (!msgs.deliverable) msgs.deliverable = [];
+              }
             }
           }
         }

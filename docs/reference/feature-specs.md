@@ -21,6 +21,7 @@
 | **026** | PDD-008 color pass, PDD-009 data gates, PDD-010 mission control | B+C | Color readability, workstream data gates, landing page rewrite, presence pips, DuckDB fix |
 | **027** | Slide deck content, Phase 1 gap analysis, COA visual research, dynamic hierarchy design | — | `docs/content/fta-slide-deck-content.md` (16+1 slides, old/new/value format), Phase 1 outstanding items audit, insurance COA visualization research (6 formats), dynamic hierarchy architecture (three-tier classification: rule/pattern/agent-pinned, audit trail, reproducibility hash, multi-perspective FSLI roll-ups) |
 | **028** | Agent grid workplan, Process Flow UAT execution + 3 defect fixes | B+C | WorkplanPanel 3-column agent grid layout, UAT 120 scenarios (95% pass), D1: custom flow nav→inline viewer, D2: placing mode cancel button, D3: Zustand hydration fix, Playwright setup, session docs 026–028 |
+| **029** | PDD-012 COA Deliverable tab, sidebar cleanup, agent backlog | B | 8th COA tab with 9-section document view, readiness badges, status lifecycle (Draft→Review→Approved), sidebar deliverable cleanup, `docs/reference/agent-backlog.md` |
 
 **Milestone (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
 
@@ -351,6 +352,54 @@ Presence appears as avatar pips on:
 ### Persistence
 
 `localStorage` stores selected context (ID + kind). Query params `?eng=` and `?pursuit=` override localStorage for direct links.
+
+---
+
+## PDD-012 — COA Design Deliverable Tab (Session 029)
+
+Read-only 8th tab on the COA Design Workbench that assembles all workbench data into a structured, presentation-quality document for client delivery.
+
+### Deliverable Status Lifecycle
+
+```
+Draft → Ready for Review → Under Review → Approved
+  ↑                                          |
+  └──────────── reset (any state) ───────────┘
+```
+
+Status stored in `coa-store.ts` as `deliverableStatus` (default `"draft"`). Independent of section readiness — consultant decides when to advance.
+
+### 9 Document Sections
+
+| # | Section | Data Source | Readiness Logic |
+|---|---------|------------|-----------------|
+| 1 | Executive Summary | `store.summary` | Green if non-empty, red if empty |
+| 2 | Future State Account String | `ACCOUNT_STRING_SEGMENTS` (static) | Always green |
+| 3 | Code Block Structure | `store.code_blocks` | Green if rows > 0 |
+| 4 | Account Group Taxonomy | `store.account_groups` | Green if rows > 0 |
+| 5 | Dimension Design | `store.dimensions` | Green if no open issues, amber if open issues, red if no dimensions |
+| 6 | FSLI Hierarchy Mapping | `hierarchy-store` classifications | Green if no agent_proposed, amber if has agent_proposed, red if not seeded |
+| 7 | Design Decisions Log | `store.decisions` | Green if all approved/rejected, amber if pending, red if no decisions |
+| 8 | Coverage Analysis | `getMatrixData()` (static) | Always green |
+| 9 | Open Items & Risks | Aggregated from 5, 6, 7 | Green if all resolved, amber if items exist |
+
+### Tab Badge
+
+Amber count badge showing non-ready sections, or green check when all 9 sections ready.
+
+### Visual Treatment
+
+- Serif font (`font-display`) on section headers — document feel
+- Mono font on all numeric/code values
+- Muted summary lines beneath each table
+- 32px vertical spacing between sections — reads as document, not dashboard
+- Chat panel hidden on this tab
+
+### Files
+
+- `web/src/components/workspace/coa-tabs/COADeliverable.tsx` — main component
+- `web/src/lib/coa-store.ts` — `DeliverableStatus` type, `deliverableStatus` field, `setDeliverableStatus` action, persist v4
+- `web/src/components/workspace/COADesignWorkbench.tsx` — tab integration
 
 ---
 

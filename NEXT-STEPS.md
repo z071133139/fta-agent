@@ -1,6 +1,6 @@
 # NEXT STEPS
 
-> Last updated: 2026-03-03 (Session 028)
+> Last updated: 2026-03-03 (Session 029)
 > Current phase: Phase 1 — Personal Use MVP
 
 ---
@@ -21,9 +21,11 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 
 **Session 028:** WorkplanPanel three-column agent grid (grouped by agent ownership). Process Flow Builder UAT executed (120 scenarios, 95% pass). Three defects found and fixed: custom flow navigation (D1-HIGH), placing mode cancel button (D2-MED), Zustand hydration timing (D3-LOW). Playwright added. Session docs for 026-028 written.
 
+**Session 029:** PDD-012 COA Design Deliverable tab — 8th tab on COA Design Workbench assembles all data into a structured, presentation-quality document view with 9 sections, per-section readiness badges, and a deliverable status lifecycle (Draft → Ready for Review → Under Review → Approved). Sidebar cleanup: 4 backlog deliverables moved from sidebar mock data to `docs/reference/agent-backlog.md` (organized by agent).
+
 ---
 
-## Session 029 Pickup
+## Session 030 Pickup
 
 1. **PDD-011 — COA Visual Enhancements + Dynamic Hierarchy** — Major evolution of d-005-02 COA Design Workbench. Three components:
    - **Account String Diagram:** Interactive horizontal segmented bar showing full account string composition (Company | Dept | Natural Account | LOB | Reinsurance Type | Product). Each segment: label, width, example values, NAIC alignment. The centerpiece of every COA presentation to CFOs.
@@ -61,6 +63,7 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 | PDD-009 | Workstream-Level Data Gates — declarative data requirements per workstream | B1 | Done |
 | PDD-010 | Mission Control Landing Page — unified context selector, attention queue, presence | PDD-009 | Done |
 | UAT | Process Flow Builder UAT — 120 scenarios, 3 defects fixed (custom flow nav, placing cancel, hydration) | PDD-007 | Done |
+| PDD-012 | COA Design Deliverable tab — 9-section document view with readiness + status lifecycle | PDD-006, PDD-011 | Done |
 
 **End state:** Three agent capabilities working end-to-end. GL Design Coach (account analysis, COA design) + Functional Consultant (process flow builder). Real data in, real agent processing, real streamed results.
 
@@ -86,10 +89,10 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 | WS-002 Business Case | d-002-02 | 1/4 |
 | WS-003 ERP Selection | d-003-04 | 1/5 |
 | WS-004 Business Process | d-004-01, d-004-03, d-004-03b, d-004-03c, d-004-03d, d-004-04 + custom flows | 6/5+ |
-| WS-005 COA & GL | d-005-01, d-005-02, d-005-03, d-005-04 | 4/8 |
+| WS-005 COA & GL | d-005-01, d-005-02 (+Deliverable tab), d-005-03, d-005-04 | 4/4 active (4 in backlog) |
 | WS-006 Reporting | d-006-01, d-006-06 | 2/6 |
 | WS-007 Data & Integration | — | 0/5 |
-| **Total** | **16 + custom** | **16/36 (44%) + custom flows** |
+| **Total** | **16 + custom** | **16/32 active (50%) + 19 backlog** |
 
 ---
 
@@ -100,14 +103,17 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 - `web/src/lib/mock-requirements.ts` — BR data (324 requirements)
 - `web/src/lib/workshop-store.ts` — Zustand store for workshop mode
 - `web/src/lib/analysis-store.ts` — Zustand store for cached analysis results
-- `web/src/lib/coa-store.ts` — Zustand store for COA Design Workbench (PDD-006)
+- `web/src/lib/coa-store.ts` — Zustand store for COA Design Workbench (PDD-006) + Deliverable tab (PDD-012)
+- `web/src/lib/hierarchy-store.ts` — Zustand store for FSLI hierarchy classifications
 - `web/src/lib/flow-builder-store.ts` — Zustand store for Process Flow Builder (PDD-007)
 - `web/src/lib/agent-store.ts` — Zustand store for agent SSE streaming state
 - `web/src/lib/agent-client.ts` — SSE client with history + onToolCall support
 - `web/src/lib/scoping-data.ts` — Scoping Canvas themes, questions
 - `web/src/app/[engagementId]/deliverables/[deliverableId]/page.tsx` — workspace dispatch
 - `web/src/components/workspace/` — all workspace components
-- `web/src/components/workspace/COADesignWorkbench.tsx` — editable tabbed workbench for d-005-02
+- `web/src/components/workspace/COADesignWorkbench.tsx` — editable tabbed workbench for d-005-02 (8 tabs incl. Deliverable)
+- `web/src/components/workspace/coa-tabs/COADeliverable.tsx` — 9-section deliverable document view (PDD-012)
+- `docs/reference/agent-backlog.md` — backlog deliverables by agent (GL Design Coach, FC, Consulting Agent)
 - `web/src/components/workspace/ProcessFlowBuilder.tsx` — split-view FC agent builder (PDD-007)
 - `web/src/components/workspace/ProcessFlowIndex.tsx` — flow index with custom flows + builder entry
 - `web/src/components/workspace/flow-builder/` — BuilderChatPanel, BuilderPreviewPanel

@@ -159,10 +159,6 @@ const ACME_WORKPLAN: Workplan = {
         { deliverable_id: "d-005-02", name: "Chart of Accounts Design (code block, dimensions)", status: "in_progress", owner_agent: "gl_design_coach", agent_summary: "Profit centre structure drafted · 2 design decisions pending your sign-off", needs_input: true },
         { deliverable_id: "d-005-03", name: "Account Mapping: Legacy → New COA", status: "in_progress", owner_agent: "gl_design_coach", agent_summary: "34 of 68 accounts mapped · 12 legacy accounts flagged for cleanup" },
         { deliverable_id: "d-005-04", name: "ACDOCA Dimension Design (profit center, segment, functional area)", status: "not_started", owner_agent: "gl_design_coach" },
-        { deliverable_id: "d-005-05", name: "Document Splitting Configuration Spec", status: "not_started", owner_agent: "gl_design_coach" },
-        { deliverable_id: "d-005-06", name: "P&C-Specific Account Groups (NAIC alignment, loss reserves, reinsurance)", status: "not_started", owner_agent: "gl_design_coach" },
-        { deliverable_id: "d-005-07", name: "GL Open Items / Clearing Accounts Inventory", status: "blocked", owner_agent: "gl_design_coach", agent_summary: "Awaiting trial balance extract from client finance team", needs_input: true },
-        { deliverable_id: "d-005-08", name: "Multi-GAAP Ledger Design (IFRS 17, US GAAP, Stat)", status: "not_started", owner_agent: "gl_design_coach" },
       ],
     },
     {
@@ -253,10 +249,6 @@ const BEACON_WORKPLAN: Workplan = {
         { deliverable_id: "d-b05-02", name: "Chart of Accounts Design (code block, dimensions)", status: "not_started", owner_agent: "gl_design_coach" },
         { deliverable_id: "d-b05-03", name: "Account Mapping: Legacy → New COA", status: "not_started", owner_agent: "gl_design_coach" },
         { deliverable_id: "d-b05-04", name: "ACDOCA Dimension Design (profit center, segment, functional area)", status: "not_started", owner_agent: "gl_design_coach" },
-        { deliverable_id: "d-b05-05", name: "Document Splitting Configuration Spec", status: "not_started", owner_agent: "gl_design_coach" },
-        { deliverable_id: "d-b05-06", name: "P&C-Specific Account Groups (NAIC alignment, loss reserves, reinsurance)", status: "not_started", owner_agent: "gl_design_coach" },
-        { deliverable_id: "d-b05-07", name: "GL Open Items / Clearing Accounts Inventory", status: "not_started", owner_agent: "gl_design_coach" },
-        { deliverable_id: "d-b05-08", name: "Multi-GAAP Ledger Design (IFRS 17, US GAAP, Stat)", status: "not_started", owner_agent: "gl_design_coach" },
       ],
     },
     {
