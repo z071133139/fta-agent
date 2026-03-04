@@ -99,8 +99,8 @@ The pursuit phase has its own deliverables (Scoping Canvas, Executive Summary, V
 | # | Session | What | Exit |
 |---|---------|------|------|
 | 1 | **Harden live agent** | Run d-005-02 with `FTA_MOCK_AGENT=false`. Fix prompt to reliably produce parseable `<coa_design>` JSON. Test 5+ runs, fix parse/quality failures. | 5 consecutive successful runs producing valid COA workbench data |
-| 2 | **Golden dataset + demo polish** | Pre-seed a beautiful coa-store + hierarchy-store as demo fallback. Verify all 8 COA tabs render perfectly. Fix any visual issues. | Screenshot-ready Deliverable tab |
-| 3 | **Demo script + rehearsal** | Write exact click path with timing. Identify failure points. Rehearse 3x. Record backup video. | Timed run under 6 minutes, recovery plan for each failure point |
+| 2 | **Deploy + golden dataset** | Dockerfile for backend (Railway/Fly.io). Frontend on Vercel. Configurable API URL. Golden pre-seeded data as fallback. Smoke test on live URL. | Working deployed URL with live agent + fallback data |
+| 3 | **Demo script + rehearsal** | Write exact click path with timing. Visual polish. Rehearse 3x on deployed URL. Record backup video. | Timed run under 6 minutes on live URL, recovery plan for each failure point |
 
 **What is NOT in Phase 1 (pushed to Phase 2):**
 - RAG pipeline (audience won't know it's missing)
@@ -114,6 +114,7 @@ The pursuit phase has its own deliverables (Scoping Canvas, Executive Summary, V
 - Additional agent capabilities
 
 **Phase 1 exit criteria:**
+- [ ] Deployed to a URL (not localhost) — frontend on Vercel, backend on Railway/Fly.io
 - [ ] Live demo completed in front of at least one stakeholder
 - [ ] Agent produces valid COA design from trial balance in < 90 seconds
 - [ ] Deliverable tab renders all 9 sections with realistic data
@@ -354,8 +355,8 @@ Phase 1: Pitch Demo MVP (3 sessions remaining)
 │
 ├── REMAINING — Demo Readiness
 │   ├── S030: Harden live agent (d-005-02)       ⬜ ← NEXT
-│   ├── S031: Golden dataset + demo polish       ⬜
-│   └── S032: Demo script + rehearsal            ⬜
+│   ├── S031: Deploy (Vercel + Railway) + golden dataset  ⬜
+│   └── S032: Demo script + rehearsal on live URL ⬜
 │
 Phase 2: Personal Use MVP
 ├── RAG pipeline (curated P&C/SAP docs, pgvector)

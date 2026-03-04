@@ -26,16 +26,20 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 2. **Verify COA workbench end-to-end** — clear localStorage, restart backend, navigate to d-005-02, run analysis → confirm all 8 tabs populate correctly from live agent output.
 3. **Test Functional Consultant live** — `FTA_MOCK_AGENT=false` on process flow builder. Verify multi-turn conversation produces valid `emit_process_flow` output.
 
-## Session 031 — Golden Dataset + Demo Polish
+## Session 031 — Deploy + Golden Dataset
 
-4. **Pre-seed golden coa-store + hierarchy-store** — Beautiful, complete data as demo fallback if live agent fails during pitch. All 9 deliverable sections green-ready.
-5. **Visual polish pass** — Fix any rendering issues found during live testing. Ensure dark theme looks screenshot-ready across all demo screens.
+4. **Deploy backend** — Dockerfile for FastAPI + DuckDB + LangGraph. Deploy to Railway or Fly.io. Set `ANTHROPIC_API_KEY` env var. Verify fixture auto-loads on startup, SSE streams to remote frontend.
+5. **Deploy frontend** — Vercel from repo. Configure `NEXT_PUBLIC_API_URL` env var pointing to deployed backend. Add deployed domain to backend CORS config.
+6. **Configurable API URL** — Replace hardcoded `localhost:8000` with environment variable in frontend API client (`agent-client.ts`, any fetch calls). Already uses env vars? Verify and fix.
+7. **Pre-seed golden coa-store + hierarchy-store** — Beautiful, complete data as demo fallback if live agent fails during pitch. All 9 deliverable sections green-ready.
+8. **Smoke test on deployed URL** — Open Vercel link, run through all three demo moments against deployed backend. Fix any issues.
 
 ## Session 032 — Demo Script + Rehearsal
 
-6. **Write demo script** — Exact click path with timing for each of the three moments. Identify every failure point with recovery action.
-7. **Rehearse 3x** — Time the full demo. Target: under 6 minutes.
-8. **Record backup video** — Screen recording of the full demo flow in case live demo fails.
+9. **Visual polish pass** — Fix any rendering issues found during deployed testing. Ensure dark theme looks screenshot-ready.
+10. **Write demo script** — Exact click path with timing for each of the three moments. Identify every failure point with recovery action.
+11. **Rehearse 3x** — Time the full demo on the deployed URL (not localhost). Target: under 6 minutes.
+12. **Record backup video** — Screen recording of the full demo flow in case live demo fails.
 
 ---
 
