@@ -69,81 +69,111 @@ The pursuit phase has its own deliverables (Scoping Canvas, Executive Summary, V
 
 ## Product Phases
 
+> Updated Session 029: Reframed phases. Phase 1 narrowed to Pitch Demo MVP (get buy-in). Original Phase 1 scope (personal use on real engagements) pushed to Phase 2.
+
 | Phase | Audience | Core Milestone |
 |-------|----------|----------------|
-| **Phase 1** | Product owner (personal use) | GL Design Coach works on real P&C engagements via CLI |
-| **Phase 2** | 3-5 trusted consultants (super testers) | Multi-user, web UI, expanded capabilities |
-| **Phase 3** | Consulting teams (broad rollout) | Commercial SaaS, enterprise deployment, multi-specialist |
+| **Phase 1** | Stakeholders (pitch demo) | One live demo: AI ingests data, produces COA design, consultant reviews in workbench |
+| **Phase 2** | Product owner (personal use) | GL Design Coach works on real P&C engagements, persistence, RAG, eval |
+| **Phase 3** | 3-5 trusted consultants (super testers) | Multi-user, expanded capabilities, Life/Annuity |
+| **Phase 4** | Consulting teams (broad rollout) | Commercial SaaS, enterprise deployment, multi-specialist |
 
 ---
 
-## Phase 1: Personal Use MVP
+## Phase 1: Pitch Demo MVP
 
-**Goal:** Product owner can use FTA on a real P&C finance transformation engagement. One user, one engagement, CLI + web interface.
+> Reframed Session 029. Original Phase 1 was "personal use on real engagements" — too broad, scope crept across 29 sessions. Narrowed to: one compelling live demo that gets buy-in from collaborators/investors. Original Phase 1 scope pushed to Phase 2.
 
-**What's in Phase 1:**
-- Three-agent MVP: Consulting Agent + Functional Consultant + GL Design Coach (DEC-029)
-- GL Design Coach V1 (P&C only, SAP mode, real data, hybrid knowledge)
-- Engagement Context with DuckDB persistence (local, V1) (DEC-032)
-- Data Analytics Engine (ingest, profile, MJE analysis)
-- RAG pipeline (curated P&C + SAP reference material)
-- LLM-based intent routing (DEC-031)
-- Agent handoff protocol with structured outcome capture (DEC-034)
-- CLI interface (engagement-aware REPL)
-- Web UI (Next.js 15 — landing screen, workplan panel, deliverable workspace — Sessions 007–009)
-- Synthetic + real P&C data for testing
-- Evaluation framework
+**Goal:** Demonstrate the product vision with a live end-to-end flow. Audience watches AI ingest a trial balance, produce a structured COA design, and the consultant reviews it in a presentation-quality workbench. Supported by workshop mode and framework depth as credibility backdrop.
+
+**The demo is three moments:**
+
+| Moment | What the audience sees | Duration | Status |
+|--------|----------------------|----------|--------|
+| 1. "It knows my world" | Mission control → workplan with P&C workstreams, NAIC vocabulary, statutory schedule lines | 30 sec | Ready |
+| 2. "It just did real work" | Upload TB → GL Design Coach runs → COA workbench populates → Deliverable tab shows 7/9 green | 3 min | **Gap: live agent reliability** |
+| 3. "It works with humans" | Workshop mode → flag gap → capture requirement → agent suggests → accept with Y | 2 min | Ready |
+
+**Remaining scope (3 sessions):**
+
+| # | Session | What | Exit |
+|---|---------|------|------|
+| 1 | **Harden live agent** | Run d-005-02 with `FTA_MOCK_AGENT=false`. Fix prompt to reliably produce parseable `<coa_design>` JSON. Test 5+ runs, fix parse/quality failures. | 5 consecutive successful runs producing valid COA workbench data |
+| 2 | **Golden dataset + demo polish** | Pre-seed a beautiful coa-store + hierarchy-store as demo fallback. Verify all 8 COA tabs render perfectly. Fix any visual issues. | Screenshot-ready Deliverable tab |
+| 3 | **Demo script + rehearsal** | Write exact click path with timing. Identify failure points. Rehearse 3x. Record backup video. | Timed run under 6 minutes, recovery plan for each failure point |
+
+**What is NOT in Phase 1 (pushed to Phase 2):**
+- RAG pipeline (audience won't know it's missing)
+- Supabase / real persistence
+- Evaluation framework execution
+- Real P&C data validation (synthetic is fine for demo)
+- PDF/Excel export
+- Performance testing at scale
 - Cost monitoring
-- LangGraph checkpointing (session persistence)
-- LangSmith tracing
-
-**What's NOT in Phase 1:**
-- Life/Annuity, Reinsurance sub-segments
-- Other Layer 2 specialists (Close Process Architect, Reporting Agent, etc.)
-- Layer 3 configuration agents
-- Web UI wired to real agent API (frontend built; backend wiring is Iteration 1.5A+)
-- Multi-user / concurrency
-- Enterprise LLM endpoints
-- Supabase (deferred to Phase 2; DuckDB used in Phase 1)
-
-### Phase 1 Iterations
-
-**See [v1-build-plan.md](v1-build-plan.md) for full detail on each iteration.**
-
-| # | Focus | What It Proves | Checkpoint |
-|---|-------|---------------|------------|
-| **0** | Synthetic test data + evaluation framework | We can measure quality | Realistic data with known patterns? Concrete eval criteria? |
-| **1** | **Domain knowledge encoding** | **THE core bet: agent sounds like a senior P&C consultant** | **GO/NO-GO: Product owner confirms depth is sufficient** |
-| **2** | Persistence (Supabase + Engagement Context) | Decisions survive across sessions | Structured decisions persist and recall correctly? |
-| **3** | Data pipeline + MJE analysis | Can ingest GL data, profile accounts, detect MJEs | ≥90% MJE detection on synthetic data? Handles real data? |
-| **4** | RAG pipeline | Reference knowledge improves answers | Measurable improvement on SAP config / NAIC questions? |
-| **5** | Integration (wire everything together) | Full flow works end-to-end | Natural conversation with data + persistence + RAG? |
-| **6** | Polish + real engagement validation | V1 is usable | 17-step walkthrough with real P&C data passes? |
-
-**Sequence rationale:**
-- Iteration 1 (domain knowledge) comes first because it's the highest-risk component and needs zero new infrastructure
-- Iterations 2, 3, 4 are informed by Iteration 1 learnings and can partially overlap
-- Iteration 5 integrates everything; Iteration 6 polishes for real use
+- LangGraph checkpointing
+- Additional agent capabilities
 
 **Phase 1 exit criteria:**
+- [ ] Live demo completed in front of at least one stakeholder
+- [ ] Agent produces valid COA design from trial balance in < 90 seconds
+- [ ] Deliverable tab renders all 9 sections with realistic data
+- [ ] Workshop mode shown without errors
+- [ ] Stakeholder response: interest in next conversation / collaboration
+- [ ] Backup video recorded in case of live demo failure
+
+---
+
+## Phase 2: Personal Use MVP
+
+> Absorbs original Phase 1 scope. Goal: product owner uses FTA on a real P&C engagement. One user, real data, real persistence.
+
+**Goal:** Product owner can use FTA on a real P&C finance transformation engagement. Agent output is reliable enough to show clients. Data persists. Knowledge base provides real reference material.
+
+### What's in Phase 2
+
+**From original Phase 1 (deferred during pitch demo focus):**
+- RAG pipeline — curate 20-30 P&C/SAP reference docs, pgvector, retrieval quality testing
+- Supabase persistence — migrate 6 Zustand stores to server state (TanStack Query)
+- Evaluation framework execution — measure agent output against senior consultant criteria
+- Real P&C data validation — test on actual trial balance, not just synthetic
+- Performance testing at 1M+ postings
+- Token cost monitoring per session
+- LangGraph checkpointing (session persistence across browser refreshes)
+- LangSmith tracing in development
+
+**New capabilities:**
+- Trust-building layer — source attribution, confidence indicators, OutputReview split view (see Session 023 audit)
+- PDF/Excel export from Deliverable tab
+- Agentic Functional Consultant expansion — 5 capabilities: gap→req pipeline, coverage analysis, cross-PA impact, session prep, deliverable drafting
+- Remaining knowledge workspaces (A6-A8, A10 from Stream A)
+- End-to-end verification of all 16 workspaces with live agents
+
+**Infrastructure:**
+- Supabase auth (single user, but real auth)
+- DuckDB → Supabase migration for engagement context
+- Custom process flow persistence (currently localStorage)
+- LLM routing by task complexity (Opus/Sonnet reasoning, Haiku routing)
+
+### Phase 2 Exit Criteria
+
 - [ ] Product owner has completed a full design workshop simulation with real P&C data
 - [ ] Agent output comparable to senior P&C consultant on ≥80% of evaluation criteria
 - [ ] MJE analysis identifies real patterns and links to COA design recommendations
-- [ ] Design decisions persist correctly across sessions
+- [ ] Design decisions persist correctly across sessions (Supabase, not localStorage)
 - [ ] Performance acceptable at 1M+ posting records
 - [ ] Token cost per session within budget
-- [ ] No API keys or client data leaked
+- [ ] RAG improves answer quality on SAP config / NAIC questions
 - [ ] Product owner confirms: ready to use on a real engagement
 
 ---
 
-## Phase 2: Super Testers
+## Phase 3: Super Testers
 
 **Goal:** 3-5 trusted consultants use FTA on real engagements. Feedback drives improvement. The product proves it works for people other than the builder.
 
 ### GL Design Coach V2
 
-| Capability | Why in Phase 2 |
+| Capability | Why in Phase 3 |
 |-----------|---------------|
 | Life/Annuity sub-segment | Second most common after P&C; validates multi-segment architecture |
 | Legacy→target mapping with confidence scores | Core data skill needed for real engagements |
@@ -168,43 +198,32 @@ The pursuit phase has its own deliverables (Scoping Canvas, Executive Summary, V
 
 ### Multi-Consultant Support
 
-- Supabase auth (user accounts, session management)
+- Supabase auth (multi-user, session management)
 - Concurrent access to shared engagement context (DEC-009)
 - Real-time updates via Supabase subscriptions
 - Shared backlog with agent-managed interaction patterns
 - Lead consultant management view (cross-workstream visibility)
 - User onboarding flow for new engagement team members
 
-### Web UI (Next.js)
-
-- Conversation interface with rich rendering (tables, progressive disclosure, code block visualizations)
-- File upload for GL data
-- Engagement dashboard
-- Decision log browser
-- Analysis results viewer (persistent analysis store)
-- Session history
-
 ### Infrastructure
 
-- LLM routing by task complexity (Opus/Sonnet for reasoning, Haiku for formatting/routing)
 - LangSmith monitoring across all users
 - Deployment to GCP Cloud Run
 - Feedback collection mechanism built into the product
 - Load testing for multi-user concurrency
 
-### Phase 2 Exit Criteria
+### Phase 3 Exit Criteria
 
 - [ ] 3-5 consultants have used FTA on real engagements
 - [ ] Feedback collected, analyzed, and incorporated
 - [ ] Multi-user concurrency works without data conflicts
-- [ ] Web UI is functional and consultant-friendly
 - [ ] Layer 1 tools produce usable deliverables
 - [ ] Life/Annuity sub-segment validated on a real engagement
 - [ ] OLD=NEW reconciliation demonstrated with real data
 
 ---
 
-## Phase 3: Broad Rollout
+## Phase 4: Broad Rollout
 
 **Goal:** FTA is a commercial product sold to consulting firms for insurance finance transformation engagements.
 
@@ -266,7 +285,7 @@ Phased approach per DEC-011:
 | Documentation + training material | For consulting firm adoption |
 | Support model | Tiered support for paying customers |
 
-### Phase 3 Exit Criteria
+### Phase 4 Exit Criteria
 
 - [ ] At least one consulting firm paying for the product
 - [ ] Multiple concurrent engagements running without interference
@@ -295,13 +314,13 @@ These are non-negotiable across every phase (from design-principles.md):
 
 | Decision | Impact |
 |----------|--------|
-| DEC-004: SAP-first, ERP-agnostic | Phase 1-2 SAP only. Platform adapters in Phase 3. |
+| DEC-004: SAP-first, ERP-agnostic | Phase 1-3 SAP only. Platform adapters in Phase 4. |
 | DEC-009: Concurrency from day one | Supabase schema supports multi-user even in Phase 1. |
 | DEC-012: Specialists have data skills | Data pipeline in Phase 1, not deferred. |
-| DEC-014: Reporting Agent separate | Close Process Architect + Reporting Agent integration is Phase 3 design challenge. |
+| DEC-014: Reporting Agent separate | Close Process Architect + Reporting Agent integration is Phase 4 design challenge. |
 | DEC-021: Supabase | Persistence for all phases. Schema evolves, platform stays. |
-| DEC-025: Enterprise endpoints deferred | Standard APIs Phase 1-2. Bedrock/Azure Phase 3. |
-| DEC-026: P&C only V1 | Life/Annuity in Phase 2. Reinsurance in Phase 3. |
+| DEC-025: Enterprise endpoints deferred | Standard APIs Phase 1-3. Bedrock/Azure Phase 4. |
+| DEC-026: P&C only V1 | Life/Annuity in Phase 3. Reinsurance in Phase 4. |
 | DEC-027: Real data day one | Data pipeline is Phase 1 Iteration 3, not deferred. |
 | DEC-028: Hybrid knowledge | Prompts + RAG. Both built in Phase 1. |
 | DEC-029: Three-agent MVP | Consulting Agent + Functional Consultant + GL Design Coach. |
@@ -315,88 +334,55 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 029: PDD-012 COA Design Deliverable tab — 8th tab assembles all COA workbench data into a 9-section presentation-quality document with per-section readiness badges and deliverable status lifecycle (Draft → Review → Approved). Sidebar cleaned: 4 backlog deliverables moved to `docs/reference/agent-backlog.md`. Coverage: 16/32 active deliverables (50%) + 19 in agent backlog.
+> Updated Session 029: Phase reframe — Phase 1 narrowed to Pitch Demo MVP (3 remaining sessions). Original Phase 1 scope pushed to Phase 2 (Personal Use MVP). PDD-012 COA Design Deliverable tab completed. Sidebar cleaned, agent backlog created.
 
 ```
-Phase 1: Personal Use MVP
-├── Project skeleton                         ✅ Session 004
-├── GL Design Coach MVP tiering              ✅ Session 004
-├── Master plan + V1 build plan              ✅ Session 005 (approved)
-├── MVP agent design (skills spec)           ✅ Session 006
+Phase 1: Pitch Demo MVP (3 sessions remaining)
+├── DONE — Framework & UI (Sessions 004–029)
+│   ├── Project skeleton + master plan           ✅ Sessions 004–005
+│   ├── Frontend harness (landing, workplan, workspaces) ✅ Sessions 007–014
+│   ├── 16 deliverable workspaces                ✅ Sessions 015–029
+│   ├── Workshop Mode (W1–W8)                    ✅ Sessions 016–019
+│   ├── Scoping Canvas                           ✅ Sessions 019–020
+│   ├── Stream B agentic capabilities            ✅ Sessions 021–029
+│   │   ├── GL Design Coach (5 tools, SSE)       ✅
+│   │   ├── Functional Consultant (flow builder) ✅
+│   │   ├── COA Design Workbench (8 tabs)        ✅
+│   │   ├── Mission Control Landing              ✅
+│   │   └── COA Deliverable tab (PDD-012)        ✅
+│   └── Process Flow UAT (120 scenarios)         ✅ Session 028
 │
-├── Iteration 0: Test Data + Eval Framework  ✅ Complete
-├── Iteration 1: Domain Knowledge + Frontend ✅ Complete
-├── Iteration 1.5: Agent Harness             ✅ Frontend complete (Sessions 007–014)
-│   ├── Frontend — Landing + Workplan        ✅ Sessions 007–008
-│   ├── Frontend — Agent Workspace           ✅ Session 009
-│   ├── Frontend — Process Visualization     ✅ Sessions 012–013
-│   └── Frontend — Business Requirements     ✅ Session 014
+├── REMAINING — Demo Readiness
+│   ├── S030: Harden live agent (d-005-02)       ⬜ ← NEXT
+│   ├── S031: Golden dataset + demo polish       ⬜
+│   └── S032: Demo script + rehearsal            ⬜
 │
-├── Stream A: Framework Expansion            ✅ A1–A3, A9, A11 complete (Sessions 015, 018)
-│
-├── WORKSHOP MODE (Sessions 016–019)         ✅ COMPLETE
-│   ├── W1 Workshop layout toggle            ✅ Session 016
-│   ├── W2 Keyboard capture system           ✅ Session 017
-│   ├── W3 Live requirements editing         ✅ Session 017
-│   ├── W4 Live process flow editing         ✅ Session 017
-│   ├── W5 Agent listening mode              ✅ Sessions 017, 018, 019
-│   ├── W6 Micro-interactions                ✅ Session 019
-│   ├── W7 Browser persistence               ✅ Session 019
-│   └── W8 Workshop session continuity       ✅ Session 019
-│
-├── PURSUIT PHASE: Scoping Canvas (P1)       ✅ Sessions 019–020
-│   ├── Orbital layout + 7 themes            ✅ Session 019
-│   ├── Contextual enhancements (hub crossfade, deps, progress rings) ✅ Session 020
-│   ├── Parallax tilt, tunnel vision, glassmorphism ✅ Session 020
-│   ├── Enterprise monochrome tone overhaul  ✅ Session 020
-│   └── Rapid 12 / Deep Dive scoping mode + hypothesis panel ✅ Session 020
-│
-├── STREAM B: Agentic Capabilities           (Session 021+)
-│   ├── B1 Data fixture + startup loader     ✅
-│   ├── B2 Analysis tools (deterministic)    ✅
-│   ├── B3 SSE streaming endpoint            ✅
-│   ├── B4 Wire GL Design Coach with tools   ✅
-│   ├── B5 Frontend SSE consumer             ✅
-│   ├── B6 Cap 1: Account Analysis e2e       ✅
-│   ├── B7 Cap 2: GAAP Income Statement      ✅
-│   ├── B8 Demo polish                       ✅
-│   ├── PDD-006 COA Design Workbench         ✅ Session 024
-│   ├── PDD-007 Custom Process Flow Builder  ✅ Session 025
-│   ├── PDD-009 Workstream Data Gates        ✅ Session 026
-│   ├── PDD-010 Mission Control Landing Page ✅ Session 026
-│   ├── Process Flow UAT (120 scenarios)     ✅ Session 028
-│   ├── PDD-012 COA Design Deliverable tab   ✅ Session 029
-│   └── PDD-011 COA Visuals + Dynamic Hierarchy ⬜ Session 030 ← NEXT
-│
-├── Stream A continued: A4–A10               (after B)
-├── Stream C: Platform Polish                (after B)
-│
-├── STREAM E: Current State Extraction       (designed Session 019, build TBD)
-│   ├── E1+E2 Types + mock data + evidence UI
-│   ├── E3 Workshop Validation Mode
-│   ├── E4+E5 Config + behavioral extraction backend (no LLM)
-│   └── E6 Document ingestion (LLM-powered)
-│   └── Plan: docs/plans/current-state-extraction-plan.md
-│
-├── Iteration 2: Persistence Layer           (after Stream B proves vertical)
-├── Iteration 3–6: Deferred                  (informed by Workshop Mode + Streams)
-│
-Phase 2: Super Testers
-└── (not started)
+Phase 2: Personal Use MVP
+├── RAG pipeline (curated P&C/SAP docs, pgvector)
+├── Supabase persistence (migrate 6 Zustand stores)
+├── Evaluation framework execution
+├── Real P&C data validation
+├── Trust-building layer (source attribution, confidence)
+├── PDF/Excel export
+├── Agentic FC expansion (5 capabilities)
+├── Stream A continued (A6–A10)
+├── Stream E: Current State Extraction
+└── Performance + cost testing
 
-Phase 3: Broad Rollout
-└── (not started)
+Phase 3: Super Testers
+└── Multi-user, Life/Annuity, Layer 1 tools
+
+Phase 4: Broad Rollout
+└── Commercial SaaS, Layer 2+3 specialists
 ```
 
 **Coverage:** 16 of 32 active deliverables have workspaces (50%) + custom process flows via builder. 19 deliverables in agent backlog (`docs/reference/agent-backlog.md`).
 
-**Frontend state:** Full workspace UI. 5 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable, COADesignWorkbench) + ProcessFlowBuilder split-view. 16 deliverables with workspaces. Two "living document" patterns: COADesignWorkbench (agent seeds structured data, consultant edits inline, deliverable tab assembles into document) and ProcessFlowBuilder (agent builds structured flows through conversation).
+**Frontend state:** Full workspace UI. 5 workspace component types + ProcessFlowBuilder split-view. 16 deliverables with workspaces. Two "living document" patterns: COADesignWorkbench (agent seeds structured data, consultant edits inline, deliverable tab assembles into document) and ProcessFlowBuilder (agent builds structured flows through conversation).
 
 **Backend state:** Two agent graphs: GL Design Coach (5 analysis tools) + Functional Consultant (emit_process_flow tool). SSE streaming with multi-turn history support, per-request mock mode. DataEngine + DuckDB + Polars pipeline.
 
-**Next priority:** PDD-011 COA Visuals + Dynamic Hierarchy (already built in Session 027-028 — Account String Diagram, Dimensional Matrix, Dynamic Hierarchy with three-tier classification and audit trail). Then end-to-end verification, trust-building layer PDD, and Agentic FC expansion.
-
-**Key architectural insight (Session 027):** Static ERP hierarchies (FSVs) are unnecessary with agentic classification. Instead of manually assigning accounts to FSLI nodes across multiple reporting bases, the agent classifies using deterministic rules (80%) + pattern heuristics (15%) + LLM-proposed/consultant-pinned (5%). The system converges toward zero LLM calls. Every mapping is more auditable than traditional manual assignment: classification source, basis text, approval chain, change history, reproducibility hash. This changes the COA design deliverable from "build hierarchies" to "validate agent classifications."
+**Next priority:** Harden live agent path for d-005-02 (Session 030). Then golden dataset + demo polish (Session 031). Then demo script + rehearsal (Session 032). No new features.
 
 ---
 

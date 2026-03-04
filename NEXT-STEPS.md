@@ -1,7 +1,7 @@
 # NEXT STEPS
 
 > Last updated: 2026-03-03 (Session 029)
-> Current phase: Phase 1 — Personal Use MVP
+> Current phase: Phase 1 — Pitch Demo MVP (3 sessions remaining)
 
 ---
 
@@ -9,40 +9,33 @@
 
 FTA is an **interactive consulting framework** for insurance finance transformations, with AI agents embedded as capabilities. Three product modes: Pursuit, Workshop, Solo.
 
-**Pivot (Session 021):** Shifting from frontend mock expansion to backend agentic capabilities. Two fully working agent flows for pitch demo: Account Analysis + GAAP Income Statement generation.
+**Phase reframe (Session 029):** Phase 1 narrowed to **Pitch Demo MVP** — one compelling live demo that gets buy-in from collaborators/investors. Original Phase 1 scope (personal use on real engagements) pushed to Phase 2. No new features — 3 sessions of hardening, polish, and rehearsal.
 
-**PDD-007 complete (Session 025):** Custom Process Flow Builder — NLP-driven flow creation via Functional Consultant agent. Split-view workspace, multi-turn conversation, live preview, accept/discard lifecycle.
-
-**PDD-009 complete (Session 026):** Workstream-Level Data Gates — declarative per-workstream data requirements, workstream gate page, deliverable readiness table, WorkplanSpine data pips.
-
-**PDD-010 complete (Session 026):** Mission Control Landing Page — unified context selector (engagements + pursuits), attention queue, resume card, data status widget, consultant presence pips, kill engagement dashboard.
-
-**Session 027:** Slide deck content created (`docs/content/fta-slide-deck-content.md`). Phase 1 gap analysis completed. COA Design Workbench visual gap identified: missing Account String Diagram and Dimensional Matrix — the two most important COA visualizations for CFO presentations. Research completed on 6 standard insurance COA visual formats.
-
-**Session 028:** WorkplanPanel three-column agent grid (grouped by agent ownership). Process Flow Builder UAT executed (120 scenarios, 95% pass). Three defects found and fixed: custom flow navigation (D1-HIGH), placing mode cancel button (D2-MED), Zustand hydration timing (D3-LOW). Playwright added. Session docs for 026-028 written.
-
-**Session 029:** PDD-012 COA Design Deliverable tab — 8th tab on COA Design Workbench assembles all data into a structured, presentation-quality document view with 9 sections, per-section readiness badges, and a deliverable status lifecycle (Draft → Ready for Review → Under Review → Approved). Sidebar cleanup: 4 backlog deliverables moved from sidebar mock data to `docs/reference/agent-backlog.md` (organized by agent).
+**The demo is three moments:**
+1. "It knows my world" — Mission control, P&C workstreams, NAIC vocabulary (READY)
+2. "It just did real work" — Upload TB → GL Design Coach → COA workbench → Deliverable tab (GAP: live agent reliability)
+3. "It works with humans" — Workshop mode, gap flagging, requirement capture, agent suggestions (READY)
 
 ---
 
-## Session 030 Pickup
+## Session 030 Pickup — Harden Live Agent
 
-1. **PDD-011 — COA Visual Enhancements + Dynamic Hierarchy** — Major evolution of d-005-02 COA Design Workbench. Three components:
-   - **Account String Diagram:** Interactive horizontal segmented bar showing full account string composition (Company | Dept | Natural Account | LOB | Reinsurance Type | Product). Each segment: label, width, example values, NAIC alignment. The centerpiece of every COA presentation to CFOs.
-   - **Dimensional Matrix:** Cross-reference grid showing Natural Account x LOB x Reinsurance Type intersections. Active vs. unused combinations. Shows the "explosion" problem and drives rationalization.
-   - **Dynamic Hierarchy with Audit Trail:** Replaces static ERP hierarchies (FSVs) with agent-computed roll-ups. Three-tier classification model:
-     - Tier 1 (Rule): deterministic lookup — `account_type + naic_category → FSLI`. Covers ~80%. No LLM.
-     - Tier 2 (Pattern): coded heuristics on posting behavior + name + dimensions. Covers ~15%. No LLM.
-     - Tier 3 (Agent→Pinned): LLM proposes for ambiguous accounts, consultant approves, approval converts to Tier 1 rule. System converges toward zero LLM calls.
-   - **Audit artifact:** Every mapping has classification_source (rule/pattern/agent_pinned), basis text, approved_by, date, full change history. Agent reasoning preserved verbatim for Tier 3 pins. Override chain (nothing deleted). Reproducibility hash (data + rule version → deterministic output). Exportable as audit workpaper appendix.
-   - **Multi-perspective:** Same accounts, different reporting frameworks on demand — "Show me NAIC Annual Statement" / "Show me GAAP" / "Show me IFRS 17". Hierarchy is a view, not a structure.
-   - Research: 6 standard COA visual formats identified. We have range table + dimension canvas. Missing account string, dimensional matrix, hierarchy tree, crosswalk.
-2. **PDD-008 — Color Readability Overhaul** — see `docs/plans/pdd-008-color-readability-overhaul.md`
-3. **COA Workbench verification** — clear localStorage, restart backend with `FTA_MOCK_AGENT=true`, navigate to d-005-02, run analysis → confirm workbench + 4 tabs
-4. **Live LLM testing (both agents)** — `FTA_MOCK_AGENT=false`: test GL Design Coach on d-005-01/d-005-02 + Functional Consultant process flow builder
-5. **Agentic Functional Consultant expansion** — 5 capabilities beyond flow building: gap→req pipeline, coverage analysis, cross-PA impact, session prep, deliverable drafting (see `docs/plans/stream-b-agentic-functional-consultant.md`)
-6. **Stream A resume** — remaining knowledge workspaces (A6–A8, A10)
-7. **Browser UAT pass** — 4 remaining MANUAL scenarios from Process Flow UAT need in-browser confirmation
+**No new features. Demo readiness only.**
+
+1. **Harden live agent for d-005-02** — Run with `FTA_MOCK_AGENT=false`. Fix GL Design Coach prompt to reliably produce parseable `<coa_design>` JSON. Test 5+ consecutive runs. Fix parse failures, output quality issues, timeout handling. Exit: 5 consecutive successful runs producing valid COA workbench data.
+2. **Verify COA workbench end-to-end** — clear localStorage, restart backend, navigate to d-005-02, run analysis → confirm all 8 tabs populate correctly from live agent output.
+3. **Test Functional Consultant live** — `FTA_MOCK_AGENT=false` on process flow builder. Verify multi-turn conversation produces valid `emit_process_flow` output.
+
+## Session 031 — Golden Dataset + Demo Polish
+
+4. **Pre-seed golden coa-store + hierarchy-store** — Beautiful, complete data as demo fallback if live agent fails during pitch. All 9 deliverable sections green-ready.
+5. **Visual polish pass** — Fix any rendering issues found during live testing. Ensure dark theme looks screenshot-ready across all demo screens.
+
+## Session 032 — Demo Script + Rehearsal
+
+6. **Write demo script** — Exact click path with timing for each of the three moments. Identify every failure point with recovery action.
+7. **Rehearse 3x** — Time the full demo. Target: under 6 minutes.
+8. **Record backup video** — Screen recording of the full demo flow in case live demo fails.
 
 ---
 
@@ -73,11 +66,19 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 
 ---
 
-## Frozen Streams (resume after B)
+## Deferred to Phase 2 (Personal Use MVP)
 
-- **Stream A — Framework Expansion:** 4 remaining knowledge workspaces (A6–A8, A10). A4 completed as PDD-006. See `docs/reference/feature-specs.md`.
-- **Stream C — Platform Polish:** WorkplanSpine sidebar, breadcrumbs, loading/error states. See `docs/reference/feature-specs.md`.
-- **Stream E — Current State Extraction:** Designed, not built. See `docs/reference/feature-specs.md`.
+- **RAG pipeline** — curate 20-30 P&C/SAP reference docs, pgvector, retrieval quality testing
+- **Supabase persistence** — migrate 6 Zustand stores to server state (TanStack Query)
+- **Evaluation framework** — measure agent output against senior consultant criteria
+- **Real P&C data validation** — test on actual trial balance, not just synthetic
+- **Trust-building layer** — source attribution, confidence indicators, OutputReview split view
+- **PDF/Excel export** — from Deliverable tab and other workspaces
+- **Agentic FC expansion** — 5 capabilities: gap→req, coverage, cross-PA impact, session prep, deliverable drafting
+- **Stream A continued** — A6–A8, A10 remaining knowledge workspaces
+- **Stream C — Platform Polish** — WorkplanSpine sidebar, breadcrumbs, loading/error states
+- **Stream E — Current State Extraction** — designed Session 019, build TBD
+- **Performance + cost testing** — 1M+ postings, token budget per session
 
 ---
 
@@ -139,22 +140,22 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 
 ---
 
-## Parked Items
+## Parked Items (Phase 2)
 
 - **d-004-03 index view:** Future State Process Maps needs a list/index of all sub-flows across all PAs (currently hardcoded to SP-02.1).
-- **Trust-building layer for live agent workspaces:** Current CompletedAnalysisView is a single-column markdown dump. Missing: source attribution per recommendation, confidence indicators per finding, inline edit/reject on individual outputs, OutputReview split view (output left / evidence right), InterruptCard in live agent flow, audit trail linking output to tool calls, one-click export (PDF/Excel/clipboard), dynamic agent name in AgentStatusBar. Needs a dedicated PDD before building more GL Design Coach workspaces at production quality. See Session 023 audit for full gap table.
-- **Permanent storage for custom process flows (PDD-007 follow-up):** Accepted flows currently live in localStorage (`fta-flow-builder` Zustand persist store). Needs Supabase migration: `custom_process_flows` table with `engagement_id`, `flow_data` (JSONB), `created_by`, `created_at`, `name`. Custom flows should appear alongside leading practice flows in the Process Flow Index and be editable via the standard ProcessFlowMap workshop mode. Depends on Supabase integration (Phase 2).
+- **Trust-building layer:** Source attribution, confidence indicators, OutputReview split view, audit trail. See Session 023 audit for full gap table. Needs dedicated PDD.
+- **Permanent storage for custom process flows:** Accepted flows in localStorage. Needs Supabase migration. Depends on Phase 2.
+- **Browser UAT pass:** 4 remaining MANUAL scenarios from Process Flow UAT need in-browser confirmation.
 
 ---
 
 ## What We're NOT Building Yet
 
-- Supabase integration (Phase 2) — includes permanent storage for custom process flows, engagement context, auth
-- Multi-agent handoff protocol
-- Additional data tools beyond GL Account Analysis
-- Pursuit phase implementation (designed, build after Stream B)
-- Mobile / responsive design
-- Auth beyond mock
+- Everything in the "Deferred to Phase 2" list above
+- Multi-agent handoff protocol (Phase 3)
+- Additional Layer 2 specialists (Phase 3+)
+- Mobile / responsive design (Phase 4)
+- Enterprise LLM endpoints (Phase 4)
 
 ---
 
