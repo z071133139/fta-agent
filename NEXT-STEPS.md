@@ -146,6 +146,7 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 
 ## Parked Items (Phase 2)
 
+- **CB Dimensions tab redesign:** Current tab conflates coding string layout (how the GL key is composed) with code block dimensions (what qualifies a posting — profit center, cost center, functional area, etc.). Needs a clear concept: is it showing the GL key structure, or the dimensions that apply to code blocks? Missing real dimensions (profit center, cost center, functional area, segment, trading partner). Revisit after demo.
 - **d-004-03 index view:** Future State Process Maps needs a list/index of all sub-flows across all PAs (currently hardcoded to SP-02.1).
 - **Trust-building layer:** Source attribution, confidence indicators, OutputReview split view, audit trail. See Session 023 audit for full gap table. Needs dedicated PDD.
 - **Permanent storage for custom process flows:** Accepted flows in localStorage. Needs Supabase migration. Depends on Phase 2.
