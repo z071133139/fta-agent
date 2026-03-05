@@ -125,6 +125,18 @@ export function PitchDeck() {
       className="h-screen w-screen bg-background overflow-hidden select-none relative"
       onMouseMove={showControls}
     >
+      {/* Close button */}
+      <button
+        onClick={() => router.push("/")}
+        className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface/80 border border-border/40 hover:border-muted/40 hover:bg-surface transition-all text-xs font-mono text-muted/60 hover:text-muted cursor-pointer backdrop-blur-sm ${
+          controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+        } transition-opacity duration-500`}
+      >
+        esc
+        <span className="text-muted/30">|</span>
+        exit
+      </button>
+
       {/* Click zones for nav */}
       <div
         className="absolute inset-y-0 left-0 w-1/3 z-10 cursor-pointer"

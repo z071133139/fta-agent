@@ -9,6 +9,8 @@ import {
   type DeliverableStatus,
   type ConsultantPresence,
 } from "@/lib/mock-data";
+import { FeatureGuide } from "@/components/guides/FeatureGuide";
+import { GUIDE_REGISTRY, type FeatureGuideData } from "@/lib/guide-content";
 
 // ── Presence helpers ──────────────────────────────────────────────────────
 
@@ -93,10 +95,12 @@ function AgentColumnHeader({
   agent,
   workstreams,
   outOfScope,
+  onNameClick,
 }: {
   agent: AgentConfig;
   workstreams: Workstream[];
   outOfScope: Set<string>;
+  onNameClick?: () => void;
 }) {
   const allDeliverables = workstreams.flatMap((ws) => ws.deliverables);
   const inScope = allDeliverables.filter((d) => !outOfScope.has(d.deliverable_id));
@@ -109,7 +113,17 @@ function AgentColumnHeader({
     <div className="mb-3 px-1">
       <div className="flex items-center gap-2 mb-1.5">
         <div className={`h-2 w-2 rounded-full shrink-0 ${agent.iconCls}`} />
-        <span className="text-sm font-semibold text-foreground">{agent.displayName}</span>
+        {onNameClick ? (
+          <button
+            onClick={onNameClick}
+            className="text-sm font-semibold text-foreground hover:text-info transition-colors text-left"
+            title="Open training guide"
+          >
+            {agent.displayName}
+          </button>
+        ) : (
+          <span className="text-sm font-semibold text-foreground">{agent.displayName}</span>
+        )}
       </div>
       <div className="flex items-center gap-2 mb-2">
         <span className="text-[10px] text-muted font-mono">
@@ -426,6 +440,8 @@ interface WorkplanPanelProps {
 export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
   const workplan = engagement.workplan;
 
+  const [activeGuide, setActiveGuide] = useState<FeatureGuideData | null>(null);
+
   const [outOfScope, setOutOfScope] = useState<Set<string>>(() => {
     const initial = new Set<string>();
     workplan?.workstreams.forEach((ws) =>
@@ -542,6 +558,11 @@ export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
                 agent={agent}
                 workstreams={agentWorkstreams}
                 outOfScope={outOfScope}
+                onNameClick={
+                  GUIDE_REGISTRY[agent.key]
+                    ? () => setActiveGuide(GUIDE_REGISTRY[agent.key])
+                    : undefined
+                }
               />
               <div className="flex flex-col gap-2">
                 {agentWorkstreams.map((ws) => (
@@ -560,6 +581,14 @@ export function WorkplanPanel({ engagement }: WorkplanPanelProps) {
           );
         })}
       </div>
+
+      {/* Training guide overlay */}
+      {activeGuide && (
+        <FeatureGuide
+          guide={activeGuide}
+          onClose={() => setActiveGuide(null)}
+        />
+      )}
     </motion.div>
   );
 }

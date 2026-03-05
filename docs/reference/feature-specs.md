@@ -22,6 +22,7 @@
 | **027** | Slide deck content, Phase 1 gap analysis, COA visual research, dynamic hierarchy design | — | `docs/content/fta-slide-deck-content.md` (16+1 slides, old/new/value format), Phase 1 outstanding items audit, insurance COA visualization research (6 formats), dynamic hierarchy architecture (three-tier classification: rule/pattern/agent-pinned, audit trail, reproducibility hash, multi-perspective FSLI roll-ups) |
 | **028** | Agent grid workplan, Process Flow UAT execution + 3 defect fixes | B+C | WorkplanPanel 3-column agent grid layout, UAT 120 scenarios (95% pass), D1: custom flow nav→inline viewer, D2: placing mode cancel button, D3: Zustand hydration fix, Playwright setup, session docs 026–028 |
 | **029** | PDD-012 COA Deliverable tab, sidebar cleanup, agent backlog | B | 8th COA tab with 9-section document view, readiness badges, status lifecycle (Draft→Review→Approved), sidebar deliverable cleanup, `docs/reference/agent-backlog.md` |
+| **030** | PDD-013 Interactive Pitch Deck | — | `/pitch` route, 11 slides, 6 slide types, keyboard nav, "See it live" demo links with return pill |
 
 **Milestone (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
 
@@ -400,6 +401,49 @@ Amber count badge showing non-ready sections, or green check when all 9 sections
 - `web/src/components/workspace/coa-tabs/COADeliverable.tsx` — main component
 - `web/src/lib/coa-store.ts` — `DeliverableStatus` type, `deliverableStatus` field, `setDeliverableStatus` action, persist v4
 - `web/src/components/workspace/COADesignWorkbench.tsx` — tab integration
+
+---
+
+## PDD-013 — Interactive Pitch Deck (Session 030)
+
+Full-screen slide viewer at `/pitch` rendering the 11-slide pitch deck with the app's native design system. No app chrome — completely clean viewport.
+
+### Slide Types
+
+| Type | Component | Used On |
+|------|-----------|---------|
+| `title` | `TitleSlide` | Slide 1 |
+| `phase0` | `Phase0Slide` | Slide 2 — two-panel (timeline Gantt bars + cost stats) |
+| `two-column` | `TwoColumnSlide` | Slides 3, 6, 7, 8 — Old Way / FTA Way |
+| `three-column` | `ThreeColumnSlide` | Slides 4, 5, 10 |
+| `value` | `ValueSlide` | Slide 9 — four value cards |
+| `roadmap` | `RoadmapSlide` | Slide 11 — three-phase horizontal |
+| `stats` | `StatsSlide` | (available, not currently used) |
+
+### Navigation
+
+- Arrow keys, Space (next/prev), Escape (exit to landing)
+- Number keys 1-9, 0 (=10), - (=11) for direct jump
+- Click left/right thirds of screen
+- URL state: `/pitch?slide=N` — preserves position
+
+### Demo Links + Return Flow
+
+Slides 6, 7, 8 have "See it live" buttons. Clicking navigates to workspace with `?from=pitch&slide=N` query params. `PitchReturnPill` component (floating top-right pill) appears on any workspace page when `?from=pitch` is present, links back to the originating slide.
+
+### Auto-hiding Controls
+
+Bottom bar with progress dots + slide counter + nav arrows. Visible on mouse movement, fades after 3 seconds of inactivity.
+
+### Files
+
+- `web/src/app/pitch/page.tsx` — route page
+- `web/src/components/pitch/PitchDeck.tsx` — main deck component
+- `web/src/components/pitch/SlideControls.tsx` — bottom control bar
+- `web/src/components/pitch/PitchReturnPill.tsx` — floating return pill
+- `web/src/components/pitch/slides/*.tsx` — 7 slide type components
+- `web/src/lib/pitch-deck-data.ts` — typed slide content array
+- `web/src/app/[engagementId]/layout.tsx` — PitchReturnPill integration
 
 ---
 

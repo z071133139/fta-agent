@@ -224,22 +224,28 @@ export const useCOAStore = create<COAStoreState>()(
             summary: data.summary,
             seededAt: now,
             modifiedAt: now,
-            code_blocks: data.code_blocks.map((cb, i) => ({
-              id: nextId("cb"),
-              range: cb.range,
-              account_type: cb.account_type,
-              stat_alignment: cb.stat_alignment,
-              count: cb.count,
-              notes: "",
-            })),
-            account_groups: data.account_groups.map((ag) => ({
-              id: nextId("ag"),
-              group_code: ag.group_code,
-              name: ag.name,
-              stat_schedule_line: ag.stat_schedule_line,
-              account_count: ag.account_count,
-              notes: ag.notes,
-            })),
+            code_blocks: data.code_blocks.map((cb) => {
+              const raw = cb as Record<string, unknown>;
+              return {
+                id: nextId("cb"),
+                range: cb.range,
+                account_type: cb.account_type,
+                stat_alignment: cb.stat_alignment || (raw.naic_alignment as string) || "",
+                count: cb.count,
+                notes: "",
+              };
+            }),
+            account_groups: data.account_groups.map((ag) => {
+              const raw = ag as Record<string, unknown>;
+              return {
+                id: nextId("ag"),
+                group_code: ag.group_code,
+                name: ag.name,
+                stat_schedule_line: ag.stat_schedule_line || (raw.naic_schedule_line as string) || "",
+                account_count: ag.account_count,
+                notes: ag.notes || "",
+              };
+            }),
             dimensions: data.dimensions.map((d) => ({
               id: nextId("dim"),
               dimension: d.dimension,
@@ -657,11 +663,16 @@ export const useCOAStore = create<COAStoreState>()(
 // ── Parser ───────────────────────────────────────────────────────────────────
 
 export function parseCOAOutput(output: string): COADesignData | null {
-  const match = output.match(/<coa_design>([\s\S]*?)<\/coa_design>/);
+  // Try greedy match first (handles nested content), fall back to lazy
+  const match =
+    output.match(/<coa_design>([\s\S]*)<\/coa_design>/) ??
+    output.match(/<coa_design>([\s\S]*?)<\/coa_design>/);
   if (!match) return null;
 
   try {
-    const parsed = JSON.parse(match[1]) as COADesignData;
+    // Trim whitespace that the LLM may add around the JSON
+    const jsonStr = match[1].trim();
+    const parsed = JSON.parse(jsonStr) as COADesignData;
     // Basic validation
     if (
       !parsed.summary ||

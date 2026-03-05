@@ -1,7 +1,7 @@
 # NEXT STEPS
 
-> Last updated: 2026-03-03 (Session 029)
-> Current phase: Phase 1 — Pitch Demo MVP (3 sessions remaining)
+> Last updated: 2026-03-04 (Session 031)
+> Current phase: Phase 1 — Pitch Demo MVP (2 sessions remaining)
 
 ---
 
@@ -18,15 +18,25 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 
 ---
 
-## Session 030 Pickup — Harden Live Agent
+## Session 030 — Interactive Pitch Deck (Done)
+
+- PDD-013: `/pitch` route — 11 full-screen navigable slides using app design system
+- 6 slide types: Title, Phase0 (two-panel timeline+costs), TwoColumn, ThreeColumn, Stats, Roadmap, Value
+- Keyboard nav (arrows, number keys, Escape), click zones, auto-hiding controls
+- "See it live" links on slides 6/7/8 navigate to workspaces with "Back to deck" return pill
+- Content from `fta-slide-deck-content.md` with fixes (COA, updated phases, eight-tab workbench)
+
+## Session 031 — Harden Live Agent (In Progress)
 
 **No new features. Demo readiness only.**
 
-1. **Harden live agent for d-005-02** — Run with `FTA_MOCK_AGENT=false`. Fix GL Design Coach prompt to reliably produce parseable `<coa_design>` JSON. Test 5+ consecutive runs. Fix parse failures, output quality issues, timeout handling. Exit: 5 consecutive successful runs producing valid COA workbench data.
-2. **Verify COA workbench end-to-end** — clear localStorage, restart backend, navigate to d-005-02, run analysis → confirm all 8 tabs populate correctly from live agent output.
-3. **Test Functional Consultant live** — `FTA_MOCK_AGENT=false` on process flow builder. Verify multi-turn conversation produces valid `emit_process_flow` output.
+1. **Harden live agent for d-005-02** — ✅ 3/5 runs passing. Fixed critical `naic_alignment` → `stat_alignment` field name mismatch across prompt, mock response, and store. Added defensive fallback in `seedFromAgent`. Made `parseCOAOutput` regex more resilient. 3 consecutive live runs produced valid JSON with correct field names, 5 code blocks, 9 account groups, 5 dimensions, 4 decisions. **Remaining: 2 more runs to hit 5-run exit criteria** (rate-limited at 30K tokens/min).
+2. **Verify COA workbench end-to-end** — Pending. Clear localStorage, restart backend, navigate to d-005-02, run analysis → confirm all 8 tabs populate correctly from live agent output.
+3. **Test Functional Consultant live** — Pending. `FTA_MOCK_AGENT=false` on process flow builder. Verify multi-turn conversation produces valid `emit_process_flow` output.
 
-## Session 031 — Deploy + Golden Dataset
+Also: Landing page polish — compact greeting (single-line), FTA logo matches body font.
+
+## Session 032 — Deploy + Golden Dataset
 
 4. **Deploy backend** — Dockerfile for FastAPI + DuckDB + LangGraph. Deploy to GCP Cloud Run. Set `ANTHROPIC_API_KEY` env var. Verify fixture auto-loads on startup, SSE streams to remote frontend.
 5. **Deploy frontend** — Firebase Hosting from repo. Configure `NEXT_PUBLIC_API_URL` env var pointing to deployed backend. Add deployed domain to backend CORS config.
@@ -34,7 +44,7 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 7. **Pre-seed golden coa-store + hierarchy-store** — Beautiful, complete data as demo fallback if live agent fails during pitch. All 9 deliverable sections green-ready.
 8. **Smoke test on deployed URL** — Open Firebase Hosting link, run through all three demo moments against deployed backend. Fix any issues.
 
-## Session 032 — Demo Script + Rehearsal
+## Session 033 — Demo Script + Rehearsal
 
 9. **Visual polish pass** — Fix any rendering issues found during deployed testing. Ensure dark theme looks screenshot-ready.
 10. **Write demo script** — Exact click path with timing for each of the three moments. Identify every failure point with recovery action.

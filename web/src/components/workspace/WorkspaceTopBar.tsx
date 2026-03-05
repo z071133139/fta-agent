@@ -13,6 +13,8 @@ import {
   clearWorkshopState,
 } from "@/lib/workshop-persistence";
 import { WorkshopHistory } from "./WorkshopHistory";
+import { FeatureGuide } from "@/components/guides/FeatureGuide";
+import { GUIDE_REGISTRY } from "@/lib/guide-content";
 
 const AGENT_LABEL: Record<string, string> = {
   gl_design_coach: "GL Design Coach",
@@ -104,9 +106,12 @@ export default function WorkspaceTopBar({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [pickerOpen]);
 
+  const [guideOpen, setGuideOpen] = useState(false);
+
   let workstreamName = "";
   let deliverableName = "";
   let agentName = "";
+  let agentKey = "";
 
   if (params.deliverableId && engagement.workplan) {
     for (const ws of engagement.workplan.workstreams) {
@@ -116,11 +121,14 @@ export default function WorkspaceTopBar({
       if (d) {
         workstreamName = ws.name;
         deliverableName = d.name;
-        agentName = d.owner_agent ? (AGENT_LABEL[d.owner_agent] ?? "") : "";
+        agentKey = d.owner_agent ?? "";
+        agentName = agentKey ? (AGENT_LABEL[agentKey] ?? "") : "";
         break;
       }
     }
   }
+
+  const agentGuide = agentKey ? GUIDE_REGISTRY[agentKey] : undefined;
 
   const handleSelectPA = (paId: string, paName: string, resume: boolean) => {
     if (!resume) {
@@ -178,7 +186,17 @@ export default function WorkspaceTopBar({
         {/* Agent status */}
         {agentName && !isWorkshopActive && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted">{agentName}</span>
+            {agentGuide ? (
+              <button
+                onClick={() => setGuideOpen(true)}
+                className="text-xs text-muted hover:text-info transition-colors"
+                title="Open training guide"
+              >
+                {agentName}
+              </button>
+            ) : (
+              <span className="text-xs text-muted">{agentName}</span>
+            )}
             <div className="flex items-center gap-1.5">
               <div className="h-1.5 w-1.5 rounded-full bg-accent agent-thinking" />
               <span className="text-[10px] font-mono text-accent">ACTIVE</span>
@@ -332,6 +350,14 @@ export default function WorkspaceTopBar({
           </div>
         )}
       </div>
+
+      {/* Training guide overlay */}
+      {guideOpen && agentGuide && (
+        <FeatureGuide
+          guide={agentGuide}
+          onClose={() => setGuideOpen(false)}
+        />
+      )}
     </div>
   );
 }

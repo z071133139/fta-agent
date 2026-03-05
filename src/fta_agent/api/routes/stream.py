@@ -234,22 +234,22 @@ and profit center hierarchy requires restructuring for NAIC Schedule P alignment
 {
   "summary": "Account structure shows proper GAAP alignment with $4.3B assets, $2.1B liabilities across 3,100 accounts. High posting volume (1M entries) indicates active multi-LOB operation across AUTO, HOME, COMML, WC. Three critical gaps: State dimension at 72% fill rate, Functional Area at 85% needs cleanup, profit center hierarchy requires restructuring for NAIC Schedule P alignment.",
   "code_blocks": [
-    { "range": "1XXX", "account_type": "Assets", "naic_alignment": "Balance Sheet Schedule", "count": 1442 },
-    { "range": "2XXX", "account_type": "Liabilities", "naic_alignment": "Balance Sheet Schedule", "count": 741 },
-    { "range": "3XXX", "account_type": "Equity", "naic_alignment": "Balance Sheet Schedule", "count": 10 },
-    { "range": "4XXX", "account_type": "Revenue", "naic_alignment": "Underwriting & Investment Exhibit", "count": 73 },
-    { "range": "5XXX", "account_type": "Expenses", "naic_alignment": "Underwriting & Investment Exhibit", "count": 834 }
+    { "range": "1XXX", "account_type": "Assets", "stat_alignment": "Balance Sheet Schedule", "count": 1442 },
+    { "range": "2XXX", "account_type": "Liabilities", "stat_alignment": "Balance Sheet Schedule", "count": 741 },
+    { "range": "3XXX", "account_type": "Equity", "stat_alignment": "Balance Sheet Schedule", "count": 10 },
+    { "range": "4XXX", "account_type": "Revenue", "stat_alignment": "Underwriting & Investment Exhibit", "count": 73 },
+    { "range": "5XXX", "account_type": "Expenses", "stat_alignment": "Underwriting & Investment Exhibit", "count": 834 }
   ],
   "account_groups": [
-    { "group_code": "CASH", "name": "Cash & Equivalents", "naic_schedule_line": "Assets Line 1", "account_count": 3, "notes": "Claims/Operating/Payroll segregation" },
-    { "group_code": "INVEST", "name": "Invested Assets", "naic_schedule_line": "Assets Lines 2-8", "account_count": 12, "notes": "Bond/equity/real estate split required" },
-    { "group_code": "PREM_REC", "name": "Premiums Receivable", "naic_schedule_line": "Assets Line 14", "account_count": 8, "notes": "Direct/assumed/ceded breakout" },
-    { "group_code": "REINS_REC", "name": "Reinsurance Recoverables", "naic_schedule_line": "Assets Line 16", "account_count": 6, "notes": "Schedule F alignment needed" },
-    { "group_code": "LOSS_RES", "name": "Loss & LAE Reserves", "naic_schedule_line": "Liabilities Line 1-3", "account_count": 15, "notes": "Case/IBNR/ALAE/ULAE split" },
-    { "group_code": "UPR", "name": "Unearned Premium Reserve", "naic_schedule_line": "Liabilities Line 9", "account_count": 4, "notes": "Direct/assumed/ceded" },
-    { "group_code": "PREM_EARN", "name": "Premiums Earned", "naic_schedule_line": "UW Exhibit Line 1", "account_count": 8, "notes": "Direct/assumed/ceded by LOB" },
-    { "group_code": "LOSS_INC", "name": "Losses Incurred", "naic_schedule_line": "UW Exhibit Line 2", "account_count": 10, "notes": "Paid/reserved/salvage breakdown" },
-    { "group_code": "OPER_EXP", "name": "Operating Expenses", "naic_schedule_line": "UW Exhibit Lines 25-29", "account_count": 18, "notes": "Functional area allocation required for IEE" }
+    { "group_code": "CASH", "name": "Cash & Equivalents", "stat_schedule_line": "Assets Line 1", "account_count": 3, "notes": "Claims/Operating/Payroll segregation" },
+    { "group_code": "INVEST", "name": "Invested Assets", "stat_schedule_line": "Assets Lines 2-8", "account_count": 12, "notes": "Bond/equity/real estate split required" },
+    { "group_code": "PREM_REC", "name": "Premiums Receivable", "stat_schedule_line": "Assets Line 14", "account_count": 8, "notes": "Direct/assumed/ceded breakout" },
+    { "group_code": "REINS_REC", "name": "Reinsurance Recoverables", "stat_schedule_line": "Assets Line 16", "account_count": 6, "notes": "Schedule F alignment needed" },
+    { "group_code": "LOSS_RES", "name": "Loss & LAE Reserves", "stat_schedule_line": "Liabilities Line 1-3", "account_count": 15, "notes": "Case/IBNR/ALAE/ULAE split" },
+    { "group_code": "UPR", "name": "Unearned Premium Reserve", "stat_schedule_line": "Liabilities Line 9", "account_count": 4, "notes": "Direct/assumed/ceded" },
+    { "group_code": "PREM_EARN", "name": "Premiums Earned", "stat_schedule_line": "UW Exhibit Line 1", "account_count": 8, "notes": "Direct/assumed/ceded by LOB" },
+    { "group_code": "LOSS_INC", "name": "Losses Incurred", "stat_schedule_line": "UW Exhibit Line 2", "account_count": 10, "notes": "Paid/reserved/salvage breakdown" },
+    { "group_code": "OPER_EXP", "name": "Operating Expenses", "stat_schedule_line": "UW Exhibit Lines 25-29", "account_count": 18, "notes": "Functional area allocation required for IEE" }
   ],
   "dimensions": [
     { "dimension": "Profit Center", "fill_rate": 100, "unique_values": 14, "mandatory": true, "key_values": "PC1000-PC4200", "reporting_purpose": "LOB + Region segmentation for Schedule P", "issues": "" },

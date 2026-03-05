@@ -320,7 +320,7 @@ function LandingPageInner() {
       <div className="relative mx-auto max-w-7xl px-8 py-8">
         {/* Top bar */}
         <div className="flex items-center justify-between mb-8">
-          <span className="font-serif text-xl text-foreground tracking-tight">
+          <span className="text-xs font-medium text-muted tracking-widest">
             FTA
           </span>
           <div className="flex items-center gap-5">
@@ -346,15 +346,16 @@ function LandingPageInner() {
         </div>
 
         {/* Greeting */}
-        <div className="mb-8">
-          <h1 className="text-xl font-semibold text-foreground mb-2 min-h-[1.75rem]">
-            {greeting.displayed}
+        <div className="mb-6">
+          <p className="text-sm text-muted min-h-[1.25rem]">
+            <span className="text-foreground font-medium">{greeting.displayed}</span>
             {!greeting.done && <span className="cursor-blink" />}
-          </h1>
-          <p className="text-base text-muted min-h-[1.5rem]">
-            {context.displayed}
-            {greeting.done && !context.done && (
-              <span className="cursor-blink" />
+            {greeting.done && (
+              <>
+                {" "}
+                {context.displayed}
+                {!context.done && <span className="cursor-blink" />}
+              </>
             )}
           </p>
         </div>

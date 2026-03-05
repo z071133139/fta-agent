@@ -674,10 +674,10 @@ After all three tools complete, produce TWO things:
 {
   "summary": "Your narrative summary here",
   "code_blocks": [
-    { "range": "1XXX", "account_type": "Assets", "naic_alignment": "Balance Sheet Schedule", "count": 0 }
+    { "range": "1XXX", "account_type": "Assets", "stat_alignment": "Balance Sheet Schedule", "count": 0 }
   ],
   "account_groups": [
-    { "group_code": "CASH", "name": "Cash & Equivalents", "naic_schedule_line": "Assets Line 1", "account_count": 0, "notes": "" }
+    { "group_code": "CASH", "name": "Cash & Equivalents", "stat_schedule_line": "Assets Line 1", "account_count": 0, "notes": "" }
   ],
   "dimensions": [
     { "dimension": "Profit Center", "fill_rate": 100, "unique_values": 14, "mandatory": true, "key_values": "PC1000-PC4200", "reporting_purpose": "LOB + Region segmentation", "issues": "" }
