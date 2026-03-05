@@ -113,9 +113,12 @@ function AccountRow({
   const isPending = c.status === "agent_proposed";
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
-      className={`w-full flex items-center gap-3 px-3 py-2 text-left text-sm transition-colors rounded-md ${
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect(); }}
+      className={`w-full flex items-center gap-3 px-3 py-2 text-left text-sm transition-colors rounded-md cursor-pointer ${
         isSelected
           ? "bg-surface-alt border border-border"
           : "hover:bg-surface-alt/30"
@@ -141,7 +144,7 @@ function AccountRow({
           </button>
         </div>
       )}
-    </button>
+    </div>
   );
 }
 

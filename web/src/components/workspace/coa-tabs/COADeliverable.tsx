@@ -201,8 +201,9 @@ function DeliverableStatusBar({
 
 // ── Section 1: Executive Summary ─────────────────────────────────────────────
 
-function ExecSummarySection({ summary }: { summary: string }) {
-  if (!summary) {
+function ExecSummarySection({ summary, fullAnalysis }: { summary: string; fullAnalysis?: string }) {
+  const text = fullAnalysis || summary;
+  if (!text) {
     return (
       <SectionCard>
         <p className="text-sm text-faint italic">No executive summary generated yet. Run the agent to generate a COA design summary.</p>
@@ -211,9 +212,15 @@ function ExecSummarySection({ summary }: { summary: string }) {
   }
   return (
     <SectionCard>
-      <p className="text-sm text-secondary leading-relaxed" style={{ fontFamily: "var(--font-display)" }}>
-        {summary}
-      </p>
+      {fullAnalysis ? (
+        <pre className="whitespace-pre-wrap text-sm text-secondary font-mono leading-relaxed">
+          {fullAnalysis.length > 600 ? fullAnalysis.slice(0, 600) + "..." : fullAnalysis}
+        </pre>
+      ) : (
+        <p className="text-sm text-secondary leading-relaxed" style={{ fontFamily: "var(--font-display)" }}>
+          {summary}
+        </p>
+      )}
     </SectionCard>
   );
 }
@@ -466,11 +473,16 @@ function HierarchySection({
 function DecisionsSection({
   decisions,
 }: {
-  decisions: { title: string; status: string; recommendation: string }[];
+  decisions: {
+    title: string;
+    status: string;
+    options?: { id: string; title: string; description: string }[];
+    selected_option_id?: string | null;
+  }[];
 }) {
-  const approved = decisions.filter((d) => d.status === "approved").length;
+  const decided = decisions.filter((d) => d.status === "decided").length;
   const pending = decisions.filter((d) => d.status === "pending").length;
-  const rejected = decisions.filter((d) => d.status === "rejected").length;
+  const deferred = decisions.filter((d) => d.status === "deferred").length;
 
   return (
     <SectionCard>
@@ -480,34 +492,45 @@ function DecisionsSection({
             <th className="px-3 py-2 w-8">#</th>
             <th className="px-3 py-2">Decision</th>
             <th className="px-3 py-2 w-28">Status</th>
-            <th className="px-3 py-2">Recommendation</th>
+            <th className="px-3 py-2">Selected Option</th>
           </tr>
         </thead>
         <tbody>
-          {decisions.map((d, i) => (
-            <tr key={i} className="border-b border-border/30">
-              <td className="px-3 py-2 font-mono text-muted">{i + 1}</td>
-              <td className="px-3 py-2 text-foreground">{d.title}</td>
-              <td className="px-3 py-2">
-                <span
-                  className={`px-2 py-0.5 rounded text-[11px] font-mono uppercase tracking-wider ${
-                    d.status === "approved"
-                      ? "bg-success/20 text-success"
-                      : d.status === "rejected"
-                        ? "bg-error/20 text-error"
-                        : "bg-warning/20 text-warning"
-                  }`}
-                >
-                  {d.status}
-                </span>
-              </td>
-              <td className="px-3 py-2 text-secondary text-xs">{d.recommendation}</td>
-            </tr>
-          ))}
+          {decisions.map((d, i) => {
+            const selectedOpt = d.options?.find(
+              (o) => o.id === d.selected_option_id
+            );
+            return (
+              <tr key={i} className="border-b border-border/30">
+                <td className="px-3 py-2 font-mono text-muted">{i + 1}</td>
+                <td className="px-3 py-2 text-foreground">{d.title}</td>
+                <td className="px-3 py-2">
+                  <span
+                    className={`px-2 py-0.5 rounded text-[11px] font-mono uppercase tracking-wider ${
+                      d.status === "decided"
+                        ? "bg-success/20 text-success"
+                        : d.status === "deferred"
+                          ? "bg-border-strong/20 text-muted"
+                          : "bg-warning/20 text-warning"
+                    }`}
+                  >
+                    {d.status}
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-secondary text-xs">
+                  {selectedOpt ? selectedOpt.title : (
+                    <span className="text-faint italic">
+                      {d.status === "deferred" ? "Deferred" : "Not selected"}
+                    </span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       <SummaryLine>
-        Summary: {approved} approved &middot; {pending} pending &middot; {rejected} rejected
+        Summary: {decided} decided &middot; {pending} pending &middot; {deferred} deferred
       </SummaryLine>
     </SectionCard>
   );
@@ -624,7 +647,7 @@ export function COADeliverable({
     );
 
     const pendingDecisions = store.decisions.filter(
-      (d) => d.status === "pending"
+      (d) => d.status === "pending" // "deferred" counts as resolved
     ).length;
 
     const pendingClassifications = hStore
@@ -726,7 +749,7 @@ export function COADeliverable({
             editTab={section.editTab}
             onEdit={onNavigateToTab}
           />
-          {i === 0 && <ExecSummarySection summary={store.summary} />}
+          {i === 0 && <ExecSummarySection summary={store.summary} fullAnalysis={store.fullAnalysis} />}
           {i === 1 && <AccountStringSection />}
           {i === 2 && <CodeBlocksSection blocks={store.code_blocks} />}
           {i === 3 && <AccountGroupsSection groups={store.account_groups} />}

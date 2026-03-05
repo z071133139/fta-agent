@@ -45,17 +45,25 @@ export interface COADimension {
   issues: COAIssue[];
 }
 
-export type DecisionStatus = "pending" | "approved" | "rejected";
+export type DecisionStatus = "pending" | "decided" | "deferred";
 
 export type DeliverableStatus = "draft" | "ready_for_review" | "under_review" | "approved";
+
+export interface COADecisionOption {
+  id: string;
+  title: string;
+  description: string;
+  effort: "high" | "medium" | "low";
+  risk: string;
+  trade_offs: string;
+}
 
 export interface COADecision {
   id: string;
   title: string;
   context: string;
-  recommendation: string;
-  alternative: string;
-  impact: string;
+  options: COADecisionOption[];
+  selected_option_id: string | null;
   status: DecisionStatus;
   consultant_notes: string;
 }
@@ -70,18 +78,28 @@ export interface ChatMessage {
 /** Raw dimension from agent output — issues arrive as a plain string */
 export type COADimensionRaw = Omit<COADimension, "id" | "issues"> & { issues: string };
 
+/** Raw decision option from agent — no id yet */
+export type COADecisionOptionRaw = Omit<COADecisionOption, "id">;
+
+/** Raw decision from agent — options arrive without ids */
+export interface COADecisionRaw {
+  title: string;
+  context: string;
+  options: COADecisionOptionRaw[];
+}
+
 /** Raw agent output — issues arrive as a plain string, parsed into COAIssue[] during seed */
 export interface COADesignData {
   summary: string;
   code_blocks: Omit<COACodeBlock, "id" | "notes">[];
   account_groups: Omit<COAAccountGroup, "id">[];
   dimensions: COADimensionRaw[];
-  decisions: Omit<COADecision, "id" | "status" | "consultant_notes">[];
+  decisions: COADecisionRaw[];
 }
 
 // ── Store State ──────────────────────────────────────────────────────────────
 
-export type TabId = "code_blocks" | "account_groups" | "dimensions" | "decisions" | "account_string" | "dim_matrix" | "hierarchy" | "deliverable";
+export type TabId = "analysis" | "code_blocks" | "account_groups" | "dimensions" | "decisions" | "account_string" | "dim_matrix" | "hierarchy" | "deliverable";
 
 interface COAStoreState {
   // Data keyed by engagement:deliverable
@@ -93,6 +111,7 @@ interface COAStoreState {
       dimensions: COADimension[];
       decisions: COADecision[];
       summary: string;
+      fullAnalysis: string;
       seededAt: string | null;
       modifiedAt: string | null;
       summaryCollapsed: boolean;
@@ -106,7 +125,7 @@ interface COAStoreState {
   isSeeded: (key: string) => boolean;
 
   // Seed from agent output
-  seedFromAgent: (key: string, data: COADesignData) => void;
+  seedFromAgent: (key: string, data: COADesignData, fullOutput?: string) => void;
 
   // CRUD — Code Blocks
   updateCodeBlock: (key: string, id: string, updates: Partial<COACodeBlock>) => void;
@@ -138,7 +157,8 @@ interface COAStoreState {
   toggleSummaryCollapsed: (key: string) => void;
 
   // Chat
-  addChatMessage: (key: string, tab: TabId, message: Omit<ChatMessage, "id" | "timestamp">) => void;
+  addChatMessage: (key: string, tab: TabId, message: Omit<ChatMessage, "id" | "timestamp">) => string;
+  updateChatMessage: (key: string, tab: TabId, messageId: string, content: string) => void;
 
   // Re-seed (clear)
   clearStore: (key: string) => void;
@@ -175,11 +195,13 @@ function emptyStoreEntry(): COAStoreState["stores"][string] {
     dimensions: [],
     decisions: [],
     summary: "",
+    fullAnalysis: "",
     seededAt: null,
     modifiedAt: null,
     summaryCollapsed: false,
     deliverableStatus: "draft",
     chatMessages: {
+      analysis: [],
       code_blocks: [],
       account_groups: [],
       dimensions: [],
@@ -216,12 +238,20 @@ export const useCOAStore = create<COAStoreState>()(
         return !!store?.seededAt;
       },
 
-      seedFromAgent: (key, data) =>
+      seedFromAgent: (key, data, fullOutput) =>
         set((state) => {
           const now = new Date().toISOString();
+
+          // Strip <coa_design>...</coa_design> JSON block from full output for narrative
+          let narrative = fullOutput ?? "";
+          if (narrative) {
+            narrative = narrative.replace(/<coa_design>[\s\S]*<\/coa_design>/, "").trim();
+          }
+
           const entry: COAStoreState["stores"][string] = {
             ...emptyStoreEntry(),
             summary: data.summary,
+            fullAnalysis: narrative,
             seededAt: now,
             modifiedAt: now,
             code_blocks: data.code_blocks.map((cb) => {
@@ -256,16 +286,47 @@ export const useCOAStore = create<COAStoreState>()(
               reporting_purpose: d.reporting_purpose,
               issues: parseIssuesString(d.issues),
             })),
-            decisions: data.decisions.map((dec) => ({
-              id: nextId("dec"),
-              title: dec.title,
-              context: dec.context,
-              recommendation: dec.recommendation,
-              alternative: dec.alternative,
-              impact: dec.impact,
-              status: "pending" as const,
-              consultant_notes: "",
-            })),
+            decisions: data.decisions.map((dec) => {
+              // Support both old flat format and new options format
+              const raw = dec as unknown as Record<string, unknown>;
+              const options: COADecisionOption[] = Array.isArray(dec.options)
+                ? dec.options.map((opt) => ({
+                    id: nextId("opt"),
+                    title: opt.title,
+                    description: opt.description,
+                    effort: opt.effort,
+                    risk: opt.risk,
+                    trade_offs: opt.trade_offs,
+                  }))
+                : [
+                    // Migrate flat format → single recommended option
+                    {
+                      id: nextId("opt"),
+                      title: "Recommended",
+                      description: (raw.recommendation as string) ?? "",
+                      effort: "medium" as const,
+                      risk: (raw.impact as string) ?? "",
+                      trade_offs: "",
+                    },
+                    {
+                      id: nextId("opt"),
+                      title: "Alternative",
+                      description: (raw.alternative as string) ?? "",
+                      effort: "medium" as const,
+                      risk: "",
+                      trade_offs: (raw.impact as string) ?? "",
+                    },
+                  ];
+              return {
+                id: nextId("dec"),
+                title: dec.title,
+                context: dec.context,
+                options,
+                selected_option_id: null,
+                status: "pending" as const,
+                consultant_notes: "",
+              };
+            }),
           };
           return { stores: { ...state.stores, [key]: entry } };
         }),
@@ -576,13 +637,14 @@ export const useCOAStore = create<COAStoreState>()(
         }),
 
       // ── Chat ───────────────────────────────────────────────────────────
-      addChatMessage: (key, tab, message) =>
+      addChatMessage: (key, tab, message) => {
+        const msgId = nextId("msg");
         set((state) => {
           const store = state.stores[key];
           if (!store) return state;
           const msg: ChatMessage = {
             ...message,
-            id: nextId("msg"),
+            id: msgId,
             timestamp: new Date().toISOString(),
           };
           return {
@@ -593,6 +655,29 @@ export const useCOAStore = create<COAStoreState>()(
                 chatMessages: {
                   ...store.chatMessages,
                   [tab]: [...(store.chatMessages[tab] ?? []), msg],
+                },
+              },
+            },
+          };
+        });
+        return msgId;
+      },
+
+      updateChatMessage: (key, tab, messageId, content) =>
+        set((state) => {
+          const store = state.stores[key];
+          if (!store) return state;
+          const tabMessages = store.chatMessages[tab] ?? [];
+          return {
+            stores: {
+              ...state.stores,
+              [key]: {
+                ...store,
+                chatMessages: {
+                  ...store.chatMessages,
+                  [tab]: tabMessages.map((m) =>
+                    m.id === messageId ? { ...m, content } : m
+                  ),
                 },
               },
             },
@@ -609,11 +694,10 @@ export const useCOAStore = create<COAStoreState>()(
     }),
     {
       name: "fta-coa-store",
-      version: 4,
+      version: 5,
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as COAStoreState;
         if (version < 2 && state.stores) {
-          // Migrate issues from string to COAIssue[]
           for (const key of Object.keys(state.stores)) {
             const store = state.stores[key];
             if (store?.dimensions) {
@@ -628,7 +712,6 @@ export const useCOAStore = create<COAStoreState>()(
           }
         }
         if (version < 3 && state.stores) {
-          // Add chatMessages for new tabs
           for (const key of Object.keys(state.stores)) {
             const store = state.stores[key];
             if (store?.chatMessages) {
@@ -640,7 +723,6 @@ export const useCOAStore = create<COAStoreState>()(
           }
         }
         if (version < 4 && state.stores) {
-          // Add deliverableStatus and deliverable chatMessages
           for (const key of Object.keys(state.stores)) {
             const store = state.stores[key];
             if (store) {
@@ -650,6 +732,58 @@ export const useCOAStore = create<COAStoreState>()(
               if (store.chatMessages) {
                 const msgs = store.chatMessages as Record<string, unknown[]>;
                 if (!msgs.deliverable) msgs.deliverable = [];
+              }
+            }
+          }
+        }
+        if (version < 5 && state.stores) {
+          // v4→v5: add fullAnalysis, analysis chat tab, convert flat decisions → options
+          for (const key of Object.keys(state.stores)) {
+            const store = state.stores[key] as Record<string, unknown>;
+            if (!store) continue;
+            // Add fullAnalysis
+            if (!store.fullAnalysis) store.fullAnalysis = "";
+            // Add analysis chat tab
+            if (store.chatMessages) {
+              const msgs = store.chatMessages as Record<string, unknown[]>;
+              if (!msgs.analysis) msgs.analysis = [];
+            }
+            // Convert flat decisions → options array
+            const decisions = store.decisions as Array<Record<string, unknown>>;
+            if (Array.isArray(decisions)) {
+              for (const dec of decisions) {
+                if (!Array.isArray(dec.options)) {
+                  const options = [];
+                  if (dec.recommendation) {
+                    options.push({
+                      id: nextId("opt"),
+                      title: "Recommended",
+                      description: dec.recommendation as string,
+                      effort: "medium",
+                      risk: (dec.impact as string) ?? "",
+                      trade_offs: "",
+                    });
+                  }
+                  if (dec.alternative) {
+                    options.push({
+                      id: nextId("opt"),
+                      title: "Alternative",
+                      description: dec.alternative as string,
+                      effort: "medium",
+                      risk: "",
+                      trade_offs: (dec.impact as string) ?? "",
+                    });
+                  }
+                  dec.options = options;
+                  dec.selected_option_id = null;
+                  // Remove old fields
+                  delete dec.recommendation;
+                  delete dec.alternative;
+                  delete dec.impact;
+                }
+                // Migrate status values
+                if (dec.status === "approved") dec.status = "decided";
+                if (dec.status === "rejected") dec.status = "deferred";
               }
             }
           }

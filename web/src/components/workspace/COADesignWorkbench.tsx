@@ -10,11 +10,13 @@ import {
   type COAAccountGroup,
   type COADimension,
   type COADecision,
+  type COADecisionOption,
   type COAIssue,
   type IssueStatus,
   type DecisionStatus,
   type TabId,
 } from "@/lib/coa-store";
+import { streamChat, buildWorkbenchContext } from "@/lib/chat-client";
 import { useHierarchyStore, hierarchyStoreKey } from "@/lib/hierarchy-store";
 import { AccountStringDiagram } from "./coa-tabs/AccountStringDiagram";
 import { DimensionalMatrix } from "./coa-tabs/DimensionalMatrix";
@@ -362,10 +364,12 @@ function IssueCard({
   issue,
   storeKey,
   dimId,
+  onShowExamples,
 }: {
   issue: COAIssue;
   storeKey: string;
   dimId: string;
+  onShowExamples?: (issueTitle: string) => void;
 }) {
   const updateIssue = useCOAStore((s) => s.updateIssue);
   const deleteIssue = useCOAStore((s) => s.deleteIssue);
@@ -462,6 +466,14 @@ function IssueCard({
 
       {/* Actions */}
       <div className="flex gap-2">
+        {onShowExamples && (
+          <button
+            onClick={() => onShowExamples(issue.title)}
+            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-accent/10 text-accent hover:bg-accent/20 border border-accent/30"
+          >
+            Show examples
+          </button>
+        )}
         {issue.status !== "in_progress" && (
           <button
             onClick={() => handleStatusChange("in_progress")}
@@ -504,9 +516,11 @@ function IssueCard({
 function DimensionsTab({
   storeKey,
   dimensions,
+  onShowExamples,
 }: {
   storeKey: string;
   dimensions: COADimension[];
+  onShowExamples?: (issueTitle: string) => void;
 }) {
   const update = useCOAStore((s) => s.updateDimension);
   const add = useCOAStore((s) => s.addDimension);
@@ -608,6 +622,7 @@ function DimensionsTab({
                           issue={issue}
                           storeKey={storeKey}
                           dimId={dim.id}
+                          onShowExamples={onShowExamples}
                         />
                       ))}
                       <button
@@ -634,25 +649,77 @@ function DimensionsTab({
   );
 }
 
-// ── Decision Card ────────────────────────────────────────────────────────────
+// ── Decision Status Styles ───────────────────────────────────────────────────
 
-const STATUS_STYLES: Record<DecisionStatus, { border: string; badge: string; label: string }> = {
+const DECISION_STATUS_STYLES: Record<DecisionStatus, { border: string; badge: string; label: string }> = {
   pending: {
     border: "border-l-warning",
     badge: "bg-warning/20 text-warning",
     label: "PENDING",
   },
-  approved: {
+  decided: {
     border: "border-l-success",
     badge: "bg-success/20 text-success",
-    label: "APPROVED",
+    label: "DECIDED",
   },
-  rejected: {
-    border: "border-l-error",
-    badge: "bg-error/20 text-error",
-    label: "REJECTED",
+  deferred: {
+    border: "border-l-border-strong",
+    badge: "bg-border-strong/20 text-muted",
+    label: "DEFERRED",
   },
 };
+
+const EFFORT_STYLES: Record<string, string> = {
+  high: "bg-error/15 text-error border-error/30",
+  medium: "bg-warning/15 text-warning border-warning/30",
+  low: "bg-success/15 text-success border-success/30",
+};
+
+// ── Option Card ──────────────────────────────────────────────────────────────
+
+function OptionCard({
+  option,
+  isSelected,
+  onSelect,
+}: {
+  option: COADecisionOption;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      onClick={onSelect}
+      className={`w-full text-left rounded-lg border p-3 space-y-2 transition-all ${
+        isSelected
+          ? "border-accent bg-accent/10 ring-1 ring-accent/30"
+          : "border-border/50 bg-surface/60 hover:border-border hover:bg-surface/80"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <span className={`text-sm font-medium ${isSelected ? "text-accent" : "text-foreground"}`}>
+          {isSelected && <span className="mr-1.5">&#10003;</span>}
+          {option.title}
+        </span>
+        <span className={`text-[10px] font-mono uppercase px-1.5 py-0.5 rounded border ${EFFORT_STYLES[option.effort] ?? EFFORT_STYLES.medium}`}>
+          {option.effort}
+        </span>
+      </div>
+      <p className="text-xs text-secondary leading-relaxed">{option.description}</p>
+      {option.risk && (
+        <p className="text-[11px] text-muted">
+          <span className="text-faint uppercase tracking-wider">Risk:</span> {option.risk}
+        </p>
+      )}
+      {option.trade_offs && (
+        <p className="text-[11px] text-muted">
+          <span className="text-faint uppercase tracking-wider">Trade-offs:</span> {option.trade_offs}
+        </p>
+      )}
+    </button>
+  );
+}
+
+// ── Decision Card ────────────────────────────────────────────────────────────
 
 function DecisionCard({
   decision,
@@ -662,97 +729,64 @@ function DecisionCard({
   storeKey: string;
 }) {
   const update = useCOAStore((s) => s.updateDecision);
-  const style = STATUS_STYLES[decision.status];
+  const style = DECISION_STATUS_STYLES[decision.status];
+
+  const handleSelectOption = (optionId: string) => {
+    update(storeKey, decision.id, {
+      selected_option_id: optionId,
+      status: "decided",
+    });
+  };
 
   return (
-    <div
-      className={`border-l-4 ${style.border} rounded-r-lg bg-surface/80 p-4 space-y-3`}
-    >
+    <div className={`border-l-4 ${style.border} rounded-r-lg bg-surface/80 p-4 space-y-3`}>
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">
-            {decision.title}
-          </span>
-        </div>
-        <span
-          className={`px-2 py-0.5 rounded text-[11px] font-mono uppercase tracking-wider ${style.badge}`}
-        >
+        <span className="text-sm font-medium text-foreground">{decision.title}</span>
+        <span className={`px-2 py-0.5 rounded text-[11px] font-mono uppercase tracking-wider ${style.badge}`}>
           {style.label}
         </span>
       </div>
 
-      {/* Content fields */}
-      <div className="space-y-2 text-sm">
-        <div>
-          <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
-            Context
-          </span>
-          <p className="text-secondary mt-0.5">{decision.context}</p>
-        </div>
-        <div>
-          <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
-            Recommendation
-          </span>
-          <p className="text-foreground mt-0.5">{decision.recommendation}</p>
-        </div>
-        <div>
-          <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
-            Alternative
-          </span>
-          <p className="text-muted mt-0.5">{decision.alternative}</p>
-        </div>
-        <div>
-          <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
-            Impact
-          </span>
-          <p className="text-muted mt-0.5">{decision.impact}</p>
-        </div>
+      {/* Context */}
+      <p className="text-xs text-secondary">{decision.context}</p>
+
+      {/* Option cards */}
+      <div className="space-y-2">
+        {decision.options.map((opt) => (
+          <OptionCard
+            key={opt.id}
+            option={opt}
+            isSelected={decision.selected_option_id === opt.id}
+            onSelect={() => handleSelectOption(opt.id)}
+          />
+        ))}
       </div>
 
       {/* Consultant notes */}
-      <div>
-        <span className="text-[11px] uppercase tracking-[0.1em] text-faint">
-          Consultant Notes
-        </span>
-        <textarea
-          value={decision.consultant_notes}
-          onChange={(e) =>
-            update(storeKey, decision.id, {
-              consultant_notes: e.target.value,
-            })
-          }
-          placeholder="Add your notes..."
-          rows={2}
-          className="mt-1 w-full rounded border border-border bg-surface-alt/50 px-3 py-2 text-sm text-foreground placeholder:text-faint focus:border-accent focus:outline-none resize-none"
-        />
-      </div>
+      <textarea
+        value={decision.consultant_notes}
+        onChange={(e) =>
+          update(storeKey, decision.id, { consultant_notes: e.target.value })
+        }
+        placeholder="Add your notes..."
+        rows={2}
+        className="w-full rounded border border-border bg-surface-alt/50 px-3 py-2 text-sm text-foreground placeholder:text-faint focus:border-accent focus:outline-none resize-none"
+      />
 
       {/* Actions */}
       <div className="flex gap-2">
-        <button
-          onClick={() =>
-            update(storeKey, decision.id, { status: "approved" })
-          }
-          disabled={decision.status === "approved"}
-          className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-success/20 text-success hover:bg-success/30 disabled:opacity-30 disabled:cursor-default"
-        >
-          &#10003; Approve
-        </button>
-        <button
-          onClick={() =>
-            update(storeKey, decision.id, { status: "rejected" })
-          }
-          disabled={decision.status === "rejected"}
-          className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors bg-error/20 text-error hover:bg-error/30 disabled:opacity-30 disabled:cursor-default"
-        >
-          &#10007; Reject
-        </button>
+        {decision.status !== "deferred" && (
+          <button
+            onClick={() => update(storeKey, decision.id, { status: "deferred", selected_option_id: null })}
+            className="rounded px-3 py-1.5 text-xs font-medium text-muted hover:text-foreground border border-border hover:border-border-strong transition-colors"
+          >
+            Defer
+          </button>
+        )}
         {decision.status !== "pending" && (
           <button
-            onClick={() =>
-              update(storeKey, decision.id, { status: "pending" })
-            }
+            onClick={() => update(storeKey, decision.id, { status: "pending", selected_option_id: null })}
             className="rounded px-3 py-1.5 text-xs text-muted hover:text-foreground transition-colors"
           >
             Reset
@@ -786,41 +820,155 @@ function DecisionsTab({
   );
 }
 
+// ── Analysis Tab ─────────────────────────────────────────────────────────────
+
+function AnalysisTab({ fullAnalysis }: { fullAnalysis: string }) {
+  if (!fullAnalysis) {
+    return (
+      <p className="text-sm text-faint py-8 text-center">
+        No analysis narrative available. Run the agent to generate output.
+      </p>
+    );
+  }
+  return (
+    <div className="prose prose-invert max-w-none">
+      <pre className="whitespace-pre-wrap text-sm text-secondary font-mono leading-relaxed bg-transparent p-0 border-none">
+        {fullAnalysis}
+      </pre>
+    </div>
+  );
+}
+
 // ── Agent Chat Panel ─────────────────────────────────────────────────────────
 
 function AgentChatPanel({
   storeKey,
   activeTab,
+  expanded,
+  setExpanded,
+  pendingMessage,
+  clearPendingMessage,
 }: {
   storeKey: string;
   activeTab: TabId;
+  expanded: boolean;
+  setExpanded: (v: boolean) => void;
+  pendingMessage?: string;
+  clearPendingMessage?: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [activeTool, setActiveTool] = useState<string | null>(null);
+  const streamingMsgIdRef = useRef<string | null>(null);
+  const tokenBufferRef = useRef("");
+  const abortRef = useRef<AbortController | null>(null);
   const messages = useCOAStore(
     (s) => s.getStore(storeKey)?.chatMessages[activeTab] ?? []
   );
+  const store = useCOAStore((s) => s.getStore(storeKey));
   const addMessage = useCOAStore((s) => s.addChatMessage);
+  const updateMessage = useCOAStore((s) => s.updateChatMessage);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [messages.length, messages[messages.length - 1]?.content]);
+
+  // Cancel stream on unmount or tab change
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, [activeTab]);
+
+  const startStream = useCallback(
+    (userMessage: string) => {
+      // Build context from store state
+      const context = store
+        ? buildWorkbenchContext(store, activeTab)
+        : undefined;
+
+      // Build history from last 10 messages
+      const history = messages.slice(-10).map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      // Add empty assistant message for streaming
+      setIsStreaming(true);
+      setActiveTool(null);
+      tokenBufferRef.current = "";
+      const msgId = addMessage(storeKey, activeTab, {
+        role: "assistant",
+        content: "",
+      });
+      streamingMsgIdRef.current = msgId;
+
+      const ctrl = streamChat(
+        userMessage,
+        { context, history, agent: "gl_design_coach" },
+        {
+          onToken: (content) => {
+            tokenBufferRef.current += content;
+            if (streamingMsgIdRef.current) {
+              updateMessage(
+                storeKey,
+                activeTab,
+                streamingMsgIdRef.current,
+                tokenBufferRef.current,
+              );
+            }
+          },
+          onToolCall: (tool, status) => {
+            setActiveTool(status === "started" ? tool : null);
+          },
+          onComplete: () => {
+            setIsStreaming(false);
+            setActiveTool(null);
+            streamingMsgIdRef.current = null;
+            abortRef.current = null;
+          },
+          onError: (message) => {
+            setIsStreaming(false);
+            setActiveTool(null);
+            if (streamingMsgIdRef.current) {
+              const current = tokenBufferRef.current;
+              updateMessage(
+                storeKey,
+                activeTab,
+                streamingMsgIdRef.current,
+                current
+                  ? `${current}\n\n[Error: ${message}]`
+                  : `[Error: ${message}]`,
+              );
+            }
+            streamingMsgIdRef.current = null;
+            abortRef.current = null;
+          },
+        },
+      );
+      abortRef.current = ctrl;
+    },
+    [store, activeTab, messages, storeKey, addMessage, updateMessage],
+  );
+
+  // Handle pending message from "Show examples" button
+  useEffect(() => {
+    if (pendingMessage && expanded && !isStreaming) {
+      addMessage(storeKey, activeTab, { role: "user", content: pendingMessage });
+      clearPendingMessage?.();
+      // Small delay to let the user message render
+      setTimeout(() => startStream(pendingMessage), 50);
+    }
+  }, [pendingMessage, expanded, isStreaming, storeKey, activeTab, addMessage, clearPendingMessage, startStream]);
 
   const handleSend = useCallback(() => {
     const msg = input.trim();
-    if (!msg) return;
+    if (!msg || isStreaming) return;
     setInput("");
     addMessage(storeKey, activeTab, { role: "user", content: msg });
-    // Mock agent response — in production this would stream from /api/v1/stream
-    setTimeout(() => {
-      addMessage(storeKey, activeTab, {
-        role: "assistant",
-        content:
-          "I can help with that. Connect the backend to get live responses from the GL Design Coach.",
-      });
-    }, 800);
-  }, [input, storeKey, activeTab, addMessage]);
+    startStream(msg);
+  }, [input, isStreaming, storeKey, activeTab, addMessage, startStream]);
 
   if (!expanded) {
     return (
@@ -880,18 +1028,31 @@ function AgentChatPanel({
             Ask the GL Design Coach about this tab.
           </p>
         )}
-        {messages.map((m) => (
+        {messages.map((m, idx) => (
           <div
             key={m.id}
-            className={`rounded px-2.5 py-1.5 text-xs leading-relaxed ${
+            className={`rounded px-2.5 py-1.5 text-xs leading-relaxed whitespace-pre-wrap ${
               m.role === "user"
                 ? "bg-surface-alt text-foreground ml-4"
                 : "bg-surface text-secondary mr-4"
             }`}
           >
             {m.content}
+            {/* Blinking cursor on streaming message */}
+            {isStreaming &&
+              m.role === "assistant" &&
+              idx === messages.length - 1 && (
+                <span className="inline-block w-1.5 h-3.5 bg-accent/80 ml-0.5 animate-pulse align-text-bottom" />
+              )}
           </div>
         ))}
+        {/* Tool activity indicator */}
+        {activeTool && (
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] text-accent font-mono">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+            {activeTool}
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -907,12 +1068,13 @@ function AgentChatPanel({
                 handleSend();
               }
             }}
-            placeholder="Ask about this section..."
-            className="flex-1 rounded border border-border bg-surface px-2.5 py-1.5 text-xs text-foreground placeholder:text-faint focus:border-accent focus:outline-none"
+            placeholder={isStreaming ? "Agent is responding..." : "Ask about this section..."}
+            disabled={isStreaming}
+            className="flex-1 rounded border border-border bg-surface px-2.5 py-1.5 text-xs text-foreground placeholder:text-faint focus:border-accent focus:outline-none disabled:opacity-50"
           />
           <button
             onClick={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isStreaming}
             className="rounded bg-accent px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-accent/80 disabled:opacity-40 transition-colors"
           >
             Send
@@ -932,7 +1094,6 @@ export function COADesignWorkbench({
 }: COADesignWorkbenchProps) {
   const storeKey = coaStoreKey(engagementId, deliverableId);
   const store = useCOAStore((s) => s.getStore(storeKey));
-  const toggleSummary = useCOAStore((s) => s.toggleSummaryCollapsed);
   const clearStore = useCOAStore((s) => s.clearStore);
 
   const hKey = hierarchyStoreKey(engagementId, deliverableId);
@@ -940,6 +1101,8 @@ export function COADesignWorkbench({
 
   const [activeTab, setActiveTab] = useState<TabId>("code_blocks");
   const [confirmReseed, setConfirmReseed] = useState(false);
+  const [chatExpanded, setChatExpanded] = useState(false);
+  const [pendingChatMessage, setPendingChatMessage] = useState<string | undefined>();
 
   if (!store) return null;
 
@@ -956,26 +1119,17 @@ export function COADesignWorkbench({
   const deliverableReadySections = (() => {
     let ready = 0;
     const total = 9;
-    // 1. Exec summary
     if (store.summary) ready++;
-    // 2. Account string — always ready
-    ready++;
-    // 3. Code blocks
+    ready++; // Account string
     if (store.code_blocks.length > 0) ready++;
-    // 4. Account groups
     if (store.account_groups.length > 0) ready++;
-    // 5. Dimensions
     if (store.dimensions.length > 0 && openIssueCount === 0) ready++;
-    // 6. Hierarchy
     const pendingClassifications = hStore
       ? hStore.classifications.filter((c) => c.status === "agent_proposed").length
       : 0;
     if (hStore && pendingClassifications === 0) ready++;
-    // 7. Decisions
     if (store.decisions.length > 0 && pendingCount === 0) ready++;
-    // 8. Coverage — always ready
-    ready++;
-    // 9. Open items
+    ready++; // Coverage
     if (openIssueCount + pendingClassifications + pendingCount === 0) ready++;
     return { ready, total };
   })();
@@ -983,8 +1137,15 @@ export function COADesignWorkbench({
   const deliverableAllReady = deliverableReadySections.ready === deliverableReadySections.total;
   const deliverableNonReady = deliverableReadySections.total - deliverableReadySections.ready;
 
+  // "Show examples" handler — opens chat with pre-filled message
+  const handleShowExamples = useCallback((issueTitle: string) => {
+    setPendingChatMessage(`Show me GL accounts that demonstrate: ${issueTitle}`);
+    setChatExpanded(true);
+  }, []);
+
   const tabs: Tab[] = [
-    { id: "code_blocks", label: "Code Blocks" },
+    { id: "analysis", label: "Analysis" },
+    { id: "code_blocks", label: "Code Blocks", dividerBefore: true },
     { id: "account_groups", label: "Account Groups" },
     {
       id: "dimensions",
@@ -1015,69 +1176,31 @@ export function COADesignWorkbench({
 
   return (
     <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
-      {/* Agent Summary Banner */}
-      <div className="shrink-0 mx-5 mt-4">
-        <div className="rounded-lg bg-surface-alt/50 border border-border/50">
+      {/* Slim summary banner */}
+      <div className="shrink-0 mx-5 mt-3 flex items-center gap-3 px-4 py-2 rounded-lg bg-surface-alt/40 border border-border/30">
+        <span className="text-[11px] font-mono text-faint">
+          Seeded{" "}
+          {store.seededAt ? new Date(store.seededAt).toLocaleDateString() : ""}
+          {store.modifiedAt &&
+            store.modifiedAt !== store.seededAt &&
+            ` · Modified ${new Date(store.modifiedAt).toLocaleDateString()}`}
+        </span>
+        {store.fullAnalysis && (
           <button
-            onClick={() => toggleSummary(storeKey)}
-            className="w-full flex items-center justify-between px-4 py-2.5"
+            onClick={() => setActiveTab("analysis")}
+            className="text-[11px] font-mono text-accent hover:text-accent/80 transition-colors"
           >
-            <span className="text-[11px] uppercase tracking-[0.1em] text-muted font-medium">
-              Agent Summary
-            </span>
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] font-mono text-faint">
-                Seeded{" "}
-                {store.seededAt
-                  ? new Date(store.seededAt).toLocaleDateString()
-                  : ""}
-                {store.modifiedAt &&
-                  store.modifiedAt !== store.seededAt &&
-                  ` · Modified ${new Date(
-                    store.modifiedAt
-                  ).toLocaleDateString()}`}
-              </span>
-              <svg
-                className={`w-3.5 h-3.5 text-muted transition-transform ${
-                  store.summaryCollapsed ? "" : "rotate-180"
-                }`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                />
-              </svg>
-            </div>
+            View analysis &rarr;
           </button>
-          <AnimatePresence>
-            {!store.summaryCollapsed && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <p className="px-4 pb-3 text-sm text-secondary font-mono leading-relaxed">
-                  {store.summary}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        )}
       </div>
 
       {/* Content area with optional chat panel */}
-      <div className="flex flex-1 min-h-0 overflow-hidden mt-3">
+      <div className="flex flex-1 min-h-0 overflow-hidden mt-2">
         {/* Main content */}
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           {/* Tab bar */}
-          <div className="shrink-0 flex items-center border-b border-border px-5">
+          <div className="shrink-0 flex items-center border-b border-border px-5 overflow-x-auto">
             {tabs.map((tab) => (
               <Fragment key={tab.id}>
                 {tab.dividerBefore && (
@@ -1085,7 +1208,7 @@ export function COADesignWorkbench({
                 )}
                 <button
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative px-4 py-2.5 text-sm font-medium transition-colors ${
+                  className={`relative px-3 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? "text-foreground"
                       : "text-muted hover:text-foreground"
@@ -1116,6 +1239,9 @@ export function COADesignWorkbench({
 
           {/* Tab content */}
           <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4">
+            {activeTab === "analysis" && (
+              <AnalysisTab fullAnalysis={store.fullAnalysis} />
+            )}
             {activeTab === "code_blocks" && (
               <CodeBlocksTab storeKey={storeKey} blocks={store.code_blocks} />
             )}
@@ -1129,13 +1255,32 @@ export function COADesignWorkbench({
               <DimensionsTab
                 storeKey={storeKey}
                 dimensions={store.dimensions}
+                onShowExamples={handleShowExamples}
               />
             )}
             {activeTab === "decisions" && (
               <DecisionsTab storeKey={storeKey} decisions={store.decisions} />
             )}
-            {activeTab === "account_string" && <AccountStringDiagram />}
-            {activeTab === "dim_matrix" && <DimensionalMatrix />}
+            {activeTab === "account_string" && (
+              <AccountStringDiagram
+                engagementId={engagementId}
+                deliverableId={deliverableId}
+                onProposeToAgent={(msg) => {
+                  setPendingChatMessage(msg);
+                  setChatExpanded(true);
+                }}
+              />
+            )}
+            {activeTab === "dim_matrix" && (
+              <DimensionalMatrix
+                engagementId={engagementId}
+                deliverableId={deliverableId}
+                onAskAgent={(msg) => {
+                  setPendingChatMessage(msg);
+                  setChatExpanded(true);
+                }}
+              />
+            )}
             {activeTab === "hierarchy" && (
               <DynamicHierarchy
                 engagementId={engagementId}
@@ -1182,9 +1327,16 @@ export function COADesignWorkbench({
           </div>
         </div>
 
-        {/* Chat panel — hidden on deliverable tab */}
-        {activeTab !== "deliverable" && (
-          <AgentChatPanel storeKey={storeKey} activeTab={activeTab} />
+        {/* Chat panel — hidden on deliverable and analysis tabs */}
+        {activeTab !== "deliverable" && activeTab !== "analysis" && (
+          <AgentChatPanel
+            storeKey={storeKey}
+            activeTab={activeTab}
+            expanded={chatExpanded}
+            setExpanded={setChatExpanded}
+            pendingMessage={pendingChatMessage}
+            clearPendingMessage={() => setPendingChatMessage(undefined)}
+          />
         )}
       </div>
     </div>

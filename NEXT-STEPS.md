@@ -1,7 +1,7 @@
 # NEXT STEPS
 
-> Last updated: 2026-03-04 (Session 031)
-> Current phase: Phase 1 — Pitch Demo MVP (2 sessions remaining)
+> Last updated: 2026-03-05 (Session 032)
+> Current phase: Phase 1 — Pitch Demo MVP (1-2 sessions remaining)
 
 ---
 
@@ -26,17 +26,22 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 - "See it live" links on slides 6/7/8 navigate to workspaces with "Back to deck" return pill
 - Content from `fta-slide-deck-content.md` with fixes (COA, updated phases, eight-tab workbench)
 
-## Session 031 — Harden Live Agent (In Progress)
+## Session 031 — Harden Live Agent (Done)
 
-**No new features. Demo readiness only.**
+- Fixed critical `naic_alignment` → `stat_alignment` field name mismatch
+- Landing page polish — compact greeting, FTA logo
+- 3/5 live agent runs passing
 
-1. **Harden live agent for d-005-02** — ✅ 3/5 runs passing. Fixed critical `naic_alignment` → `stat_alignment` field name mismatch across prompt, mock response, and store. Added defensive fallback in `seedFromAgent`. Made `parseCOAOutput` regex more resilient. 3 consecutive live runs produced valid JSON with correct field names, 5 code blocks, 9 account groups, 5 dimensions, 4 decisions. **Remaining: 2 more runs to hit 5-run exit criteria** (rate-limited at 30K tokens/min).
-2. **Verify COA workbench end-to-end** — Pending. Clear localStorage, restart backend, navigate to d-005-02, run analysis → confirm all 8 tabs populate correctly from live agent output.
-3. **Test Functional Consultant live** — Pending. `FTA_MOCK_AGENT=false` on process flow builder. Verify multi-turn conversation produces valid `emit_process_flow` output.
+## Session 032 — Wire Workbench Chat to Real Agent (Done)
 
-Also: Landing page polish — compact greeting (single-line), FTA logo matches body font.
+- **`chat-client.ts`** — callback-based SSE streaming client (no Zustand collision with main agent store)
+- **`buildWorkbenchContext()`** — injects active tab + store state into agent messages
+- **5 smart chat mock responses** in `stream.py` — show examples, propose fix, impact analysis, continuation, tab-aware fallback
+- **`AgentChatPanel` fully wired** — token-by-token streaming, blinking cursor, tool activity indicator, input disabled during stream
+- **`updateChatMessage`** added to COA store for in-place message updates
+- Also includes prior uncommitted COA tab improvements (AccountStringDiagram, DimensionalMatrix, COADeliverable, DynamicHierarchy)
 
-## Session 032 — Deploy + Golden Dataset
+## Session 033/034 — Deploy + Golden Dataset + Demo Script
 
 4. **Deploy backend** — Dockerfile for FastAPI + DuckDB + LangGraph. Deploy to GCP Cloud Run. Set `ANTHROPIC_API_KEY` env var. Verify fixture auto-loads on startup, SSE streams to remote frontend.
 5. **Deploy frontend** — Firebase Hosting from repo. Configure `NEXT_PUBLIC_API_URL` env var pointing to deployed backend. Add deployed domain to backend CORS config.
@@ -122,7 +127,8 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 - `web/src/lib/hierarchy-store.ts` — Zustand store for FSLI hierarchy classifications
 - `web/src/lib/flow-builder-store.ts` — Zustand store for Process Flow Builder (PDD-007)
 - `web/src/lib/agent-store.ts` — Zustand store for agent SSE streaming state
-- `web/src/lib/agent-client.ts` — SSE client with history + onToolCall support
+- `web/src/lib/agent-client.ts` — SSE client with history + onToolCall support (main agent runs)
+- `web/src/lib/chat-client.ts` — callback-based SSE client for workbench chat panel (no Zustand collision)
 - `web/src/lib/scoping-data.ts` — Scoping Canvas themes, questions
 - `web/src/app/[engagementId]/deliverables/[deliverableId]/page.tsx` — workspace dispatch
 - `web/src/components/workspace/` — all workspace components

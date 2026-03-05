@@ -259,10 +259,23 @@ and profit center hierarchy requires restructuring for NAIC Schedule P alignment
     { "dimension": "State", "fill_rate": 72, "unique_values": 38, "mandatory": false, "key_values": "All 50 states + DC, PR, VI, USVI", "reporting_purpose": "Schedule T — Premiums by State", "issues": "28% gap — WC single-state, corporate accounts missing state; 12 states have fewer than 5 accounts — verify if operational or data gap; Default state assignment needed for corporate overhead" }
   ],
   "decisions": [
-    { "title": "Leading Ledger Basis", "context": "Single-segment P&C operation with statutory and GAAP reporting requirements. Current system uses statutory as primary basis.", "recommendation": "GAAP leading ledger (0L) with statutory as extension ledger (2L). GAAP basis aligns with consolidated reporting and supports IFRS 17 future-readiness.", "alternative": "Statutory leading with GAAP extension. Lower migration risk but limits consolidation flexibility.", "impact": "GAAP basis supports direct consolidation, segment reporting per ASC 280, and future IFRS 17 adoption without ledger restructuring." },
-    { "title": "Extension Ledger Strategy", "context": "Multi-basis reporting required: US GAAP, Statutory (SAP), and potential IFRS 17. Tax differences tracked separately.", "recommendation": "Two extension ledgers: 2L for Statutory adjustments, 4L for Tax. IFRS 17 deferred to Phase 2 as a third extension ledger.", "alternative": "Single extension ledger for all non-GAAP adjustments with attribute-based filtering. Simpler but harder to audit.", "impact": "Clean separation of adjustment types. Each ledger maps to a distinct reporting framework with independent close cycles." },
-    { "title": "Document Splitting Scope", "context": "6 accounts flagged for document splitting eligibility (AR, AP, clearing accounts). Current postings lack profit center on balance sheet items.", "recommendation": "Enable document splitting for Profit Center and Segment on all balance sheet accounts. Passive splitting on equity.", "alternative": "Split only on Profit Center, derive Segment from PC master data. Reduces configuration but limits independent segment reporting.", "impact": "Full balance sheet by profit center enables LOB-level balance sheets required for Schedule P Part 1 and management reporting." },
-    { "title": "Profit Center Hierarchy", "context": "Current 14 profit centers are flat. NAIC reporting requires LOB-level aggregation, management wants regional view.", "recommendation": "Three-level hierarchy: Region (L1) → LOB (L2) → Sub-LOB (L3). Maps to both NAIC Schedule P lines and internal management views.", "alternative": "Two-level hierarchy: LOB → Sub-LOB only. Simpler but loses geographic dimension for state-level analysis.", "impact": "Three-level structure supports Schedule P, combined ratio by region, and state premium allocation without separate reporting hierarchies." }
+    { "title": "Leading Ledger Basis", "context": "Single-segment P&C operation with statutory and GAAP reporting requirements. Current system uses statutory as primary basis.", "options": [
+      { "title": "GAAP Leading Ledger (0L)", "description": "GAAP leading ledger with statutory as extension ledger (2L). Aligns with consolidated reporting and supports IFRS 17 future-readiness.", "effort": "high", "risk": "Requires remapping all statutory entries to extension ledger during migration", "trade_offs": "Higher migration effort but supports direct consolidation, ASC 280 segment reporting, and future IFRS 17 adoption" },
+      { "title": "Statutory Leading Ledger", "description": "Statutory leading with GAAP extension. Lower migration risk but limits consolidation flexibility.", "effort": "low", "risk": "Consolidation requires manual GAAP adjustments each close cycle", "trade_offs": "Simpler migration but creates ongoing operational burden for multi-basis reporting" },
+      { "title": "Parallel Ledger (No Leading)", "description": "No designated leading ledger — both GAAP and STAT posted independently. Maximum flexibility but highest maintenance.", "effort": "high", "risk": "Dual-posting complexity increases error surface and close cycle time", "trade_offs": "Full independence between bases but doubles posting volume and reconciliation effort" }
+    ] },
+    { "title": "Extension Ledger Strategy", "context": "Multi-basis reporting required: US GAAP, Statutory (SAP), and potential IFRS 17. Tax differences tracked separately.", "options": [
+      { "title": "Two Extension Ledgers (2L + 4L)", "description": "2L for Statutory adjustments, 4L for Tax. IFRS 17 deferred to Phase 2 as a third extension ledger.", "effort": "medium", "risk": "IFRS 17 deferred — will require Phase 2 extension ledger addition", "trade_offs": "Clean separation of adjustment types. Each ledger maps to a distinct reporting framework with independent close cycles" },
+      { "title": "Single Extension Ledger", "description": "Single extension ledger for all non-GAAP adjustments with attribute-based filtering.", "effort": "low", "risk": "Harder to audit — adjustment types co-mingled in one ledger", "trade_offs": "Simpler configuration but filtering by attribute adds query complexity" }
+    ] },
+    { "title": "Document Splitting Scope", "context": "6 accounts flagged for document splitting eligibility (AR, AP, clearing accounts). Current postings lack profit center on balance sheet items.", "options": [
+      { "title": "Full Splitting (PC + Segment)", "description": "Enable document splitting for Profit Center and Segment on all balance sheet accounts. Passive splitting on equity.", "effort": "high", "risk": "Retroactive splitting of historical data requires data migration planning", "trade_offs": "Full balance sheet by profit center enables LOB-level balance sheets required for Schedule P Part 1" },
+      { "title": "PC-Only Splitting", "description": "Split only on Profit Center, derive Segment from PC master data. Reduces configuration but limits independent segment reporting.", "effort": "medium", "risk": "Segment reporting depends on PC master data accuracy — any PC misassignment cascades to segments", "trade_offs": "Simpler implementation but no independent segment dimension on balance sheet" }
+    ] },
+    { "title": "Profit Center Hierarchy", "context": "Current 14 profit centers are flat. NAIC reporting requires LOB-level aggregation, management wants regional view.", "options": [
+      { "title": "Three-Level (Region → LOB → Sub-LOB)", "description": "Region at L1, LOB at L2, Sub-LOB at L3. Maps to both NAIC Schedule P lines and internal management views.", "effort": "medium", "risk": "Regional dimension adds master data maintenance — 14 PCs × 3 regions = 42 nodes", "trade_offs": "Supports Schedule P, combined ratio by region, and state premium allocation without separate hierarchies" },
+      { "title": "Two-Level (LOB → Sub-LOB)", "description": "LOB at L1, Sub-LOB at L2. Simpler but loses geographic dimension for state-level analysis.", "effort": "low", "risk": "No regional reporting — state allocation requires separate dimension or reporting logic", "trade_offs": "Fewer master data nodes but geographic analysis requires workarounds" }
+    ] }
   ]
 }
 </coa_design>
@@ -471,12 +484,200 @@ async def _stream_mock_fc(session_id: str, message: str, history: list[HistoryMe
     yield _sse_event("complete", session_id, {"total_tokens": len(response.split())})
 
 
+_CHAT_RESPONSE_SHOW_EXAMPLES = """\
+Here are specific GL accounts that demonstrate this issue:
+
+| Account | Description | LOB | State Coverage | Issue |
+|---------|------------|-----|----------------|-------|
+| **400100** | Direct Premiums Written (HOME) | HOME | 12 states | Missing state tag on 12% of entries — premium allocation to Schedule T incomplete |
+| **500200** | Loss Adjustment Expense (WC) | WC | OH only | Single-state Workers' Comp — no multi-state allocation despite 38 states in master |
+| **110300** | Premiums Receivable (WC) | WC | OH only | 87,170 postings all mapped to one state — verify if operational or data gap |
+| **200400** | UPR – Unearned Premium (COMML) | COMML | 6 states | Commercial lines only using 6 of 12 active states — missing state assignments |
+| **600100** | Commission Expense (AUTO) | AUTO | 12 states | Clean — all states populated, good reference pattern |
+
+**Pattern:** The gap concentrates in WC and COMML lines. HOME and AUTO have better dimensional coverage.
+
+Want me to propose a remediation approach for these accounts?"""
+
+_CHAT_RESPONSE_PROPOSE_FIX = """\
+## Remediation Plan for Dimensional Gaps
+
+Based on the current state of your chart of accounts, here's a structured remediation approach:
+
+### Phase 1: Quick Wins (1-2 days)
+- **Default state assignment** for corporate overhead accounts — assign to domicile state (OH) with "CORP" allocation flag
+- **WC state expansion** — verify with underwriting if WC operates in additional states; if single-state is correct, document as intentional
+
+### Phase 2: Data Enrichment (3-5 days)
+- **Functional Area cleanup** — map the 15% unclassified accounts (mostly legacy clearing) to appropriate functional areas using account description keywords
+- **Segment gap closure** — tag the 2% missing segment on intercompany elimination entries
+
+### Phase 3: Validation (2-3 days)
+- **Schedule T reconciliation** — verify state premium totals tie to statutory filing
+- **IEE allocation test** — confirm functional area coverage supports Insurance Expense Exhibit
+
+**Estimated effort:** 6-10 business days with 1 senior analyst + 1 GL specialist
+**Risk:** Low — all changes are additive (enriching missing dimensions, not changing existing values)
+
+Shall I detail the specific accounts for any phase?"""
+
+_CHAT_RESPONSE_IMPACT = """\
+## Impact Analysis
+
+Changing this dimension assignment would affect the following areas:
+
+### Direct Impact
+- **Schedule T (Premiums by State):** Premium allocation shifts — 12% of HOME premium currently unassigned to state would be distributed, changing state-level totals
+- **Combined Ratio by State:** States receiving newly allocated premium will see ratio changes of 2-5 basis points
+- **Management Reporting:** LOB profitability by geography becomes reportable for the first time
+
+### Downstream Effects
+- **Reinsurance allocation:** Treaty structures referencing state-level premium will pick up the new allocations
+- **Tax calculations:** State premium tax basis changes for affected jurisdictions
+- **NAIC Schedule P:** Part 1 summary by state gains completeness
+
+### Risk Assessment
+- **Data quality:** Medium confidence — the allocation methodology (pro-rata by written premium) is standard but should be validated against actual exposure data
+- **Reversibility:** High — dimension assignments can be modified without affecting GL balances
+
+Would you like me to quantify the specific dollar impact on any of these areas?"""
+
+_CHAT_RESPONSE_CONTINUATION = """\
+Building on the previous analysis — the key consideration here is whether the current state is intentional or a data gap from the source system migration.
+
+For the WC single-state pattern specifically:
+- **If intentional:** Document the business rationale (Ohio-only WC operation) and mark as "confirmed" in the dimension analysis
+- **If a data gap:** The 87,170 postings in account 110300 likely need state derivation rules applied during the transformation
+
+The source system (legacy GL) may not have carried state as a posting dimension — many P&C carriers derive state allocation at reporting time rather than at posting time. In SAP, you'll want this resolved at posting to support real-time Schedule T generation.
+
+What's the client's current approach — do they derive state at posting or at reporting time?"""
+
+_CHAT_RESPONSE_TAB_FALLBACK: dict[str, str] = {
+    "dimensions": "Looking at your dimension analysis, I can see several areas that need attention. The State dimension at 72% fill rate is the most critical gap — this affects Schedule T compliance and state-level profitability reporting. Would you like me to show specific accounts affected, or propose a remediation approach?",
+    "code_blocks": "Your code block structure follows standard P&C insurance patterns — 1XXX through 5XXX mapping to Assets through Expenses. The STAT alignment looks solid for NAIC filing. What specific aspect would you like me to analyze deeper — statutory alignment, account density, or range optimization?",
+    "account_groups": "The account groups show good statutory schedule alignment. I notice the OPER_EXP group (Operating Expenses, 18 accounts) has the note about functional area allocation — this connects directly to the IEE requirement. Would you like me to detail the functional area mapping for these accounts?",
+    "decisions": "There are pending design decisions that affect the overall COA architecture. The Leading Ledger Basis and Extension Ledger Strategy decisions should be resolved first — they cascade into Document Splitting scope and Profit Center hierarchy design. Would you like my recommendation on sequencing these decisions?",
+    "account_string": "The CB Dimensions (account string) configuration defines how your chart of accounts segments data across profit center, segment, functional area, and other dimensions. What aspect of the string structure would you like to explore?",
+    "dim_matrix": "The Dimensional Matrix shows the intersection of your GL accounts with each dimension. Fill rates below 90% indicate data quality gaps that need remediation before go-live. Which dimension intersection would you like me to analyze?",
+    "hierarchy": "The hierarchy defines how accounts roll up for reporting. The current flat profit center structure needs restructuring for NAIC Schedule P alignment. Would you like me to propose a multi-level hierarchy?",
+}
+
+_CHAT_DEFAULT_FALLBACK = "I can help you analyze and refine the chart of accounts design. I have access to the GL data, dimensional analysis, and statutory alignment mappings. What specific aspect would you like to explore?"
+
+
+def _detect_chat_variant(message: str, active_tab: str) -> tuple[str, list[dict[str, str | dict]]]:
+    """Pick the right chat response based on message content patterns."""
+    # Strip the context block for pattern matching
+    clean = message
+    if "<workbench_context>" in message:
+        idx = message.find("</workbench_context>")
+        if idx >= 0:
+            clean = message[idx + len("</workbench_context>"):].strip()
+
+    lower = clean.lower()
+
+    # Pattern: show examples / show GL accounts
+    if any(kw in lower for kw in ("show example", "show me gl", "show me account", "demonstrate")):
+        tools = [
+            {"tool": "query_gl_accounts", "output": "(5 accounts matching criteria)"},
+            {"tool": "assess_dimensions", "output": "(dimensional coverage analyzed)"},
+        ]
+        return _CHAT_RESPONSE_SHOW_EXAMPLES, tools
+
+    # Pattern: propose fix / remediation
+    if any(kw in lower for kw in ("propose fix", "propose a fix", "remediat", "how to fix", "fix this", "resolve", "action plan")):
+        tools = [
+            {"tool": "assess_dimensions", "output": "(gap analysis complete)"},
+            {"tool": "estimate_effort", "output": "(effort estimate: 6-10 days)"},
+        ]
+        return _CHAT_RESPONSE_PROPOSE_FIX, tools
+
+    # Pattern: what if / impact
+    if any(kw in lower for kw in ("what if", "impact", "affect", "consequence", "downstream")):
+        tools = [
+            {"tool": "analyze_impact", "output": "(3 direct impacts, 3 downstream effects identified)"},
+        ]
+        return _CHAT_RESPONSE_IMPACT, tools
+
+    # Pattern: short follow-ups
+    if len(clean.split()) <= 5 and any(kw in lower for kw in ("yes", "tell me more", "explain", "go on", "continue", "more detail", "sure", "ok")):
+        return _CHAT_RESPONSE_CONTINUATION, []
+
+    # Fallback: tab-aware response
+    response = _CHAT_RESPONSE_TAB_FALLBACK.get(active_tab, _CHAT_DEFAULT_FALLBACK)
+    return response, []
+
+
+async def _stream_mock_chat(
+    session_id: str,
+    message: str,
+    history: list[HistoryMessage] | None = None,
+) -> AsyncIterator[str]:
+    """Mock stream for workbench chat — context-aware responses."""
+    # Extract active tab from context block
+    active_tab = "dimensions"
+    if "<workbench_context>" in message:
+        for line in message.split("\n"):
+            if line.startswith("Active tab:"):
+                tab_name = line.split(":", 1)[1].strip().lower()
+                tab_map = {
+                    "analysis narrative": "analysis",
+                    "code blocks": "code_blocks",
+                    "account groups": "account_groups",
+                    "dimensions": "dimensions",
+                    "decisions": "decisions",
+                    "cb dimensions": "account_string",
+                    "dimensional matrix": "dim_matrix",
+                    "dynamic hierarchy": "hierarchy",
+                }
+                active_tab = tab_map.get(tab_name, "dimensions")
+                break
+
+    response, tools = _detect_chat_variant(message, active_tab)
+
+    yield _sse_event("trace_step", session_id, {"step": "gl_design_coach_chat", "status": "started"})
+
+    # Simulate tool calls
+    for tool_def in tools:
+        yield _sse_event("tool_call", session_id, {
+            "tool": tool_def["tool"],
+            "status": "started",
+            "input": {},
+        })
+        await asyncio.sleep(0.2)
+        yield _sse_event("tool_call", session_id, {
+            "tool": tool_def["tool"],
+            "status": "completed",
+            "output_preview": tool_def.get("output", ""),
+        })
+
+    # Stream tokens
+    for line in response.split("\n"):
+        words = line.split(" ")
+        for i, word in enumerate(words):
+            token = word if i == 0 else " " + word
+            yield _sse_event("token", session_id, {"content": token})
+            await asyncio.sleep(0.008)
+        yield _sse_event("token", session_id, {"content": "\n"})
+        await asyncio.sleep(0.015)
+
+    yield _sse_event("trace_step", session_id, {"step": "gl_design_coach_chat", "status": "completed"})
+    yield _sse_event("complete", session_id, {"total_tokens": len(response.split())})
+
+
 async def _stream_mock(session_id: str, message: str = "", agent: str = "gl_design_coach", history: list[HistoryMessage] | None = None) -> AsyncIterator[str]:
     """Yield a canned response as realistic SSE events (no LLM call)."""
 
     # Route to FC mock for functional_consultant agent
     if agent == "functional_consultant":
         async for event in _stream_mock_fc(session_id, message, history):
+            yield event
+        return
+
+    # Route to chat mock when workbench context is present
+    if "<workbench_context>" in message:
+        async for event in _stream_mock_chat(session_id, message, history):
             yield event
         return
 

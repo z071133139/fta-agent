@@ -182,7 +182,7 @@ export default function DeliverablePage() {
                 onComplete={(output, tools) => {
                   const parsed = parseCOAOutput(output);
                   if (parsed) {
-                    seedFromAgent(coaKey, parsed);
+                    seedFromAgent(coaKey, parsed, output);
                   }
                   // Always save markdown as a record (fallback if parse fails)
                   savePrimary(params.engagementId, params.deliverableId, {
