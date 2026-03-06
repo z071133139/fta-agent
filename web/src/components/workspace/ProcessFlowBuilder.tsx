@@ -44,11 +44,15 @@ export function ProcessFlowBuilder({ onClose }: ProcessFlowBuilderProps) {
 
   // Agent store — streaming state
   const agentStatus = useAgentStore((s) => s.status);
+  const agentError = useAgentStore((s) => s.error);
   const tokens = useAgentStore((s) => s.tokens);
   const resetAgent = useAgentStore((s) => s.reset);
 
   // Track whether we got a flow update during the current stream
   const [pendingFlowUpdate, setPendingFlowUpdate] = useState(false);
+
+  // Error state for flow parsing failures
+  const [flowError, setFlowError] = useState<string | null>(null);
 
   // Initialize building session — resume existing or start fresh
   const [initialized, setInitialized] = useState(false);
@@ -86,6 +90,17 @@ export function ProcessFlowBuilder({ onClose }: ProcessFlowBuilderProps) {
     }
   }, [agentStatus, tokens, engId, addAssistantMessage, pendingFlowUpdate, resetAgent]);
 
+  // Capture agent errors
+  useEffect(() => {
+    if (agentStatus === "error" && agentError) {
+      setFlowError(`Agent error: ${agentError}`);
+      if (tokens) {
+        addAssistantMessage(engId, tokens, false);
+      }
+      resetAgent();
+    }
+  }, [agentStatus, agentError, tokens, engId, addAssistantMessage, resetAgent]);
+
   const handleSend = useCallback(
     (message: string) => {
       if (!session) return;
@@ -98,6 +113,7 @@ export function ProcessFlowBuilder({ onClose }: ProcessFlowBuilderProps) {
         content: m.content,
       }));
 
+      setFlowError(null);
       streamAgentMessage(message, "functional_consultant", undefined, {
         history,
         mockMode: useMock,
@@ -105,12 +121,17 @@ export function ProcessFlowBuilder({ onClose }: ProcessFlowBuilderProps) {
           if (tool === "emit_process_flow") {
             try {
               const flow = JSON.parse(output) as ProcessFlowData;
-              if (flow.kind === "process_flow") {
+              if (flow.kind === "process_flow" && Array.isArray(flow.nodes) && Array.isArray(flow.edges)) {
                 updateFlow(engId, flow);
                 setPendingFlowUpdate(true);
+                setFlowError(null);
+              } else {
+                setFlowError("Agent returned flow data with missing or invalid structure.");
               }
             } catch (err) {
-              console.error("[ProcessFlowBuilder] Failed to parse emit_process_flow output:", err, output?.slice(0, 200));
+              const preview = output?.slice(0, 100) ?? "(empty)";
+              console.error("[ProcessFlowBuilder] Failed to parse emit_process_flow output:", err, preview);
+              setFlowError(`Failed to parse process flow output. Preview: ${preview}...`);
             }
           }
         },
@@ -202,7 +223,7 @@ export function ProcessFlowBuilder({ onClose }: ProcessFlowBuilderProps) {
 
         {/* Preview panel — flex fill */}
         <div className="flex flex-1 min-h-0 min-w-0 bg-background">
-          <BuilderPreviewPanel flow={session.currentFlow} />
+          <BuilderPreviewPanel flow={session.currentFlow} error={flowError} onDismissError={() => setFlowError(null)} />
         </div>
       </div>
     </div>

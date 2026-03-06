@@ -1,7 +1,7 @@
 # NEXT STEPS
 
 > Last updated: 2026-03-05 (Session 032)
-> Current phase: Phase 1 — Pitch Demo MVP (1-2 sessions remaining)
+> Current phase: Phase 1 — Pitch Demo MVP (3 sessions remaining)
 
 ---
 
@@ -41,20 +41,31 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 - **`updateChatMessage`** added to COA store for in-place message updates
 - Also includes prior uncommitted COA tab improvements (AccountStringDiagram, DimensionalMatrix, COADeliverable, DynamicHierarchy)
 
-## Session 033/034 — Deploy + Golden Dataset + Demo Script
+## Session 033 — Harden Process Flow Builder (Done)
 
-4. **Deploy backend** — Dockerfile for FastAPI + DuckDB + LangGraph. Deploy to GCP Cloud Run. Set `ANTHROPIC_API_KEY` env var. Verify fixture auto-loads on startup, SSE streams to remote frontend.
-5. **Deploy frontend** — Firebase Hosting from repo. Configure `NEXT_PUBLIC_API_URL` env var pointing to deployed backend. Add deployed domain to backend CORS config.
-6. **Configurable API URL** — Replace hardcoded `localhost:8000` with environment variable in frontend API client (`agent-client.ts`, any fetch calls). Already uses env vars? Verify and fix.
-7. **Pre-seed golden coa-store + hierarchy-store** — Beautiful, complete data as demo fallback if live agent fails during pitch. All 9 deliverable sections green-ready.
-8. **Smoke test on deployed URL** — Open Firebase Hosting link, run through all three demo moments against deployed backend. Fix any issues.
+1. **Prompt hardening** — Rewrote `functional_consultant_flow.md`: explicit instruction to call `emit_process_flow` after 2+ swimlanes and 4+ steps, max 2 rounds of clarifying questions, full tool invocation format with all field descriptions, "NEVER ask more than 2 rounds before emitting"
+2. **Frontend error recovery** — Parse error display in BuilderPreviewPanel (error banner with dismiss), agent error capture in ProcessFlowBuilder, flow validation before accepting (checks `kind`, `nodes`, `edges`)
+3. **Live FC test — 3/3 PASS:**
+   - **Test 1:** GL Posting Correction — 3 swimlanes, 11 nodes, gateway (>$50K), 2 overlays (risk + SOX constraint). Multi-turn: clarifying questions turn 1, tool call turn 2.
+   - **Test 2:** Monthly Premium Close — 3 swimlanes, 11 nodes, approval gateway, correction loop. Single turn (rich prompt).
+   - **Test 3:** Reinsurance Treaty Settlement — 4 swimlanes, 10 nodes, gateway (>$1M), 4 overlays. Single turn.
+   - All three produced valid `ProcessFlowData` JSON parsed by frontend without errors.
+4. **Remaining:** COA still at 3/5 live runs (rate-limited, deferred to next session)
 
-## Session 033 — Demo Script + Rehearsal
+## Session 034 — Deploy + Golden Dataset
 
-9. **Visual polish pass** — Fix any rendering issues found during deployed testing. Ensure dark theme looks screenshot-ready.
-10. **Write demo script** — Exact click path with timing for each of the three moments. Identify every failure point with recovery action.
-11. **Rehearse 3x** — Time the full demo on the deployed URL (not localhost). Target: under 6 minutes.
-12. **Record backup video** — Screen recording of the full demo flow in case live demo fails.
+6. **Deploy backend** — Dockerfile for FastAPI + DuckDB + LangGraph. Deploy to GCP Cloud Run. Set `ANTHROPIC_API_KEY` env var. Verify fixture auto-loads on startup, SSE streams to remote frontend.
+7. **Deploy frontend** — Firebase Hosting from repo. Configure `NEXT_PUBLIC_API_URL` env var pointing to deployed backend. Add deployed domain to backend CORS config.
+8. **Configurable API URL** — Replace hardcoded `localhost:8000` with environment variable in frontend API client (`agent-client.ts`, any fetch calls). Already uses env vars? Verify and fix.
+9. **Pre-seed golden coa-store + hierarchy-store** — Beautiful, complete data as demo fallback if live agent fails during pitch. All 9 deliverable sections green-ready.
+10. **Smoke test on deployed URL** — Open Firebase Hosting link, run through all three demo moments against deployed backend. Fix any issues.
+
+## Session 035 — Demo Script + Rehearsal
+
+11. **Visual polish pass** — Fix any rendering issues found during deployed testing. Ensure dark theme looks screenshot-ready.
+12. **Write demo script** — Exact click path with timing for each of the three moments. Identify every failure point with recovery action.
+13. **Rehearse 3x** — Time the full demo on the deployed URL (not localhost). Target: under 6 minutes.
+14. **Record backup video** — Screen recording of the full demo flow in case live demo fails.
 
 ---
 
