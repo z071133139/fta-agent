@@ -22,7 +22,6 @@ import { CompletedAnalysisView } from "@/components/workspace/CompletedAnalysisV
 import InsightCards from "@/components/workspace/InsightCards";
 import AnnotatedTable from "@/components/workspace/AnnotatedTable";
 import InlineInterrupt from "@/components/workspace/InlineInterrupt";
-import AgentChatInput from "@/components/workspace/AgentChatInput";
 import ActivityPanel from "@/components/workspace/ActivityPanel";
 import { LiveAgentWorkspace } from "@/components/workspace/LiveAgentWorkspace";
 import { ProcessInventoryGraph } from "@/components/workspace/ProcessInventoryGraph";
@@ -532,10 +531,6 @@ export default function DeliverablePage() {
               />
             )}
 
-            {/* Chat input — hidden in workshop mode */}
-            {!isWorkshopActive && (
-              <AgentChatInput runState={runState} agentName={agentName} />
-            )}
 
           </div>
         )}
