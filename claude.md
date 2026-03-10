@@ -335,13 +335,14 @@ No `any`. No `as Type` without an explanatory comment. Discriminated unions over
 
 ## Session Workflow
 
-### Planning docs (three files, distinct purposes)
+### Planning docs (three files + session docs, distinct purposes)
 
-| File | Purpose | Read at session start? | Update at session end? |
+| File | Purpose | Read at session start? | Update at every commit? |
 |------|---------|----------------------|----------------------|
-| `NEXT-STEPS.md` | Active work: strategy, current stream backlog, coverage, key files | Always | Always (backlog status, coverage) |
-| `docs/reference/feature-specs.md` | Living reference: how existing features work, session history | When modifying existing features | When new features are built |
-| `docs/plans/master-plan.md` | Product roadmap: phases, iterations, architecture | Rarely | Current Position section each session |
+| `NEXT-STEPS.md` | Active work: strategy, current stream backlog, coverage, key files | **Always — first thing** | **Always** (session summary, backlog, coverage) |
+| `docs/reference/feature-specs.md` | Living reference: how existing features work, session history | When modifying existing features | When new features are built (session index + spec) |
+| `docs/plans/master-plan.md` | Product roadmap: phases, iterations, architecture | Rarely | Current Position, exit criteria, session table |
+| `docs/sessions/YYYY-MM-DD-session-NNN-*.md` | Per-session record: what was built, files changed, commits | — | **Create at first commit of each session** |
 
 ### PDD Committee — Three Personas
 
@@ -417,19 +418,33 @@ Every feature is designed by a committee of three senior personas. All three hav
 4. **Implement against the PDD** — use the file manifest and verification checklist as the task list
 5. **Build check after each major component** — `pnpm --filter web build` — fix errors immediately before moving on
 
+### At the start of every session
+
+**Read `NEXT-STEPS.md` first.** Before writing any code, read it to understand current priorities, active stream, coverage, and what was done in recent sessions. This is non-negotiable — it prevents duplicate work and keeps sessions coherent.
+
 ### After completing a task
 
 1. **Mark the task as complete** in the task list
-2. **Update documentation:**
-   - `NEXT-STEPS.md` — backlog status, coverage table
-   - `docs/plans/master-plan.md` — Current Position section
-   - `docs/reference/feature-specs.md` — add specs for any new features built, update session index
-3. **List the next 5 items** from `NEXT-STEPS.md` that are up next, so the user can choose what to work on
+2. **List the next 5 items** from `NEXT-STEPS.md` that are up next, so the user can choose what to work on
+
+### Before every commit — documentation gate
+
+**Every commit that adds or modifies a feature MUST include documentation updates in the same commit.** Do not commit code without updating the relevant docs. This is the #1 process failure mode — code ships, docs rot, context is lost.
+
+Update all that apply:
+
+| Doc | What to update | When |
+|-----|---------------|------|
+| `NEXT-STEPS.md` | Session summary, backlog status, coverage table, key files | **Every commit** |
+| `docs/reference/feature-specs.md` | Session index row + full spec section for new features | Every commit that adds/modifies a feature |
+| `docs/plans/master-plan.md` | Current Position section, exit criteria checkboxes, session table | Every commit |
+| `docs/sessions/YYYY-MM-DD-session-NNN-title.md` | Session doc with date, focus, what was built, files, commits | **Every session** (create at first commit, update if more commits follow) |
+
+**The commit is not done until docs are updated.** If you realize after committing that docs weren't updated, amend or make a follow-up commit immediately — do not defer to "next session."
 
 ### General
 
 - Build check (`pnpm --filter web build`) before any commit
-- Session docs go to `docs/sessions/YYYY-MM-DD-session-NNN-title.md`
 - Commit message format: `Session NNN: [short description]`
 
 ---
