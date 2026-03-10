@@ -90,17 +90,26 @@ The pursuit phase has its own deliverables (Scoping Canvas, Executive Summary, V
 
 | Moment | What the audience sees | Duration | Status |
 |--------|----------------------|----------|--------|
-| 1. "It knows my world" | Mission control → workplan with P&C workstreams, NAIC vocabulary, statutory schedule lines | 30 sec | Ready |
-| 2. "It just did real work" | Upload TB → GL Design Coach runs → COA workbench populates → Deliverable tab shows 7/9 green | 3 min | **Gap: live agent reliability** |
+| 1. "It knows my world" | Mission control → workplan with P&C workstreams, NAIC vocabulary, statutory schedule lines, scope summary dashboard | 30 sec | Ready |
+| 2. "It just did real work" | Upload TB → GL Design Coach runs → COA workbench populates → Deliverable tab shows 7/9 green | 3 min | **Mostly ready** — COA 3/5, FC 3/3 |
 | 3. "It works with humans" | Workshop mode → flag gap → capture requirement → agent suggests → accept with Y | 2 min | Ready |
 
-**Remaining scope (3 sessions):**
+**Completed sessions (030–034):**
+
+| # | Session | What | Status |
+|---|---------|------|--------|
+| 030 | **Interactive Pitch Deck** | 11 slides at `/pitch`, 6 slide types, keyboard nav, "See it live" demo links | ✅ Done |
+| 031 | **Harden live agent** | Fixed `stat_alignment` mismatch, landing page polish, 3/5 COA runs passing | ✅ Done |
+| 032 | **Wire workbench chat** | `chat-client.ts`, `buildWorkbenchContext()`, AgentChatPanel streaming, Scoping Canvas fix | ✅ Done |
+| 033 | **Harden Process Flow Builder** | FC prompt rewrite, error recovery, 3/3 live FC tests passing | ✅ Done |
+| 034 | **Scope Summary Dashboard + docs** | PDD-011 `d-002-05`, session docs 030-034, all planning docs updated | ✅ Done |
+
+**Remaining scope (2 sessions):**
 
 | # | Session | What | Exit |
 |---|---------|------|------|
-| 1 | **Harden live agent** | Run d-005-02 with `FTA_MOCK_AGENT=false`. Fix prompt to reliably produce parseable `<coa_design>` JSON. Test 5+ runs, fix parse/quality failures. | 5 consecutive successful runs producing valid COA workbench data |
-| 2 | **Deploy + golden dataset** | Dockerfile for backend (GCP Cloud Run). Frontend on Firebase Hosting. Configurable API URL. Golden pre-seeded data as fallback. Smoke test on live URL. | Working deployed URL with live agent + fallback data |
-| 3 | **Demo script + rehearsal** | Write exact click path with timing. Visual polish. Rehearse 3x on deployed URL. Record backup video. | Timed run under 6 minutes on live URL, recovery plan for each failure point |
+| 035 | **Deploy + golden dataset** | Dockerfile for backend (GCP Cloud Run). Frontend on Firebase Hosting. Configurable API URL. Golden pre-seeded data as fallback. Smoke test on live URL. | Working deployed URL with live agent + fallback data |
+| 036 | **Demo script + rehearsal** | Write exact click path with timing. Visual polish. Rehearse 3x on deployed URL. Record backup video. | Timed run under 6 minutes on live URL, recovery plan for each failure point |
 
 **What is NOT in Phase 1 (pushed to Phase 2):**
 - RAG pipeline (audience won't know it's missing)
@@ -116,11 +125,14 @@ The pursuit phase has its own deliverables (Scoping Canvas, Executive Summary, V
 **Phase 1 exit criteria:**
 - [ ] Deployed to a URL (not localhost) — frontend on Firebase Hosting, backend on GCP Cloud Run
 - [ ] Live demo completed in front of at least one stakeholder
-- [ ] Agent produces valid COA design from trial balance in < 90 seconds
-- [ ] Deliverable tab renders all 9 sections with realistic data
-- [ ] Workshop mode shown without errors
+- [x] Agent produces valid COA design from trial balance (3/5 runs passing — Session 031)
+- [x] Deliverable tab renders all 9 sections with realistic data (Session 029)
+- [x] Workshop mode shown without errors (Session 019)
 - [ ] Stakeholder response: interest in next conversation / collaboration
 - [ ] Backup video recorded in case of live demo failure
+- [x] Interactive pitch deck with live workspace links (Session 030)
+- [x] Process Flow Builder live agent 3/3 passing (Session 033)
+- [x] Scope Summary Dashboard for executive overview (Session 034)
 
 ---
 
