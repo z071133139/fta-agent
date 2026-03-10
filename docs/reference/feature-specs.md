@@ -23,6 +23,10 @@
 | **028** | Agent grid workplan, Process Flow UAT execution + 3 defect fixes | B+C | WorkplanPanel 3-column agent grid layout, UAT 120 scenarios (95% pass), D1: custom flow nav→inline viewer, D2: placing mode cancel button, D3: Zustand hydration fix, Playwright setup, session docs 026–028 |
 | **029** | PDD-012 COA Deliverable tab, sidebar cleanup, agent backlog | B | 8th COA tab with 9-section document view, readiness badges, status lifecycle (Draft→Review→Approved), sidebar deliverable cleanup, `docs/reference/agent-backlog.md` |
 | **030** | PDD-013 Interactive Pitch Deck | — | `/pitch` route, 11 slides, 6 slide types, keyboard nav, "See it live" demo links with return pill |
+| **031** | Harden live agent | B | Fix `naic_alignment` → `stat_alignment` field mismatch, landing page polish, 3/5 live runs passing |
+| **032** | Wire workbench chat to real agent | B | `chat-client.ts`, `buildWorkbenchContext()`, 5 smart mock responses, AgentChatPanel streaming, Scoping Canvas link fix |
+| **033** | Harden Process Flow Builder | B | FC prompt rewrite (max 2 clarifying rounds), BuilderPreviewPanel error recovery, 3/3 live FC tests passing |
+| **034** | PDD-011 Scope Summary Dashboard, documentation catch-up | A+B | `d-002-05` executive scope overview, session docs 030-034, planning doc updates |
 
 **Milestone (Session 019):** Workshop Mode fully operational — consultant can run a live business process workshop with FTA on the projector, capturing requirements and process changes in real-time against the leading practice baseline. Persistence via localStorage, session resume, history panel, export JSON.
 
@@ -450,3 +454,49 @@ Bottom bar with progress dots + slide counter + nav arrows. Visible on mouse mov
 ## Backend Fix — DuckDB Table Registration (Session 026)
 
 `DataEngine.load_polars()` changed from `conn.register()` (replacement scan, Arrow reference can be garbage collected) to `CREATE TABLE AS SELECT * FROM _tmp` (persistent in-memory table). Fixes "column not found" errors in `generate_income_statement` and other tools that JOIN `account_master`.
+
+---
+
+## PDD-011 — Scope Summary Dashboard (Session 034)
+
+Executive-facing scope synthesis view at `d-002-05`, owned by the Engagement Lead. The "anchor screen" for demos — answers "what exactly is in scope?" in one scrollable view.
+
+### Layout
+
+Full-width (no ActivityPanel right rail). Four sections stacked vertically:
+
+1. **Engagement header** — client name, sub-segment, ERP target, phase badge
+2. **Scope overview stat row** — 4 cards: in-scope (emerald), deferred (amber), out-of-scope (red), total sub-flows (blue). Values derived live from `d-004-01` process inventory nodes.
+3. **Agent progress cards** — 3 cards (Engagement Lead / Business Analyst / GL Design Coach) with colored top borders, progress bars, completion fractions, sub-status lines. Derived from workplan deliverables grouped by `owner_agent`.
+4. **Process areas by scoping theme** — 7 theme cards (from `getScopingThemes()`) with left accent borders using `theme.colorHex`. Each card lists PAs with scope status badges (emerald/amber/red). PA scope cross-referenced from process inventory nodes.
+5. **Footer** — scope baseline date, confirmed/excluded counts, source attribution.
+
+### Data Derivation
+
+All data computed at render time from existing mock data — no new data sources:
+- Scope stats: `MOCK_WORKSPACES["d-004-01"].graph.nodes` filtered by `scope`
+- Agent progress: `engagement.workplan.workstreams.flatMap(ws => ws.deliverables)` grouped by `owner_agent`
+- Theme grid: `getScopingThemes()` cross-referenced with process nodes for scope status
+
+### Type Extension
+
+```typescript
+export interface ScopeSummaryData { kind: "scope_summary"; }
+// Added to ProcessGraphData union
+```
+
+### Routing
+
+```typescript
+{hasGraph && workspaceTemplate.graph!.kind === "scope_summary" && (
+  <ScopeSummaryDashboard engagement={engagement} />
+)}
+```
+
+ActivityPanel suppressed when `graph?.kind === "scope_summary"`.
+
+### Files
+
+- `web/src/components/workspace/ScopeSummaryDashboard.tsx` — new component
+- `web/src/lib/mock-data.ts` — `ScopeSummaryData` type, `d-002-05` workspace + workplan entry
+- `web/src/app/[engagementId]/deliverables/[deliverableId]/page.tsx` — routing branch + ActivityPanel suppression

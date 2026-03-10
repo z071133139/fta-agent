@@ -226,12 +226,11 @@ export const CaptureBar = forwardRef<CaptureBarHandle, { context?: CaptureContex
     if (pending) {
       return (
         <div
-          className="border-t"
+          className="border-t bg-surface"
           style={{
             borderLeftWidth: 3,
             borderLeftColor: pending.status === "ready" ? "#10B981" : "#3B82F6",
             borderTopColor: "rgba(59,130,246,0.2)",
-            backgroundColor: "rgba(15,23,42,0.95)",
           }}
           onKeyDown={handlePendingKeyDown}
           tabIndex={0}
@@ -303,17 +302,14 @@ export const CaptureBar = forwardRef<CaptureBarHandle, { context?: CaptureContex
 
     return (
       <div
-        className="flex items-center gap-3 px-5 py-2.5 border-t backdrop-blur-md transition-colors"
+        className="flex items-center gap-3 px-5 py-3 border-t bg-surface transition-colors"
         style={{
           borderLeftWidth: 3,
           borderLeftColor: flash ? "#10B981" : "#F59E0B",
           borderTopColor: flash
             ? "rgba(16,185,129,0.3)"
-            : "rgba(245,158,11,0.2)",
-          backgroundColor: flash
-            ? "rgba(16,185,129,0.12)"
-            : "rgba(15,23,42,0.92)",
-          transition: "border-color 0.3s, background-color 0.3s",
+            : "rgba(245,158,11,0.3)",
+          transition: "border-color 0.3s",
         }}
       >
         {/* Capture count */}

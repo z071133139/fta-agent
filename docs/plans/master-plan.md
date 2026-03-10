@@ -2,7 +2,7 @@
 
 > Status: APPROVED (Session 005, updated Sessions 006, 015)
 > Created: 2026-02-16 (Session 005)
-> Last updated: 2026-03-03 (Session 029)
+> Last updated: 2026-03-09 (Session 034)
 
 ## Purpose
 
@@ -335,28 +335,31 @@ These are non-negotiable across every phase (from design-principles.md):
 
 ## Current Position
 
-> Updated Session 029: Phase reframe — Phase 1 narrowed to Pitch Demo MVP (3 remaining sessions). Original Phase 1 scope pushed to Phase 2 (Personal Use MVP). PDD-012 COA Design Deliverable tab completed. Sidebar cleaned, agent backlog created.
+> Updated Session 034: Pitch Deck done, live agents hardened (FC 3/3, COA 3/5), workbench chat wired, Scope Summary Dashboard added. 2 sessions remaining: deploy + golden dataset, then demo script + rehearsal.
 
 ```
-Phase 1: Pitch Demo MVP (3 sessions remaining)
-├── DONE — Framework & UI (Sessions 004–029)
+Phase 1: Pitch Demo MVP (2 sessions remaining)
+├── DONE — Framework & UI (Sessions 004–034)
 │   ├── Project skeleton + master plan           ✅ Sessions 004–005
 │   ├── Frontend harness (landing, workplan, workspaces) ✅ Sessions 007–014
-│   ├── 16 deliverable workspaces                ✅ Sessions 015–029
+│   ├── 17 deliverable workspaces                ✅ Sessions 015–034
 │   ├── Workshop Mode (W1–W8)                    ✅ Sessions 016–019
 │   ├── Scoping Canvas                           ✅ Sessions 019–020
-│   ├── Stream B agentic capabilities            ✅ Sessions 021–029
+│   ├── Stream B agentic capabilities            ✅ Sessions 021–034
 │   │   ├── GL Design Coach (5 tools, SSE)       ✅
 │   │   ├── Functional Consultant (flow builder) ✅
 │   │   ├── COA Design Workbench (8 tabs)        ✅
 │   │   ├── Mission Control Landing              ✅
-│   │   └── COA Deliverable tab (PDD-012)        ✅
+│   │   ├── COA Deliverable tab (PDD-012)        ✅
+│   │   ├── Interactive Pitch Deck (PDD-013)     ✅ Session 030
+│   │   ├── Workbench chat wired to agent        ✅ Session 032
+│   │   ├── FC agent hardened (3/3 live)         ✅ Session 033
+│   │   └── Scope Summary Dashboard (PDD-011)    ✅ Session 034
 │   └── Process Flow UAT (120 scenarios)         ✅ Session 028
 │
 ├── REMAINING — Demo Readiness
-│   ├── S030: Harden live agent (d-005-02)       ⬜ ← NEXT
-│   ├── S031: Deploy (Firebase Hosting + Railway) + golden dataset  ⬜
-│   └── S032: Demo script + rehearsal on live URL ⬜
+│   ├── S035: Deploy (GCP Cloud Run + Firebase) + golden dataset  ⬜ ← NEXT
+│   └── S036: Demo script + rehearsal on live URL ⬜
 │
 Phase 2: Personal Use MVP
 ├── RAG pipeline (curated P&C/SAP docs, pgvector)
@@ -377,13 +380,13 @@ Phase 4: Broad Rollout
 └── Commercial SaaS, Layer 2+3 specialists
 ```
 
-**Coverage:** 16 of 32 active deliverables have workspaces (50%) + custom process flows via builder. 19 deliverables in agent backlog (`docs/reference/agent-backlog.md`).
+**Coverage:** 17 of 33 active deliverables have workspaces (52%) + custom process flows via builder. 19 deliverables in agent backlog (`docs/reference/agent-backlog.md`).
 
-**Frontend state:** Full workspace UI. 5 workspace component types + ProcessFlowBuilder split-view. 16 deliverables with workspaces. Two "living document" patterns: COADesignWorkbench (agent seeds structured data, consultant edits inline, deliverable tab assembles into document) and ProcessFlowBuilder (agent builds structured flows through conversation).
+**Frontend state:** Full workspace UI. 6 workspace component types (AnnotatedTable, ProcessInventoryGraph, ProcessFlowMap, BusinessRequirementsTable, ScopeSummaryDashboard, COADesignWorkbench) + ProcessFlowBuilder split-view. 17 deliverables with workspaces. Two "living document" patterns: COADesignWorkbench (agent seeds structured data, consultant edits inline, deliverable tab assembles into document) and ProcessFlowBuilder (agent builds structured flows through conversation). Interactive pitch deck at `/pitch` with live workspace demo links.
 
-**Backend state:** Two agent graphs: GL Design Coach (5 analysis tools) + Functional Consultant (emit_process_flow tool). SSE streaming with multi-turn history support, per-request mock mode. DataEngine + DuckDB + Polars pipeline.
+**Backend state:** Two agent graphs: GL Design Coach (5 analysis tools) + Functional Consultant (emit_process_flow tool). SSE streaming with multi-turn history support, per-request mock mode, workbench chat client. DataEngine + DuckDB + Polars pipeline. FC agent 3/3 live test passing. COA agent 3/5 live runs passing.
 
-**Next priority:** Harden live agent path for d-005-02 (Session 030). Then golden dataset + demo polish (Session 031). Then demo script + rehearsal (Session 032). No new features.
+**Next priority:** Deploy backend (GCP Cloud Run) + frontend (Firebase Hosting) with golden dataset fallback (Session 035). Then demo script + rehearsal (Session 036).
 
 ---
 

@@ -593,16 +593,12 @@ export function ProcessFlowMap({ data }: { data: ProcessFlowData }) {
         );
       })()}
 
-      {/* Name badge */}
-      <div className="absolute top-3 left-3 z-20">
-        <span className="text-[9px] font-mono text-muted bg-surface/80 border border-border/40 rounded px-2 py-1 backdrop-blur-sm">
+      {/* Name badge + hint */}
+      <div className="absolute top-3 left-3 z-20 flex flex-col gap-1">
+        <span className="text-[9px] font-mono text-muted bg-surface/80 border border-border/40 rounded px-2 py-1 backdrop-blur-sm w-fit">
           {data.name}
         </span>
-      </div>
-
-      {/* Hint */}
-      <div className="absolute bottom-4 left-4 z-10">
-        <span className="text-[9px] font-mono text-muted/70 select-none">
+        <span className="text-[9px] font-mono text-muted/70 select-none px-1">
           {workshopMode
             ? "double-click to edit · G gap · D delete · scroll to zoom"
             : "scroll to zoom · space+drag to pan · double-click to edit"}

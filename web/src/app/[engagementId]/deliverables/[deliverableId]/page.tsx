@@ -30,6 +30,7 @@ import { ProcessFlowIndex } from "@/components/workspace/ProcessFlowIndex";
 import { ProcessFlowBuilder } from "@/components/workspace/ProcessFlowBuilder";
 import { BusinessRequirementsTable } from "@/components/workspace/BusinessRequirementsTable";
 import { CaptureBar, type CaptureBarHandle } from "@/components/workspace/CaptureBar";
+import { ScopeSummaryDashboard } from "@/components/workspace/ScopeSummaryDashboard";
 import { useWorkshopKeyboard } from "@/hooks/useWorkshopKeyboard";
 import { CommandPalette } from "@/components/workspace/CommandPalette";
 import { COADesignWorkbench } from "@/components/workspace/COADesignWorkbench";
@@ -453,7 +454,7 @@ export default function DeliverablePage() {
 
             {/* Graph path — process flow map */}
             {hasGraph && workspaceTemplate.graph!.kind === "process_flow" && (
-              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="flex flex-col flex-1 min-h-0">
                 <div className="flex-1 min-h-0 relative">
                   <ProcessFlowMap
                     data={workspaceTemplate.graph as ProcessFlowData}
@@ -473,6 +474,11 @@ export default function DeliverablePage() {
                 data={workspaceTemplate.graph as BusinessRequirementsData}
                 captureBarRef={captureBarRef}
               />
+            )}
+
+            {/* Graph path — scope summary dashboard */}
+            {hasGraph && workspaceTemplate.graph!.kind === "scope_summary" && (
+              <ScopeSummaryDashboard engagement={engagement} />
             )}
 
             {/* Table path */}
@@ -536,8 +542,8 @@ export default function DeliverablePage() {
         )}
       </div>
 
-      {/* Activity panel — right rail (hidden in workshop mode) */}
-      {!isWorkshopActive && (
+      {/* Activity panel — right rail (hidden in workshop mode and scope summary) */}
+      {!isWorkshopActive && workspaceTemplate.graph?.kind !== "scope_summary" && (
         <ActivityPanel activity={workspaceTemplate.activity} />
       )}
     </div>

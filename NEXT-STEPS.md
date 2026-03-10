@@ -1,7 +1,7 @@
 # NEXT STEPS
 
-> Last updated: 2026-03-05 (Session 032)
-> Current phase: Phase 1 — Pitch Demo MVP (3 sessions remaining)
+> Last updated: 2026-03-09 (Session 034)
+> Current phase: Phase 1 — Pitch Demo MVP (2 sessions remaining)
 
 ---
 
@@ -9,7 +9,7 @@
 
 FTA is an **interactive consulting framework** for insurance finance transformations, with AI agents embedded as capabilities. Three product modes: Pursuit, Workshop, Solo.
 
-**Phase reframe (Session 029):** Phase 1 narrowed to **Pitch Demo MVP** — one compelling live demo that gets buy-in from collaborators/investors. Original Phase 1 scope (personal use on real engagements) pushed to Phase 2. No new features — 3 sessions of hardening, polish, and rehearsal.
+**Phase reframe (Session 029):** Phase 1 narrowed to **Pitch Demo MVP** — one compelling live demo that gets buy-in from collaborators/investors. Original Phase 1 scope (personal use on real engagements) pushed to Phase 2. No new features — hardening, polish, and rehearsal.
 
 **The demo is three moments:**
 1. "It knows my world" — Mission control, P&C workstreams, NAIC vocabulary (READY)
@@ -52,20 +52,25 @@ FTA is an **interactive consulting framework** for insurance finance transformat
    - All three produced valid `ProcessFlowData` JSON parsed by frontend without errors.
 4. **Remaining:** COA still at 3/5 live runs (rate-limited, deferred to next session)
 
-## Session 034 — Deploy + Golden Dataset
+## Session 034 — Scope Summary Dashboard + Documentation Catch-Up (Current)
 
-6. **Deploy backend** — Dockerfile for FastAPI + DuckDB + LangGraph. Deploy to GCP Cloud Run. Set `ANTHROPIC_API_KEY` env var. Verify fixture auto-loads on startup, SSE streams to remote frontend.
-7. **Deploy frontend** — Firebase Hosting from repo. Configure `NEXT_PUBLIC_API_URL` env var pointing to deployed backend. Add deployed domain to backend CORS config.
-8. **Configurable API URL** — Replace hardcoded `localhost:8000` with environment variable in frontend API client (`agent-client.ts`, any fetch calls). Already uses env vars? Verify and fix.
-9. **Pre-seed golden coa-store + hierarchy-store** — Beautiful, complete data as demo fallback if live agent fails during pitch. All 9 deliverable sections green-ready.
-10. **Smoke test on deployed URL** — Open Firebase Hosting link, run through all three demo moments against deployed backend. Fix any issues.
+- **PDD-011: Scope Summary Dashboard** — new workspace `d-002-05` with engagement header, 4 scope stat cards, 3 agent progress cards, 7 theme cards with PA scope badges. Full-width (no ActivityPanel). Renders at `/eng-001/deliverables/d-002-05`.
+- **Documentation catch-up** — session docs for 030–034, updated all 3 planning docs, feature-specs for sessions 031–034
 
-## Session 035 — Demo Script + Rehearsal
+## Session 035 — Deploy + Golden Dataset
 
-11. **Visual polish pass** — Fix any rendering issues found during deployed testing. Ensure dark theme looks screenshot-ready.
-12. **Write demo script** — Exact click path with timing for each of the three moments. Identify every failure point with recovery action.
-13. **Rehearse 3x** — Time the full demo on the deployed URL (not localhost). Target: under 6 minutes.
-14. **Record backup video** — Screen recording of the full demo flow in case live demo fails.
+1. **Deploy backend** — Dockerfile for FastAPI + DuckDB + LangGraph. Deploy to GCP Cloud Run. Set `ANTHROPIC_API_KEY` env var. Verify fixture auto-loads on startup, SSE streams to remote frontend.
+2. **Deploy frontend** — Firebase Hosting from repo. Configure `NEXT_PUBLIC_API_URL` env var pointing to deployed backend. Add deployed domain to backend CORS config.
+3. **Configurable API URL** — Replace hardcoded `localhost:8000` with environment variable in frontend API client (`agent-client.ts`, any fetch calls). Already uses env vars? Verify and fix.
+4. **Pre-seed golden coa-store + hierarchy-store** — Beautiful, complete data as demo fallback if live agent fails during pitch. All 9 deliverable sections green-ready.
+5. **Smoke test on deployed URL** — Open Firebase Hosting link, run through all three demo moments against deployed backend. Fix any issues.
+
+## Session 036 — Demo Script + Rehearsal
+
+6. **Visual polish pass** — Fix any rendering issues found during deployed testing. Ensure dark theme looks screenshot-ready.
+7. **Write demo script** — Exact click path with timing for each of the three moments. Identify every failure point with recovery action.
+8. **Rehearse 3x** — Time the full demo on the deployed URL (not localhost). Target: under 6 minutes.
+9. **Record backup video** — Screen recording of the full demo flow in case live demo fails.
 
 ---
 
@@ -86,7 +91,9 @@ FTA is an **interactive consulting framework** for insurance finance transformat
 | PDD-009 | Workstream-Level Data Gates — declarative data requirements per workstream | B1 | Done |
 | PDD-010 | Mission Control Landing Page — unified context selector, attention queue, presence | PDD-009 | Done |
 | UAT | Process Flow Builder UAT — 120 scenarios, 3 defects fixed (custom flow nav, placing cancel, hydration) | PDD-007 | Done |
-| PDD-012 | COA Design Deliverable tab — 9-section document view with readiness + status lifecycle | PDD-006, PDD-011 | Done |
+| PDD-011 | Scope Summary Dashboard — executive scope overview at d-002-05 | — | Done (034) |
+| PDD-012 | COA Design Deliverable tab — 9-section document view with readiness + status lifecycle | PDD-006 | Done |
+| PDD-013 | Interactive Pitch Deck — 11 slides at /pitch with "See it live" demo links | — | Done (030) |
 
 **End state:** Three agent capabilities working end-to-end. GL Design Coach (account analysis, COA design) + Functional Consultant (process flow builder). Real data in, real agent processing, real streamed results.
 
@@ -117,13 +124,13 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 | Workstream | Deliverables with Workspaces | Coverage |
 |-----------|------------------------------|----------|
 | WS-001 PM & Governance | d-001-03, d-001-04 | 2/5 |
-| WS-002 Business Case | d-002-02 | 1/4 |
+| WS-002 Business Case | d-002-02, d-002-05 | 2/5 |
 | WS-003 ERP Selection | d-003-04 | 1/5 |
 | WS-004 Business Process | d-004-01, d-004-03, d-004-03b, d-004-03c, d-004-03d, d-004-04 + custom flows | 6/5+ |
 | WS-005 COA & GL | d-005-01, d-005-02 (+Deliverable tab), d-005-03, d-005-04 | 4/4 active (4 in backlog) |
 | WS-006 Reporting | d-006-01, d-006-06 | 2/6 |
 | WS-007 Data & Integration | — | 0/5 |
-| **Total** | **16 + custom** | **16/32 active (50%) + 19 backlog** |
+| **Total** | **17 + custom** | **17/33 active (52%) + 19 backlog** |
 
 ---
 
@@ -143,6 +150,7 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 - `web/src/lib/scoping-data.ts` — Scoping Canvas themes, questions
 - `web/src/app/[engagementId]/deliverables/[deliverableId]/page.tsx` — workspace dispatch
 - `web/src/components/workspace/` — all workspace components
+- `web/src/components/workspace/ScopeSummaryDashboard.tsx` — executive scope overview (PDD-011)
 - `web/src/components/workspace/COADesignWorkbench.tsx` — editable tabbed workbench for d-005-02 (8 tabs incl. Deliverable)
 - `web/src/components/workspace/coa-tabs/COADeliverable.tsx` — 9-section deliverable document view (PDD-012)
 - `docs/reference/agent-backlog.md` — backlog deliverables by agent (GL Design Coach, FC, Consulting Agent)
@@ -151,6 +159,8 @@ Five remaining capabilities beyond flow building: gap→requirement pipeline, co
 - `web/src/components/workspace/flow-builder/` — BuilderChatPanel, BuilderPreviewPanel
 - `web/src/components/landing/` — ContextSelector, AttentionQueue, ResumeCard, DataStatusWidget, PursuitContent
 - `web/src/components/workstream/` — WorkstreamDataPanel, WorkstreamDataSummary
+- `web/src/components/pitch/` — PitchDeck, SlideControls, PitchReturnPill, slides/
+- `web/src/lib/pitch-deck-data.ts` — typed slide content array
 - `web/src/lib/workstream-data-config.ts` — declarative per-workstream data requirements
 - `web/src/lib/data-store.ts` — Zustand store for uploaded data files + workstream selectors
 

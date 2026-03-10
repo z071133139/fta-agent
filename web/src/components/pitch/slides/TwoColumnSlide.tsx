@@ -77,8 +77,8 @@ export function TwoColumnSlide({
       </div>
 
       {/* Takeaway bar */}
-      <div className="bg-info/5 border border-info/15 rounded-lg px-6 py-4">
-        <p className="text-sm text-info/80 italic leading-relaxed">
+      <div className="border-l-2 border-blue-500/60 bg-surface rounded-r-lg px-6 py-4">
+        <p className="text-lg text-foreground italic leading-relaxed">
           {data.takeaway}
         </p>
       </div>

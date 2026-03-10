@@ -124,6 +124,7 @@ const ACME_WORKPLAN: Workplan = {
         { deliverable_id: "d-002-02", name: "Scope Definition (in/out-of-scope inventory)", status: "complete", owner_agent: "functional_consultant", agent_summary: "47 in-scope items confirmed · 12 explicitly excluded · Baseline locked" },
         { deliverable_id: "d-002-03", name: "Stakeholder Map", status: "in_review", owner_agent: "consulting_agent", agent_summary: "14 stakeholders mapped · CFO and CTO alignment still pending", needs_input: true },
         { deliverable_id: "d-002-04", name: "Benefits Realization Framework", status: "not_started", owner_agent: "functional_consultant" },
+        { deliverable_id: "d-002-05", name: "Scope Summary Dashboard", status: "complete", owner_agent: "consulting_agent", agent_summary: "16 PAs in scope · 3 deferred · 1 excluded · 13/34 deliverables complete" },
       ],
     },
     {
@@ -566,7 +567,11 @@ export interface ProcessFlowIndexData {
   flow_ids: string[];
 }
 
-export type ProcessGraphData = ProcessFlowData | ProcessInventoryData | BusinessRequirementsData | ProcessFlowIndexData;
+export interface ScopeSummaryData {
+  kind: "scope_summary";
+}
+
+export type ProcessGraphData = ProcessFlowData | ProcessInventoryData | BusinessRequirementsData | ProcessFlowIndexData | ScopeSummaryData;
 
 // ── Workspace types ────────────────────────────────────────────────────────
 
@@ -1624,6 +1629,20 @@ Keep under 1000 words. Use tables, not prose.`,
       { step: 2, label: "Applied engagement decisions", detail: "Scoping workshop Jan 15 · Steering committee Jan 28", status: "complete", duration_ms: 780 },
       { step: 3, label: "Baseline locked", detail: "Change control process activated", status: "complete", duration_ms: 180 },
     ],
+  },
+
+  "d-002-05": {
+    deliverable_id: "d-002-05",
+    agent_kind: "knowledge_grounded",
+    run_state: "complete",
+    preflight_title: "Scope Summary Dashboard",
+    preflight_bullets: [],
+    columns: [],
+    rows: [],
+    graph: {
+      kind: "scope_summary",
+    } satisfies ScopeSummaryData,
+    activity: [],
   },
 
   // ── WS-003: ERP Software Selection ────────────────────────────────────────

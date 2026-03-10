@@ -15,6 +15,7 @@ import {
 import { WorkshopHistory } from "./WorkshopHistory";
 import { FeatureGuide } from "@/components/guides/FeatureGuide";
 import { GUIDE_REGISTRY } from "@/lib/guide-content";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const AGENT_LABEL: Record<string, string> = {
   gl_design_coach: "GL Design Coach",
@@ -181,8 +182,11 @@ export default function WorkspaceTopBar({
         )}
       </div>
 
-      {/* Right side: agent status + workshop toggle + history */}
+      {/* Right side: agent status + workshop toggle + history + theme */}
       <div className="flex items-center gap-3 shrink-0">
+        {/* Theme toggle */}
+        <ThemeToggle />
+
         {/* Agent status */}
         {agentName && !isWorkshopActive && (
           <div className="flex items-center gap-2">

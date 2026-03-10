@@ -9,7 +9,8 @@ export type SlideType =
   | "stats"
   | "phase0"
   | "roadmap"
-  | "value";
+  | "value"
+  | "showcase";
 
 export interface BulletItem {
   label: string;
@@ -111,6 +112,16 @@ export interface ValueSlideData {
   takeaway?: string;
 }
 
+export interface ShowcaseSlideData {
+  type: "showcase";
+  title: string;
+  subtitle: string;
+  image: string;
+  agentDoes: string;
+  consultantDoes: string;
+  takeaway: string;
+}
+
 export type SlideData =
   | TitleSlideData
   | TwoColumnSlideData
@@ -118,8 +129,238 @@ export type SlideData =
   | StatsSlideData
   | Phase0SlideData
   | RoadmapSlideData
-  | ValueSlideData;
+  | ValueSlideData
+  | ShowcaseSlideData;
 
+// ── Feature Showcase Slides (shared between decks) ──────────────────────
+const SHOWCASE_SLIDES: ShowcaseSlideData[] = [
+  {
+    type: "showcase",
+    title: "Engagement Dashboard",
+    subtitle: "One screen. Full situational awareness.",
+    image: "/slides/dashboard.png",
+    agentDoes: "Tracks 34 deliverables across three agents, surfaces blocked items, computes progress automatically, and flags decisions waiting for consultant input.",
+    consultantDoes: "Opens the dashboard, sees exactly what needs attention, and spends time on the three items that matter — not hunting through spreadsheets for status.",
+    takeaway: "The agent assembles status. The consultant makes decisions.",
+  },
+  {
+    type: "showcase",
+    title: "Scope Summary Dashboard",
+    subtitle: "20 process areas. Scoped in minutes, not days.",
+    image: "/slides/scope-summary.png",
+    agentDoes: "Pre-loads 20 insurance-specific process areas organized by theme, tracks scope decisions across all three agents, and maintains the living scope definition as workshops progress.",
+    consultantDoes: "Walks the client through process areas on the projector, makes in/out/defer decisions in real time, and leaves the room with a locked scope — no follow-up email needed.",
+    takeaway: "The agent organizes the complexity. The consultant drives the conversation.",
+  },
+  {
+    type: "showcase",
+    title: "Process Inventory",
+    subtitle: "324 requirements. 20 process areas. Pre-loaded.",
+    image: "/slides/process-inventory.png",
+    agentDoes: "Maintains the full process taxonomy with sub-flows, tracks scope status, wave assignments, and ERP mapping for every process area. Expands to L3 sub-processes on demand.",
+    consultantDoes: "Reviews the pre-built inventory with the client, customizes scope and wave assignments per process area, and focuses on design decisions — not building the list from scratch.",
+    takeaway: "The agent assembles the inventory. The consultant tailors it to the client.",
+  },
+  {
+    type: "showcase",
+    title: "Process Flow Builder",
+    subtitle: "Describe it, don't draw it.",
+    image: "/slides/process-flow.png",
+    agentDoes: "Generates future-state swimlane process flows from natural language descriptions, identifies agentic automation opportunities within each flow, and links requirements to process steps.",
+    consultantDoes: "Describes the process in business language, reviews the generated flow with the client, and focuses on design trade-offs — not dragging boxes in Visio.",
+    takeaway: "The agent draws the flow. The consultant designs the process.",
+  },
+  {
+    type: "showcase",
+    title: "COA Design Workbench",
+    subtitle: "Eight tabs. Seeded from actual GL data.",
+    image: "/slides/coa-workbench.png",
+    agentDoes: "Ingests 500K+ GL posting lines, profiles every dimension (fill rates, key values, issues), detects data quality problems, and seeds the workbench with findings the consultant can act on.",
+    consultantDoes: "Reviews agent-identified issues like the Functional Area gap shown here, makes design decisions with full data context, and resolves issues with the client — not pivoting in Excel.",
+    takeaway: "The agent analyzes the data. The consultant makes the design decisions.",
+  },
+  {
+    type: "showcase",
+    title: "Reporting Inventory",
+    subtitle: "Every report cataloged. Risks surfaced automatically.",
+    image: "/slides/reporting-inventory.png",
+    agentDoes: "Catalogs 28+ reports across statutory, management, and operational categories. Flags risks (manual processes, missing dimensions), identifies gaps, and links required dimensions to the COA design.",
+    consultantDoes: "Reviews the risk findings with the client, prioritizes transformation targets, and connects reporting requirements to the COA workbench — not building the inventory from a blank spreadsheet.",
+    takeaway: "The agent catalogs and flags risks. The consultant prioritizes and advises.",
+  },
+];
+
+// ── 3-Slide Executive Pitch Deck ──────────────────────────────────────────
+// Tight framing for 30-min exec meetings: 5-10 min slides, then 20 min demo.
+// Route: /pitch?deck=exec
+export const EXEC_PITCH_SLIDES: SlideData[] = [
+  // ── Slide 1: Title ──────────────────────────────────────────────────────
+  {
+    type: "title",
+    heading: "FT Agent",
+    subheading: "Agentic Consulting for Insurance\nFinance Transformation",
+    subtitle:
+      "An agentic consulting framework to reimagine how we sell and deliver Phase 0 of Finance Transformations in Insurance.",
+    footer: "March 2026 | Confidential",
+  },
+
+  // ── Slide 2: The Problem ────────────────────────────────────────────────
+  {
+    type: "phase0",
+    title: "Phase 0 Today: The Problem",
+    subtitle:
+      "Every insurance finance transformation starts with a similar 12–18 week Phase 0 engagement. We have to reimagine how we pitch and deliver Phase 0 in the AI era to capture a bigger share of upcoming programs. Clients expect strategic advisory and faster value creation.",
+    timeline: [
+      { weeks: "Wk 1-4", label: "Data assembly & access setup", color: "red", widthPercent: 65 },
+      { weeks: "Wk 3-6", label: "Workshops & manual capture", color: "amber", widthPercent: 55 },
+      { weeks: "Wk 6-12", label: "Decisions & deliverables", color: "red", widthPercent: 40 },
+    ],
+    costs: [
+      { value: "60%", label: "of time on coordination and assembly, not advisory", color: "red" },
+      { value: "35+", label: "deliverables rebuilt from scratch — expertise manually assembled from similar engagements", color: "purple" },
+      { value: "4-6 wks", label: "before clients see strategic insight", color: "amber" },
+    ],
+    takeaway:
+      "We're billing premium rates for work that doesn't require premium judgment.",
+  },
+
+  // ── Slide 3: The Shift ─────────────────────────────────────────────────
+  {
+    type: "two-column",
+    title: "The Shift",
+    subtitle:
+      "Agents replace the work. Consultants keep the judgment.",
+    leftTitle: "Consultants Stop Doing Labor Intensive, Low Value Assembly Work",
+    leftItems: [
+      "GL data profiling in Excel",
+      "Dragging boxes in Visio to create process flows",
+      "Extracting requirements from workshop notes",
+      "Creating and formatting deliverables by using templates from other projects",
+      "Tracking open items in spreadsheets",
+    ],
+    rightTitle: "Consultants Focus the Majority of Time on High Value Work",
+    rightItems: [
+      "Strategic advisory",
+      "Design trade-offs",
+      "Steering workshops",
+      "Executive insight",
+      "Client relationships",
+      "Selecting the best technology to get the job done",
+      "Change management",
+      "Transforming processes",
+    ],
+    takeaway:
+      "FTA moves the left column to agents so consultants live in the right column.",
+  },
+
+  // ── The Product ───────────────────────────────────────────────────────
+  {
+    type: "three-column",
+    title: "Finance Transformation Agent",
+    subtitle:
+      "We have channeled our expertise into an agentic consulting framework to elevate our consulting teams. We will free up consultants for strategic advisory and value creation and have fit-for-purpose Agents assemble Phase 0 deliverables.",
+    cards: [
+      {
+        title: "Engagement Lead",
+        subtitle: "Project manager",
+        accent: "green",
+        bullets: [
+          "Workplan generation and tracking",
+          "Decision registry with audit trail",
+          "Attention queue — blocked items first",
+          "ERP Vendor Selection",
+        ],
+        valueLine: "Nothing gets dropped",
+      },
+      {
+        title: "Business Analyst",
+        subtitle: "Functional consultant",
+        accent: "amber",
+        bullets: [
+          "200+ insurance-specific finance processes L1–L3 for client-specific customization",
+          "300+ standardized business requirements for client adoption",
+          "FIT/GAP against major ERP platforms",
+          "Identification of agentic potential",
+        ],
+        valueLine: "Assembly → advisory",
+      },
+      {
+        title: "GL Design Coach",
+        subtitle: "Accounting specialist",
+        accent: "blue",
+        bullets: [
+          "GL design grounded in GL data from the current solution",
+          "17-step chart of accounts simplification",
+          "Seeds COA and code block design from actual data",
+          "Three-tier audit-ready hierarchy classification",
+        ],
+        valueLine: "Weeks of GL work → hours",
+      },
+    ],
+    takeaway:
+      "The consulting framework is the product. The AI agents are capabilities inside it.",
+  },
+
+  // ── Technical Architecture ────────────────────────────────────────────
+  {
+    type: "three-column",
+    title: "Technical Architecture",
+    subtitle: "Production-grade. Strict TypeScript. Strict MyPy. Not a prototype.",
+    cards: [
+      {
+        title: "Frontend",
+        subtitle: "Next.js 15 + App Router",
+        accent: "blue",
+        bullets: [
+          "Tailwind + Shadcn/ui",
+          "Zustand + TanStack Query",
+          "React Flow for process graphs",
+          "SSE streaming for agent output",
+          "Framer Motion for agent states",
+        ],
+      },
+      {
+        title: "Agent Layer",
+        subtitle: "LangGraph orchestration",
+        accent: "amber",
+        bullets: [
+          "Claude Opus / Sonnet / Haiku",
+          "LiteLLM multi-provider routing",
+          "Decision registry with interrupts",
+          "Structured logging + LangSmith",
+          "Tool-level locking per engagement",
+        ],
+      },
+      {
+        title: "Data Layer",
+        subtitle: "Python FastAPI + DuckDB",
+        accent: "green",
+        bullets: [
+          "DuckDB for 500K+ row analysis",
+          "Polars for DataFrame operations",
+          "Supabase (Postgres + pgvector)",
+          "Row-level security isolation",
+          "Async-first, SSE streaming",
+        ],
+      },
+    ],
+  },
+
+  // ── Transition: Capabilities ──────────────────────────────────────────
+  {
+    type: "title",
+    heading: "See It Working",
+    subheading: "Six capabilities.\nBuilt and running.",
+    subtitle:
+      "Every screen you're about to see is a production workspace — not a mockup. On each one, notice the same pattern: the agent does the assembly, the consultant makes the judgment call.",
+    footer: "",
+  },
+
+  // ── Feature Showcase Slides ───────────────────────────────────────────
+  ...SHOWCASE_SLIDES,
+];
+
+// ── Full 11-Slide Pitch Deck ──────────────────────────────────────────────
 export const PITCH_SLIDES: SlideData[] = [
   // ── Slide 1: Title ──────────────────────────────────────────────────────
   {
@@ -162,21 +403,24 @@ export const PITCH_SLIDES: SlideData[] = [
     title: "The Shift",
     subtitle:
       "Agents replace the work. Consultants keep the judgment.",
-    leftTitle: "Consultants Are Stuck Doing",
+    leftTitle: "Consultants Stop Doing Labor Intensive, Low Value Assembly Work",
     leftItems: [
       "GL data profiling in Excel",
-      "Dragging boxes in Visio",
-      "Writing up notes after workshops",
-      "Formatting deliverables",
+      "Dragging boxes in Visio to create process flows",
+      "Extracting requirements from workshop notes",
+      "Creating and formatting deliverables by using templates from other projects",
       "Tracking open items in spreadsheets",
     ],
-    rightTitle: "Consultants Should Be Doing",
+    rightTitle: "Consultants Focus the Majority of Time on High Value Work",
     rightItems: [
       "Strategic advisory",
       "Design trade-offs",
       "Steering workshops",
       "Executive insight",
       "Client relationships",
+      "Selecting the best technology to get the job done",
+      "Change management",
+      "Transforming processes",
     ],
     takeaway:
       "FTA moves the left column to agents so consultants live in the right column.",
@@ -279,7 +523,10 @@ export const PITCH_SLIDES: SlideData[] = [
     ],
   },
 
-  // ── Slide 6: Workshop Mode ─────────────────────────────────────────────
+  // ── Feature Showcase Slides ───────────────────────────────────────────
+  ...SHOWCASE_SLIDES,
+
+  // ── Workshop Mode ─────────────────────────────────────────────────────
   {
     type: "two-column",
     title: "Workshop Mode",

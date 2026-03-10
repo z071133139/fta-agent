@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Instrument_Serif } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/lib/auth";
+import { Providers } from "@/components/Providers";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -27,9 +27,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${instrumentSerif.variable}`}>
+    <html lang="en" className={`${dmSans.variable} ${instrumentSerif.variable}`} suppressHydrationWarning>
       <body className="bg-background text-foreground font-sans antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

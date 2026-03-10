@@ -19,11 +19,11 @@ import { useWorkshopStore } from "@/lib/workshop-store";
 // ── Config ────────────────────────────────────────────────────────────────
 
 const TAG_CFG: Record<BRTag, { label: string; color: string; bg: string }> = {
-  REG: { label: "REG", color: "#EF4444", bg: "rgba(239,68,68,0.15)" },
-  CTL: { label: "CTL", color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
-  FIN: { label: "FIN", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
-  OPS: { label: "OPS", color: "#CBD5E1", bg: "rgba(100,116,139,0.20)" },
-  INT: { label: "INT", color: "#8B5CF6", bg: "rgba(139,92,246,0.15)" },
+  REG: { label: "REG", color: "#EF4444", bg: "rgba(239,68,68,0.18)" },
+  CTL: { label: "CTL", color: "#F59E0B", bg: "rgba(245,158,11,0.18)" },
+  FIN: { label: "FIN", color: "#3B82F6", bg: "rgba(59,130,246,0.18)" },
+  OPS: { label: "OPS", color: "#64748B", bg: "rgba(100,116,139,0.22)" },
+  INT: { label: "INT", color: "#8B5CF6", bg: "rgba(139,92,246,0.18)" },
 };
 
 const TAG_VALUES: BRTag[] = ["REG", "CTL", "FIN", "OPS", "INT"];
@@ -31,32 +31,32 @@ const SEGMENT_VALUES: BRSegment[] = ["P&C", "Life", "Re", "All"];
 const STATUS_VALUES: BRStatus[] = ["draft", "validated", "deferred", "out_of_scope"];
 
 const SEGMENT_CFG: Record<BRSegment, { label: string; color: string; bg: string }> = {
-  "P&C": { label: "P&C", color: "#3B82F6", bg: "rgba(59,130,246,0.12)" },
-  Life: { label: "Life", color: "#A855F7", bg: "rgba(168,85,247,0.12)" },
-  Re:   { label: "Re",   color: "#F59E0B", bg: "rgba(245,158,11,0.12)" },
-  All:  { label: "All",  color: "#94A3B8", bg: "rgba(100,116,139,0.15)" },
+  "P&C": { label: "P&C", color: "#3B82F6", bg: "rgba(59,130,246,0.18)" },
+  Life: { label: "Life", color: "#A855F7", bg: "rgba(168,85,247,0.18)" },
+  Re:   { label: "Re",   color: "#F59E0B", bg: "rgba(245,158,11,0.18)" },
+  All:  { label: "All",  color: "#64748B", bg: "rgba(100,116,139,0.18)" },
 };
 
 const FIT_CFG: Record<FitRating, { label: string; color: string; bg: string }> = {
-  F1: { label: "Native Fit",      color: "#10B981", bg: "rgba(16,185,129,0.15)" },
-  F2: { label: "Configurable",    color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
-  F3: { label: "Extension Req'd", color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
-  F4: { label: "External System", color: "#F97316", bg: "rgba(249,115,22,0.15)" },
-  F5: { label: "Arch Gap",        color: "#EF4444", bg: "rgba(239,68,68,0.15)" },
+  F1: { label: "Native Fit",      color: "#10B981", bg: "rgba(16,185,129,0.18)" },
+  F2: { label: "Configurable",    color: "#3B82F6", bg: "rgba(59,130,246,0.18)" },
+  F3: { label: "Extension Req'd", color: "#F59E0B", bg: "rgba(245,158,11,0.18)" },
+  F4: { label: "External System", color: "#F97316", bg: "rgba(249,115,22,0.18)" },
+  F5: { label: "Arch Gap",        color: "#EF4444", bg: "rgba(239,68,68,0.18)" },
 };
 
 const AGENTIC_CFG: Record<AgenticRating, { label: string; color: string; bg: string }> = {
-  A1: { label: "Full Closure",    color: "#10B981", bg: "rgba(16,185,129,0.15)" },
-  A2: { label: "Partial Closure", color: "#3B82F6", bg: "rgba(59,130,246,0.15)" },
-  A3: { label: "Agent-Assisted",  color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
-  A0: { label: "Not Applicable",  color: "#94A3B8", bg: "rgba(100,116,139,0.15)" },
+  A1: { label: "Full Closure",    color: "#10B981", bg: "rgba(16,185,129,0.18)" },
+  A2: { label: "Partial Closure", color: "#3B82F6", bg: "rgba(59,130,246,0.18)" },
+  A3: { label: "Agent-Assisted",  color: "#F59E0B", bg: "rgba(245,158,11,0.18)" },
+  A0: { label: "Not Applicable",  color: "#64748B", bg: "rgba(100,116,139,0.18)" },
 };
 
 const STATUS_CFG: Record<string, { color: string; bg: string }> = {
-  draft:        { color: "#94A3B8", bg: "rgba(100,116,139,0.15)" },
-  validated:    { color: "#10B981", bg: "rgba(16,185,129,0.15)" },
-  deferred:     { color: "#F59E0B", bg: "rgba(245,158,11,0.15)" },
-  out_of_scope: { color: "#EF4444", bg: "rgba(239,68,68,0.12)" },
+  draft:        { color: "#64748B", bg: "rgba(100,116,139,0.18)" },
+  validated:    { color: "#10B981", bg: "rgba(16,185,129,0.18)" },
+  deferred:     { color: "#F59E0B", bg: "rgba(245,158,11,0.18)" },
+  out_of_scope: { color: "#EF4444", bg: "rgba(239,68,68,0.18)" },
 };
 
 const PA_NAMES: Record<string, string> = {
@@ -747,7 +747,7 @@ const AGENTIC_LABELS: Record<AgenticRating, string> = {
 
 function LegendStrip({ hasAssessed }: { hasAssessed: boolean }) {
   return (
-    <div className="px-6 py-2 border-b border-border/20 flex items-center gap-4 flex-wrap" style={{ backgroundColor: "rgba(30,41,59,0.6)" }}>
+    <div className="px-6 py-2 border-b border-border/20 flex items-center gap-4 flex-wrap bg-surface-alt/60">
       {/* Tags */}
       <span className="text-[9px] uppercase tracking-[0.1em] text-muted/50 font-semibold">Type</span>
       {(Object.keys(TAG_CFG) as BRTag[]).map((t) => (
@@ -856,7 +856,7 @@ function FilterBar({
               style={
                 active
                   ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
-                  : { borderColor: "rgba(100,116,139,0.6)", color: "#94A3B8" }
+                  : { borderColor: "var(--color-border)", color: "var(--color-muted)" }
               }
             >
               {t}
@@ -878,7 +878,7 @@ function FilterBar({
               style={
                 active
                   ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
-                  : { borderColor: "rgba(100,116,139,0.6)", color: "#94A3B8" }
+                  : { borderColor: "var(--color-border)", color: "var(--color-muted)" }
               }
             >
               {s}
@@ -902,7 +902,7 @@ function FilterBar({
                   style={
                     active
                       ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
-                      : { borderColor: "rgba(100,116,139,0.6)", color: "#94A3B8" }
+                      : { borderColor: "var(--color-border)", color: "var(--color-muted)" }
                   }
                 >
                   {r}
@@ -923,7 +923,7 @@ function FilterBar({
                   style={
                     active
                       ? { backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.color + "50" }
-                      : { borderColor: "rgba(100,116,139,0.6)", color: "#94A3B8" }
+                      : { borderColor: "var(--color-border)", color: "var(--color-muted)" }
                   }
                 >
                   {r}
@@ -939,7 +939,7 @@ function FilterBar({
               style={
                 filters.assessedOnly
                   ? { backgroundColor: "rgba(59,130,246,0.15)", color: "#3B82F6", borderColor: "rgba(59,130,246,0.5)" }
-                  : { borderColor: "rgba(100,116,139,0.6)", color: "#94A3B8" }
+                  : { borderColor: "var(--color-border)", color: "var(--color-muted)" }
               }
             >
               Assessed only
@@ -975,6 +975,7 @@ function FilterBar({
 
 export function BusinessRequirementsTable({ data, captureBarRef }: { data: BusinessRequirementsData; captureBarRef?: RefObject<CaptureBarHandle | null> }) {
   const [expandedReq, setExpandedReq] = useState<string | null>(null);
+  const [allCollapsed, setAllCollapsed] = useState(true);
   const [collapsedPAs, setCollapsedPAs] = useState<Set<string>>(new Set());
   const [editingField, setEditingField] = useState<{ id: string; field: string } | null>(null);
   const [filters, setFilters] = useState<FilterState>({
@@ -1074,7 +1075,16 @@ export function BusinessRequirementsTable({ data, captureBarRef }: { data: Busin
     return map;
   }, [filtered]);
 
+  // Track which PAs were manually open before a detail expand, so we can restore
+  const presExpandPAs = useRef<Set<string> | null>(null);
+
   const togglePA = (paId: string) => {
+    if (allCollapsed) {
+      // First toggle from all-collapsed: open just this PA, explicitly collapse all others
+      setAllCollapsed(false);
+      setCollapsedPAs(new Set([...groups.keys()].filter((p) => p !== paId)));
+      return;
+    }
     setCollapsedPAs((prev) => {
       const next = new Set(prev);
       if (next.has(paId)) next.delete(paId);
@@ -1082,6 +1092,28 @@ export function BusinessRequirementsTable({ data, captureBarRef }: { data: Busin
       return next;
     });
   };
+
+  // When a requirement detail is expanded, collapse all other PAs
+  const handleReqToggle = useCallback((reqId: string, paId: string) => {
+    setExpandedReq((prev) => {
+      if (prev === reqId) {
+        // Closing — restore PAs that were open before
+        if (presExpandPAs.current) {
+          setCollapsedPAs(presExpandPAs.current);
+          presExpandPAs.current = null;
+        }
+        return null;
+      }
+      // Opening — save current collapsed state, then collapse all PAs except this one
+      if (!presExpandPAs.current) {
+        presExpandPAs.current = allCollapsed ? new Set([...groups.keys()]) : new Set(collapsedPAs);
+      }
+      setAllCollapsed(false);
+      const allPAs = [...groups.keys()];
+      setCollapsedPAs(new Set(allPAs.filter((p) => p !== paId)));
+      return reqId;
+    });
+  }, [collapsedPAs, allCollapsed, groups]);
 
   const handleEditCommit = useCallback((id: string, updates: Partial<BusinessRequirement>) => {
     // Find the original req to snapshot if first edit
@@ -1192,7 +1224,7 @@ export function BusinessRequirementsTable({ data, captureBarRef }: { data: Busin
           )}
 
           {[...groups].map(([paId, reqs]) => {
-            const collapsed = collapsedPAs.has(paId);
+            const collapsed = allCollapsed || collapsedPAs.has(paId);
             const assessedCount = reqs.filter((r) => r.fit_gap).length;
 
             return (
@@ -1238,9 +1270,7 @@ export function BusinessRequirementsTable({ data, captureBarRef }: { data: Busin
                             <RequirementRow
                               req={r}
                               expanded={expandedReq === r.id}
-                              onToggle={() =>
-                                setExpandedReq((prev) => (prev === r.id ? null : r.id))
-                              }
+                              onToggle={() => handleReqToggle(r.id, paId)}
                               workshopMode={workshopMode}
                               isSelected={isSelected}
                               isNew={isNew}

@@ -19,8 +19,8 @@ import { useWorkshopStore } from "@/lib/workshop-store";
 // ── Agent framework config ─────────────────────────────────────────────────
 
 const LEVEL_CFG: Record<AgentLevel, { color: string; bg: string }> = {
-  L0: { color: "#475569", bg: "rgba(71,85,105,0.15)" },
-  L1: { color: "#94A3B8", bg: "rgba(148,163,184,0.12)" },
+  L0: { color: "#64748B", bg: "rgba(71,85,105,0.18)" },
+  L1: { color: "#64748B", bg: "rgba(148,163,184,0.18)" },
   L2: { color: "#3B82F6", bg: "rgba(59,130,246,0.12)" },
   L3: { color: "#A855F7", bg: "rgba(168,85,247,0.12)" },
   L4: { color: "#10B981", bg: "rgba(16,185,129,0.12)" },
@@ -597,6 +597,7 @@ export function ProcessInventoryGraph({ data }: { data: ProcessInventoryData }) 
   const [allNodes, setAllNodes] = useState<ProcessInventoryNode[]>(data.nodes);
   const [selectedNode, setSelectedNode] = useState<ProcessInventoryNode | null>(null);
   const [expandedSection, setExpandedSection] = useState<{ id: string; section: "erp" | "qs" | "flows" } | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string> | "all">("all");
 
   // Workshop filter: show only selected PA when workshop is active
   const workshopMode = useWorkshopStore((s) => s.workshopMode);
@@ -631,44 +632,70 @@ export function ProcessInventoryGraph({ data }: { data: ProcessInventoryData }) 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <div className="max-w-2xl space-y-5">
-            {[...groups].map(([area, areaNodes]) => (
+            {[...groups].map(([area, areaNodes]) => {
+              const isCollapsed = collapsedGroups === "all" || collapsedGroups.has(area);
+              return (
               <div key={area}>
-                <h3 className="text-[10px] uppercase tracking-[0.14em] text-muted font-semibold px-3 mb-1.5">
-                  {area}
-                </h3>
-                <div className="space-y-0.5">
-                  {areaNodes.map((node) => {
-                    const sec = expandedSection?.id === node.id ? expandedSection.section : null;
-                    return (
-                      <div key={node.id}>
-                        <ProcessRow
-                          node={node}
-                          selected={selectedNode?.id === node.id}
-                          onSelect={() =>
-                            setSelectedNode((prev) => (prev?.id === node.id ? null : node))
-                          }
-                          onScopeChange={(s) => updateNode(node.id, { scope: s })}
-                          onWorkStatusChange={(s) => updateNode(node.id, { work_status: s })}
-                          expandedSection={sec}
-                          onToggleSection={(section) => handleToggleSection(node.id, section)}
-                        />
-                        <AnimatePresence>
-                          {sec === "flows" && node.sub_flows?.length && (
-                            <SubFlowsPanel subFlows={node.sub_flows} />
-                          )}
-                          {sec === "erp" && node.erp_notes && (
-                            <ErpNotesPanel notes={node.erp_notes} />
-                          )}
-                          {sec === "qs" && node.scoping_questions?.length && (
-                            <ScopingQsPanel questions={node.scoping_questions} />
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    );
-                  })}
-                </div>
+                <button
+                  onClick={() => {
+                    if (collapsedGroups === "all") {
+                      // First click from all-collapsed: open this group, collapse rest explicitly
+                      setCollapsedGroups(new Set([...groups.keys()].filter((g) => g !== area)));
+                    } else {
+                      setCollapsedGroups((prev) => {
+                        const next = new Set(prev as Set<string>);
+                        if (next.has(area)) next.delete(area);
+                        else next.add(area);
+                        return next;
+                      });
+                    }
+                  }}
+                  className="flex items-center gap-2 w-full text-left px-3 mb-1.5 group"
+                >
+                  <h3 className="text-[10px] uppercase tracking-[0.14em] text-muted font-semibold">
+                    {area}
+                  </h3>
+                  <span className="text-[9px] font-mono text-muted/80">{areaNodes.length}</span>
+                  <span className="text-[10px] text-muted/70 ml-auto group-hover:text-muted transition-colors">
+                    {isCollapsed ? "▾" : "▲"}
+                  </span>
+                </button>
+                {!isCollapsed ? (
+                  <div className="space-y-0.5">
+                    {areaNodes.map((node) => {
+                      const sec = expandedSection?.id === node.id ? expandedSection.section : null;
+                      return (
+                        <div key={node.id}>
+                          <ProcessRow
+                            node={node}
+                            selected={selectedNode?.id === node.id}
+                            onSelect={() =>
+                              setSelectedNode((prev) => (prev?.id === node.id ? null : node))
+                            }
+                            onScopeChange={(s) => updateNode(node.id, { scope: s })}
+                            onWorkStatusChange={(s) => updateNode(node.id, { work_status: s })}
+                            expandedSection={sec}
+                            onToggleSection={(section) => handleToggleSection(node.id, section)}
+                          />
+                          <AnimatePresence>
+                            {sec === "flows" && node.sub_flows?.length && (
+                              <SubFlowsPanel subFlows={node.sub_flows} />
+                            )}
+                            {sec === "erp" && node.erp_notes && (
+                              <ErpNotesPanel notes={node.erp_notes} />
+                            )}
+                            {sec === "qs" && node.scoping_questions?.length && (
+                              <ScopingQsPanel questions={node.scoping_questions} />
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

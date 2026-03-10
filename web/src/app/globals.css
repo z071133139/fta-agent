@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
-@theme inline {
+@theme {
   /* Backgrounds */
   --color-background:    #0F172A;  /* slate-900 — canvas/page */
   --color-surface:       #1E293B;  /* slate-800 — cards/panels */
   --color-surface-alt:   #334155;  /* slate-700 — hover/active */
   --color-elevated:      #3D4F6A;  /* raised surfaces: flow nodes, prominent cards */
 
-  /* Borders */
-  --color-border:        #475569;  /* slate-600 — default */
-  --color-border-strong: #64748B;  /* visible separators, node outlines */
+  /* Borders — boosted for screen-share legibility */
+  --color-border:        #526278;  /* slate-600 bumped ~10% */
+  --color-border-strong: #7285A0;  /* visible separators, node outlines */
 
-  /* Text */
-  --color-foreground:    #F1F5F9;  /* slate-100 — primary */
-  --color-secondary:     #CBD5E1;  /* slate-300 — data text, 8.1:1 contrast */
-  --color-muted:         #94A3B8;  /* slate-400 — decorative only, not for data */
+  /* Text — boosted for screen-share legibility */
+  --color-foreground:    #F8FAFC;  /* slate-50 — primary (brighter) */
+  --color-secondary:     #E2E8F0;  /* slate-200 — data text (brighter) */
+  --color-muted:         #A1B0C4;  /* slate-400 bumped ~10% */
   --color-faint:         #64748B;  /* intentionally dim: hints, placeholders */
 
   /* Accent */
@@ -56,6 +56,64 @@
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-mono:  "JetBrains Mono", "Fira Code", monospace;
 }
+
+/* ── Light mode — CSS variable overrides ─────────────────────────────── */
+/* Tailwind v4 resolves all utilities from --color-* variables,           */
+/* so swapping here updates bg-surface, text-muted, border-border etc.   */
+
+:root[data-theme="light"] {
+  --color-background:    #F8FAFC;  /* slate-50 */
+  --color-surface:       #EFF3F8;  /* between slate-100 and 200 — visible on slate-50 bg */
+  --color-surface-alt:   #DFE5ED;  /* slate-200ish — visible contrast from surface */
+  --color-elevated:      #CBD5E1;  /* slate-300 — clearly raised */
+
+  --color-border:        #94A3B8;  /* slate-400 — crisp borders */
+  --color-border-strong: #64748B;  /* slate-500 — bold separators */
+
+  /* Text: designed to survive /50 and /70 opacity modifiers on #F8FAFC bg.
+     At /50 opacity on white, #000 → #808080 (still readable).
+     At /70 opacity on white, #000 → #4D4D4D (clearly readable). */
+  --color-foreground:    #000000;  /* pure black — /90 still #1A1A1A */
+  --color-secondary:     #020617;  /* slate-950 — /80 still very dark */
+  --color-muted:         #0F172A;  /* slate-900 — /50 → ~#878B92, still legible */
+  --color-faint:         #1E293B;  /* slate-800 — /40 → ~#A0A5AD, borderline but visible */
+
+  --color-accent:        #2563EB;  /* blue-600 — deeper on white */
+  --color-purple:        #9333EA;
+
+  /* Semantic — shifted darker for white background */
+  --color-success:       #059669;  /* emerald-600 */
+  --color-warning:       #D97706;  /* amber-600 */
+  --color-error:         #DC2626;  /* red-600 */
+  --color-info:          #0891B2;  /* cyan-600 */
+
+  /* Agent state */
+  --color-agent-thinking: #2563EB;
+  --color-agent-waiting:  #D97706;
+  --color-agent-success:  #059669;
+  --color-agent-error:    #DC2626;
+
+  /* Domain confidence */
+  --color-confidence-high:   #059669;
+  --color-confidence-medium: #2563EB;
+  --color-confidence-low:    #64748B;
+
+  /* Severity */
+  --color-severity-critical: #DC2626;
+  --color-severity-high:     #D97706;
+  --color-severity-medium:   #CA8A04;
+  --color-severity-low:      #64748B;
+
+  /* Engagement phase */
+  --color-phase-discovery:     #0891B2;
+  --color-phase-current-state: #D97706;
+  --color-phase-design:        #2563EB;
+  --color-phase-build:         #9333EA;
+  --color-phase-test:          #059669;
+}
+
+:root[data-theme="light"] ::-webkit-scrollbar-track { background: #F1F5F9; }
+:root[data-theme="light"] ::-webkit-scrollbar-thumb { background: #94A3B8; }
 
 body {
   background: var(--color-background);
@@ -183,5 +241,18 @@ body {
   .connection-active,
   .data-stream {
     animation: none !important;
+  }
+}
+
+/* ── Print / PDF export ────────────────────────────────────────────────── */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+
+  html, body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }

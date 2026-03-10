@@ -58,20 +58,20 @@ export function Phase0Slide({ data }: { data: Phase0SlideData }) {
           </div>
         </div>
 
-        {/* Right — What This Costs Us */}
+        {/* Right — Where We Spend Our Time */}
         <div className="bg-surface rounded-lg border border-border/50 p-6">
           <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-5">
-            What This Costs Us
+            Where We Spend Our Time
           </h3>
           <div className="space-y-4">
             {data.costs.map((cost, i) => (
-              <div key={i} className="flex items-baseline gap-4">
+              <div key={i} className="flex items-start gap-4">
                 <span
-                  className={`font-serif text-2xl font-bold ${STAT_COLOR[cost.color]} w-24 shrink-0 text-right`}
+                  className={`font-serif text-2xl font-bold ${STAT_COLOR[cost.color]} w-24 shrink-0 text-right leading-none pt-0.5`}
                 >
                   {cost.value}
                 </span>
-                <span className="text-sm text-muted leading-snug flex-1">
+                <span className="text-sm text-muted leading-snug flex-1 pt-1">
                   {cost.label}
                 </span>
               </div>
@@ -81,8 +81,8 @@ export function Phase0Slide({ data }: { data: Phase0SlideData }) {
       </div>
 
       {/* Takeaway bar */}
-      <div className="bg-info/10 border border-info/20 rounded-lg px-6 py-4">
-        <p className="text-sm text-info/80 italic leading-relaxed text-center">
+      <div className="border-l-2 border-red-500/60 bg-surface rounded-r-lg px-6 py-4">
+        <p className="text-lg text-foreground italic leading-relaxed">
           {data.takeaway}
         </p>
       </div>

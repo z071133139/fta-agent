@@ -325,10 +325,16 @@ function LandingPageInner() {
           </span>
           <div className="flex items-center gap-5">
             <a
+              href="/pitch?deck=exec"
+              className="text-xs font-mono text-muted/50 hover:text-muted transition-colors"
+            >
+              exec deck ↗
+            </a>
+            <a
               href="/pitch"
               className="text-xs font-mono text-muted/50 hover:text-muted transition-colors"
             >
-              pitch deck ↗
+              full deck ↗
             </a>
             <a
               href="/framework"

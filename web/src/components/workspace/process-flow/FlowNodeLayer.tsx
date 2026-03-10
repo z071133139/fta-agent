@@ -49,9 +49,9 @@ const SwimlaneBand = React.memo(function SwimlaneBand({
         width: lane.w,
         height: lane.h,
         pointerEvents: "none", // never intercept clicks
-        borderTop: "1px solid rgba(100,116,139,0.35)",
-        borderBottom: isLast ? "1px solid rgba(100,116,139,0.35)" : "none",
-        backgroundColor: "rgba(30,41,59,0.25)",
+        borderTop: "1px solid var(--color-border)",
+        borderBottom: isLast ? "1px solid var(--color-border)" : "none",
+        backgroundColor: "color-mix(in srgb, var(--color-surface-alt) 40%, transparent)",
       }}
     >
       {/* Lane label column */}
@@ -62,7 +62,7 @@ const SwimlaneBand = React.memo(function SwimlaneBand({
           top: 0,
           bottom: 0,
           width: LABEL_COL_W,
-          borderRight: "1px solid rgba(100,116,139,0.35)",
+          borderRight: "1px solid var(--color-border)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -194,7 +194,7 @@ const TaskNode = React.memo(function TaskNode({
         cursor: editing ? "default" : "pointer",
         boxShadow: selected
           ? "0 0 0 3px rgba(59,130,246,0.2)"
-          : "0 1px 3px rgba(0,0,0,0.3)",
+          : "0 1px 3px color-mix(in srgb, var(--color-background) 30%, transparent)",
         transition: "border-color 0.12s ease, box-shadow 0.12s ease",
         userSelect: "none",
         overflow: "visible", // allow overlay badge to bleed out
